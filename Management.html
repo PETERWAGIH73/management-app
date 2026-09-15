@@ -1,0 +1,2383 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MANAGEMENT</title>
+
+  <style>
+    /* =========================================================
+       ألوان وشكل البرنامج العام
+       ========================================================= */
+    :root {
+      --black: #0b1220;
+      --ink: #e7edf7;
+      --muted: #9caec4;
+      --line: #283a52;
+      --panel: #111d2e;
+      --panel-soft: #17263a;
+      --orange: #22a6b3;
+      --orange-dark: #17808b;
+      --red: #dc5a67;
+      --dark-bg: #07111f;
+      --shadow: 0 18px 45px rgba(0, 0, 0, .36);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+      background: radial-gradient(circle at top right, #173553 0, var(--dark-bg) 42%, #050b14 100%);
+      color: var(--ink);
+      font-size: 15px;
+      line-height: 1.55;
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+      font: inherit;
+    }
+
+    button {
+      border: 0;
+      border-radius: 10px;
+      padding: 11px 16px;
+      background: var(--orange);
+      color: white;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 8px 18px rgba(249, 115, 22, .18);
+      transition: .15s ease;
+    }
+
+    button:hover {
+      background: var(--orange-dark);
+      transform: translateY(-1px);
+    }
+
+    .gray {
+       background: #22334a;
+       box-shadow: 0 8px 18px rgba(0, 0, 0, .22);
+    }
+
+    .gray:hover {
+       background: #304862;
+    }
+
+    .light {
+       background: #1c3049;
+       color: #dce9f6;
+      border: 1px solid var(--line);
+      box-shadow: none;
+    }
+
+    .light:hover {
+       background: #294564;
+       color: #ffffff;
+    }
+
+    .danger {
+      background: var(--red);
+      box-shadow: 0 8px 18px rgba(185, 28, 28, .18);
+    }
+
+    .danger:hover {
+       background: #b93f51;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 11px 12px;
+       background: #0d1828;
+      color: var(--ink);
+      outline: none;
+    }
+
+    input[type="checkbox"] {
+      width: auto;
+      accent-color: var(--orange);
+    }
+
+    .shop-choice {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 8px 11px;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      background: var(--panel-soft);
+      color: var(--ink);
+      cursor: pointer;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+       border-color: var(--orange);
+       box-shadow: 0 0 0 3px rgba(34, 166, 179, .20);
+     }
+
+    label {
+      display: grid;
+      gap: 7px;
+      font-size: 13px;
+      color: var(--muted);
+      font-weight: 800;
+    }
+
+    textarea {
+      min-height: 46px;
+      resize: vertical;
+    }
+
+    /* =========================================================
+       الهيدر، الصفحة الرئيسية، والكروت
+       ========================================================= */
+    .top {
+      position: sticky;
+      top: 0;
+      z-index: 8;
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      align-items: center;
+      padding: 12px 22px;
+       background: rgba(7, 17, 31, .96);
+      border-bottom: 3px solid var(--orange);
+      color: white;
+      box-shadow: 0 8px 28px rgba(0, 0, 0, .22);
+    }
+
+    .top b {
+      font-size: 20px;
+      letter-spacing: .8px;
+    }
+
+    .top-right {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      flex-wrap: wrap;
+    }
+
+    .actions,
+    .row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .row button,
+    .grid button {
+      margin-top: 4px;
+      min-width: 120px;
+    }
+
+    .chart-wrap {
+      display: grid;
+      grid-template-columns: minmax(240px, 340px) 1fr;
+      gap: 22px;
+      align-items: center;
+      margin-top: 16px;
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+       background: #0d1828;
+    }
+
+    .pie-svg {
+      width: min(320px, 100%);
+      height: auto;
+      display: block;
+      margin: auto;
+      transform: rotate(-90deg);
+      filter: drop-shadow(0 8px 18px rgba(0, 0, 0, .12));
+    }
+
+    .legend-row {
+      display: grid;
+      grid-template-columns: 18px 1fr auto;
+      gap: 10px;
+      align-items: center;
+      padding: 9px 0;
+       border-bottom: 1px solid var(--line);
+    }
+
+    .legend-row:last-child {
+      border-bottom: 0;
+    }
+
+    .legend-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .bar-chart {
+      display: grid;
+      gap: 14px;
+      margin-top: 16px;
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+       background: #0d1828;
+    }
+
+    .bar-row {
+      display: grid;
+      grid-template-columns: minmax(120px, 180px) 1fr;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .bar-name {
+      font-weight: 800;
+       color: var(--ink);
+    }
+
+    .bar-track {
+      display: grid;
+      gap: 6px;
+    }
+
+    .bar-line {
+      height: 22px;
+      min-width: 2px;
+      border-radius: 8px;
+      color: white;
+      display: flex;
+      align-items: center;
+      padding: 0 8px;
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .page {
+      width: min(1060px, calc(100% - 34px));
+      margin: auto;
+      padding: 18px 0 32px;
+    }
+
+    .title {
+      text-align: center;
+      font-size: clamp(38px, 6vw, 70px);
+      margin: 18px 0 20px;
+      font-weight: 900;
+      color: white;
+      letter-spacing: 1px;
+    }
+
+    .stores {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .store {
+      width: 100%;
+      min-height: 92px;
+       background: linear-gradient(145deg, #182a41, #101c2d);
+       color: var(--ink);
+       border: 1px solid #2e4967;
+      box-shadow: var(--shadow);
+      font-size: clamp(17px, 1.7vw, 23px);
+      border-bottom: 5px solid var(--orange);
+    }
+
+    .store-tile {
+      position: relative;
+    }
+
+    .delete-store {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      z-index: 1;
+      min-width: 0;
+      padding: 4px 7px;
+      border-radius: 7px;
+      font-size: 11px;
+      box-shadow: none;
+    }
+
+    .store:hover {
+       background: #1c5262;
+       color: white;
+       border-color: #36b7bf;
+    }
+
+    .wide {
+      display: block;
+      width: min(560px, 100%);
+      margin: 14px auto 0;
+      min-height: 54px;
+      font-size: 17px;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      box-shadow: var(--shadow);
+      padding: 22px;
+      margin-top: 18px;
+    }
+
+    .head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 12px;
+    }
+
+    .head h1 {
+      margin: 0;
+      font-size: clamp(28px, 4vw, 46px);
+      color: white;
+      font-weight: 750;
+    }
+
+    /* قائمة الشيتات ثابتة أثناء النزول في الصفحة */
+    .tabs {
+      position: sticky;
+      top: 68px;
+      z-index: 6;
+      display: flex;
+      gap: 10px;
+      overflow: auto;
+      padding: 12px 10px 14px;
+      border: 1px solid rgba(255, 255, 255, .10);
+      border-radius: 14px;
+      margin-bottom: 18px;
+       background: rgba(10, 25, 43, .96);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, .22);
+      backdrop-filter: blur(8px);
+    }
+
+    .tab {
+      white-space: nowrap;
+       background: #14243a;
+       color: var(--ink);
+      border: 1px solid var(--line);
+      box-shadow: none;
+    }
+
+    .tab.on {
+       background: var(--orange);
+      color: white;
+      border-color: var(--black);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(150px, 1fr));
+      gap: 14px;
+      align-items: end;
+    }
+
+    .grid3 {
+      grid-template-columns: repeat(3, minmax(150px, 1fr));
+    }
+
+    .datebox {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 7px;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(155px, 1fr));
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .card {
+       background: var(--panel-soft);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 14px;
+       color: var(--muted);
+    }
+
+    .card strong {
+      display: block;
+      font-size: 22px;
+       color: #ffffff;
+      margin-top: 4px;
+    }
+
+    h2 {
+      font-size: 24px;
+      margin: 2px 0 16px;
+      color: #ffffff;
+      font-weight: 750;
+    }
+
+    h3 {
+      font-size: 18px;
+      margin: 22px 0 12px;
+      color: #c8d6e6;
+      font-weight: 700;
+    }
+
+    hr {
+      border: 0;
+      border-top: 1px solid var(--line);
+      margin: 22px 0;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      margin-top: 14px;
+       background: #0d1828;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    th,
+    td {
+      border-bottom: 1px solid var(--line);
+      padding: 11px 10px;
+      text-align: right;
+      vertical-align: top;
+    }
+
+    th {
+      background: var(--black);
+      color: white;
+      font-size: 13px;
+    }
+
+     tr:last-child td {
+       border-bottom: 0;
+     }
+
+      tbody tr:hover td {
+        background: #14243a;
+      }
+
+      td button {
+      padding: 8px 11px;
+      border-radius: 8px;
+      margin: 4px;
+    }
+
+    .file {
+      position: absolute;
+      opacity: 0;
+      width: 1px;
+      height: 1px;
+    }
+
+    .ok {
+       color: #50d09a;
+      font-weight: 900;
+    }
+
+    .bad {
+      color: var(--red);
+      font-weight: 900;
+    }
+
+    @media (max-width: 860px) {
+      .stores,
+      .grid,
+      .grid3,
+      .cards {
+        grid-template-columns: 1fr;
+      }
+
+      .top {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .top-right {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .tabs {
+        top: 116px;
+      }
+
+      .chart-wrap,
+      .bar-row {
+        grid-template-columns: 1fr;
+      }
+
+      .page {
+        width: min(100% - 22px, 1200px);
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- الهيدر الثابت: رجوع للرئيسية + نسخ احتياطي + استرجاع -->
+  <header class="top">
+    <div class="top-right">
+      <b>T.p</b>
+      <div class="actions">
+        <button class="light" onclick="home()">الرئيسية</button>
+        <button class="gray" onclick="backup()">نسخ احتياطي</button>
+        <button onclick="restoreFile.click()">استرجاع</button>
+        <input class="file" id="restoreFile" type="file" accept="application/json" onchange="restore(event)">
+      </div>
+    </div>
+    <button class="danger" onclick="clearAllData()">حذف كل البيانات</button>
+  </header>
+
+  <!-- هنا البرنامج بيعرض الصفحة الرئيسية أو صفحة المحل -->
+  <main class="page" id="app"></main>
+
+  <script>
+    /* =========================================================
+       بيانات ثابتة: المحلات وأسماء الشيتات
+       الرقم الأخير في كل محل يحدد ظهور خانة سعر القطع المباعة:
+       0 = لا تظهر، 1 = تظهر
+       ========================================================= */
+    const stores = [
+      ["cleopatra", "كليوبترا", 0],
+      ["aladdin", "علاء الدين", 0],
+      ["lobby", "اللوبي", 1],
+      ["bardi", "سيفا البردي", 1],
+      ["sindbad", "سيفا السندباد", 1],
+      ["portofino", "بورتوفينو", 1]
+    ];
+
+    const tabNames = {
+      sales: "المبيعات اليومية",
+      exchange: "تغيير العملة",
+      traders: "التجار",
+      sellers: "البائعين",
+      expenses: "المصروفات والمسحوبات",
+      profits: "توزيع الأرباح",
+      items: "الاصناف"
+    };
+
+    /* شكل بيانات كل محل جديد */
+    const blank = () => ({
+      sales: [],
+      exchange: [],
+      traderTx: [],
+      sellers: [],
+      fixedSellers: [],
+      items: [],
+      expenses: [],
+      withdrawals: [],
+      partners: []
+    });
+
+    let data = load();
+    syncCustomStores();
+    let store = "";
+    let tab = "sales";
+    let edit = null;
+    let period = loadSavedPeriod();
+
+    /* =========================================================
+       دوال مساعدة عامة
+       ========================================================= */
+
+    // تحميل البيانات المحفوظة من المتصفح، أو إنشاء بيانات فاضية أول مرة.
+    function load() {
+      try {
+        // نستخدم اسم التخزين الجديد، مع قراءة البيانات القديمة تلقائيًا إن وجدت.
+        const saved = JSON.parse(localStorage.managementData || localStorage["h1group"]);
+        saved.traders ||= [];
+        saved.stores ||= {};
+        saved.customStores ||= [];
+        saved.deletedStoreIds ||= [];
+        stores.forEach(s => {
+          saved.stores[s[0]] ||= blank();
+          saved.stores[s[0]].sales ||= [];
+          saved.stores[s[0]].exchange ||= [];
+          saved.stores[s[0]].traderTx ||= [];
+          saved.stores[s[0]].sellers ||= [];
+          saved.stores[s[0]].fixedSellers ||= [];
+          saved.stores[s[0]].items ||= [];
+          saved.stores[s[0]].expenses ||= [];
+          saved.stores[s[0]].withdrawals ||= [];
+          saved.stores[s[0]].partners ||= [];
+        });
+        return saved;
+      } catch (e) {
+        return {
+          traders: [],
+          customStores: [],
+          deletedStoreIds: [],
+          stores: Object.fromEntries(stores.map(s => [s[0], blank()]))
+        };
+      }
+    }
+
+    // حفظ كل البيانات في المتصفح.
+    function save() {
+      localStorage.managementData = JSON.stringify(data);
+    }
+
+    // إضافة المحلات المخصصة المحفوظة إلى قائمة المحلات عند فتح البرنامج.
+    function syncCustomStores() {
+      data.customStores ||= [];
+      data.deletedStoreIds ||= [];
+      for (let index = stores.length - 1; index >= 0; index--) {
+        if (data.deletedStoreIds.includes(stores[index][0])) stores.splice(index, 1);
+      }
+      data.customStores.forEach(s => {
+        if (!Array.isArray(s) || !s[0] || !s[1] || stores.some(x => x[0] === s[0])) return;
+        stores.push([s[0], s[1], s[2] ? 1 : 0]);
+        data.stores[s[0]] ||= blank();
+      });
+    }
+
+    // إنشاء رقم تعريفي مختلف لكل سجل.
+    function id() {
+      return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+    }
+
+    // تحويل أي قيمة لرقم آمن.
+    function n(value) {
+      return Number(value) || 0;
+    }
+
+    // تنسيق الأرقام بدون فواصل آلاف، وبنقطة بين الجنيه والقروش.
+    function m(value) {
+      const rounded = Math.round(n(value) * 100) / 100;
+      return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(2);
+    }
+
+    // اختصار لجلب عنصر من الصفحة.
+    function q(selectorId) {
+      return document.getElementById(selectorId);
+    }
+
+    // بيانات المحل المفتوح حاليًا.
+    function st() {
+      return data.stores[store];
+    }
+
+    // بيانات تعريف المحل المفتوح حاليًا.
+    function meta() {
+      return stores.find(s => s[0] === store);
+    }
+
+    /* =========================================================
+       دوال التاريخ
+       ========================================================= */
+
+    // تاريخ اليوم بصيغة YYYY-MM-DD.
+    function today() {
+      const d = new Date();
+      const y = d.getFullYear();
+      const mo = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      return `${y}-${mo}-${day}`;
+    }
+
+    // تقسيم التاريخ إلى سنة وشهر ويوم.
+    function parts(value) {
+      const x = (value || today()).split("-");
+      return {
+        y: n(x[0]) || new Date().getFullYear(),
+        m: n(x[1]) || new Date().getMonth() + 1,
+        d: n(x[2]) || new Date().getDate()
+      };
+    }
+
+    // إنشاء 3 خانات للتاريخ: سنة، شهر، يوم.
+    function dateBox(prefix, value) {
+      const p = parts(value);
+      const currentYear = new Date().getFullYear();
+      let years = "";
+      let months = "";
+      let days = "";
+
+      for (let y = currentYear - 6; y <= currentYear + 2; y++) {
+        years += `<option value="${y}" ${p.y === y ? "selected" : ""}>${y}</option>`;
+      }
+
+      for (let month = 1; month <= 12; month++) {
+        months += `<option value="${month}" ${p.m === month ? "selected" : ""}>${month}</option>`;
+      }
+
+      for (let day = 1; day <= 31; day++) {
+        days += `<option value="${day}" ${p.d === day ? "selected" : ""}>${day}</option>`;
+      }
+
+      return `
+        <div class="datebox">
+          <select id="${prefix}Y">${years}</select>
+          <select id="${prefix}M">${months}</select>
+          <select id="${prefix}D">${days}</select>
+        </div>
+      `;
+    }
+
+    // قراءة التاريخ من 3 خانات وتحويله للصيغة الموحدة.
+    function dateValue(prefix) {
+      const y = n(q(prefix + "Y").value);
+      const month = n(q(prefix + "M").value);
+      let day = n(q(prefix + "D").value);
+      const lastDay = new Date(y, month, 0).getDate();
+
+      if (day > lastDay) day = lastDay;
+
+      const value = `${y}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+      if (store) localStorage[`managementDate:${store}:${prefix}`] = value;
+      return value;
+    }
+
+    // تحديد الشهر الحالي كفترة افتراضية.
+    function thisMonth() {
+      const d = new Date();
+      const y = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, "0");
+      const lastDay = new Date(y, d.getMonth() + 1, 0).getDate();
+
+      return {
+        from: `${y}-${month}-01`,
+        to: `${y}-${month}-${lastDay}`
+      };
+    }
+
+    // حفظ فترة التقرير حتى تظل كما اختارها المستخدم إلى أن يغيرها بنفسه.
+    function loadSavedPeriod() {
+      try {
+        const saved = JSON.parse(localStorage.managementPeriod);
+        if (saved?.from && saved?.to) return saved;
+      } catch (e) {}
+      return thisMonth();
+    }
+
+    function setPeriod(next) {
+      period = next;
+      localStorage.managementPeriod = JSON.stringify(period);
+    }
+
+    // حفظ تاريخ كل نموذج لكل محل حتى يبقى التاريخ المختار في الإدخالات التالية.
+    function rememberedDate(prefix) {
+      return localStorage[`managementDate:${store}:${prefix}`] || today();
+    }
+
+    // هل التاريخ داخل الفترة المحددة؟
+    function inP(date) {
+      return date && (!period.from || date >= period.from) && (!period.to || date <= period.to);
+    }
+
+    // فلترة أي قائمة حسب الفترة المحددة.
+    function fl(list) {
+      return list.filter(x => inP(x.date));
+    }
+
+    // سجل موحد للفلوس الخارجة: لا ينشئ نسخة جديدة من السجل، بل يعرض السجلات الأصلية معًا.
+    // لهذا تظل الدفعة أو السلفة قابلة للتعديل من مصدرها ولا تُحسب مرتين.
+    function unifiedOutflows() {
+      return [
+        ...fl(st().expenses).map(x => ({ ...x, source: "expenses", type: "مصروفات كاش", item: x.item })),
+        ...fl(st().traderTx)
+          .filter(x => x.kind === "payment")
+          .map(x => ({ ...x, source: "traderTx", type: "دفعة تاجر", item: `دفعة تاجر - ${x.name}` })),
+        ...fl(st().withdrawals)
+          .map(x => ({ ...x, source: "withdrawals", type: "مسحوبات ", item: `مسحوبات  - ${x.seller}` }))
+      ].sort((a, b) => String(b.date).localeCompare(String(a.date)));
+    }
+
+    function unifiedOutflowTotal() {
+      return unifiedOutflows().reduce((sum, x) => sum + n(x.amount), 0);
+    }
+
+    /* =========================================================
+       التنقل وعرض الصفحات
+       ========================================================= */
+
+    // عرض الصفحة الرئيسية.
+    function home() {
+      store = "";
+      edit = null;
+      history.replaceState(null, "", "#MANAGEMENT");
+
+      app.innerHTML = `
+        <h1 class="title">MANAGEMENT</h1>
+        <section class="stores">
+          ${stores.map(s => `<div class="store-tile"><button class="store" onclick="openStore('${s[0]}')">${s[1]}</button><button class="danger delete-store" onclick="deleteStore('${s[0]}')">حذف</button></div>`).join("")}
+        </section>
+        <section class="panel">
+          <h2>إضافة محل</h2>
+          <div class="grid grid3">
+            <label>اسم المحل <input id="newStoreName" placeholder="اكتب اسم المحل"></label>
+            <button onclick="addStore()">إضافة محل جديد</button>
+          </div>
+        </section>
+        <button class="wide" onclick="collections()">تحصيل المحلات</button>
+        <button class="wide" onclick="traderTotals()">إجمالي الأرصدة للتجار</button>
+      `;
+    }
+
+    // إضافة محل جديد بكل الشيتات والخصائص الأساسية الموجودة في المحلات الأخرى.
+    function addStore() {
+      const name = q("newStoreName").value.trim();
+      if (!name) return alert("اكتب اسم المحل");
+      if (stores.some(s => s[1] === name)) return alert("هذا المحل موجود بالفعل");
+
+      const newStore = [`store-${id()}`, name, 1];
+      stores.push(newStore);
+      data.customStores ||= [];
+      data.customStores.push(newStore);
+      data.stores[newStore[0]] = blank();
+      save();
+      home();
+    }
+
+    // حذف محل وبياناته بعد تأكيد المستخدم.
+    function deleteStore(storeId) {
+      const index = stores.findIndex(s => s[0] === storeId);
+      if (index < 0) return;
+      const name = stores[index][1];
+      if (!confirm(`حذف محل ${name} وكل بياناته؟`)) return;
+
+      stores.splice(index, 1);
+      delete data.stores[storeId];
+      data.customStores = (data.customStores || []).filter(s => s[0] !== storeId);
+      if (!storeId.startsWith("store-") && !(data.deletedStoreIds || []).includes(storeId)) {
+        data.deletedStoreIds ||= [];
+        data.deletedStoreIds.push(storeId);
+      }
+      save();
+      home();
+    }
+
+    // إجمالي تحصيل محل واحد. العملات الأجنبية التي تم تغييرها تُخصم من عدد العملات المحصلة.
+    function storeCollectionTotals(storeId) {
+      const shop = data.stores[storeId];
+      const sales = shop.sales.filter(x => inP(x.date));
+      const exchanged = shop.exchange.filter(x => inP(x.date));
+      const sum = (list, field) => list.reduce((total, item) => total + n(item[field]), 0);
+      const euroSales = sum(sales, "euro");
+      const dollarSales = sum(sales, "dollar");
+      const gbpSales = sum(sales, "gbp");
+      const euroChanged = sum(exchanged, "ea");
+      const dollarChanged = sum(exchanged, "da");
+      const gbpChanged = sum(exchanged, "ba");
+      return {
+        euroSales, dollarSales, gbpSales, euroChanged, dollarChanged, gbpChanged,
+        euro: euroSales - euroChanged,
+        dollar: dollarSales - dollarChanged,
+        gbp: gbpSales - gbpChanged,
+        egp: sum(sales, "egp"),
+        visa: sum(sales, "visa")
+      };
+    }
+
+    // المستخدم يحدد المحلات التي يريد إدراجها في التحصيل، بما فيها بورتوفينو.
+    function collectionStores() {
+      return stores;
+    }
+
+    function selectedCollectionStoreIds() {
+      const availableIds = collectionStores().map(s => s[0]);
+      try {
+        const saved = JSON.parse(localStorage.managementCollectionStores);
+        if (Array.isArray(saved)) return new Set(saved.filter(id => availableIds.includes(id)));
+      } catch (e) {}
+      return new Set(availableIds);
+    }
+
+    function toggleCollectionStore(storeId, checked) {
+      const selected = selectedCollectionStoreIds();
+      if (checked) selected.add(storeId);
+      else selected.delete(storeId);
+      localStorage.managementCollectionStores = JSON.stringify([...selected]);
+      collections();
+    }
+
+    function selectAllCollectionStores() {
+      localStorage.managementCollectionStores = JSON.stringify(collectionStores().map(s => s[0]));
+      collections();
+    }
+
+    // صفحة تحصيل المحلات: تجمع العملات من جميع المحلات في الفترة المختارة.
+    function collections() {
+      store = "";
+      edit = null;
+      history.replaceState(null, "", "#MANAGEMENT-COLLECTIONS");
+      const availableStores = collectionStores();
+      const selectedIds = selectedCollectionStoreIds();
+      const rows = availableStores.filter(s => selectedIds.has(s[0])).map(s => ({ id: s[0], name: s[1], totals: storeCollectionTotals(s[0]) }));
+      const total = rows.reduce((all, row) => {
+        Object.keys(all).forEach(key => all[key] += row.totals[key]);
+        return all;
+      }, { euroSales: 0, dollarSales: 0, gbpSales: 0, euroChanged: 0, dollarChanged: 0, gbpChanged: 0, euro: 0, dollar: 0, gbp: 0, egp: 0, visa: 0 });
+
+      app.innerHTML = `
+        <div class="head"><h1>تحصيل المحلات</h1><button class="light" onclick="home()">رجوع</button></div>
+        <section class="panel">
+          <div class="grid">
+            <label>من تاريخ ${dateBox("from", period.from)}</label>
+            <label>إلى تاريخ ${dateBox("to", period.to)}</label>
+            <button onclick="setPeriod({from:dateValue('from'),to:dateValue('to')}); collections()">الفترة المحددة</button>
+            <button class="light" onclick="setPeriod(thisMonth()); collections()">الشهر الحالي</button>
+          </div>
+          <div class="row">
+            <button class="gray" onclick="selectAllCollectionStores()">اختيار كل المحلات</button>
+            ${availableStores.map(s => `<label class="shop-choice"><input type="checkbox" ${selectedIds.has(s[0]) ? "checked" : ""} onchange="toggleCollectionStore('${s[0]}', this.checked)">${s[1]}</label>`).join("")}
+          </div>
+          <div class="row"><button onclick="exportCollectionsPdf()">تصدير تحصيل المحلات PDF</button></div>
+          <div class="cards">
+            <div class="card">صافي اليورو <strong>${m(total.euro)}</strong></div>
+            <div class="card">صافي الدولار <strong>${m(total.dollar)}</strong></div>
+            <div class="card">صافي الجنيه الإنجليزي <strong>${m(total.gbp)}</strong></div>
+            <div class="card">إجمالي الجنيه <strong>${m(total.egp)}</strong></div>
+            <div class="card">إجمالي الفيزا <strong>${m(total.visa)}</strong></div>
+          </div>
+          <h2>تفاصيل تحصيل المحلات</h2>
+          <div style="overflow:auto">
+            <table>
+              <tr><th>المحل</th><th>يورو محصل</th><th>يورو تم تغييره</th><th>صافي يورو</th><th>دولار محصل</th><th>دولار تم تغييره</th><th>صافي دولار</th><th>إنجليزي محصل</th><th>إنجليزي تم تغييره</th><th>صافي إنجليزي</th><th>جنيه</th><th>فيزا</th></tr>
+              ${rows.map(row => `<tr><td>${row.name}</td><td>${m(row.totals.euroSales)}</td><td>${m(row.totals.euroChanged)}</td><td>${m(row.totals.euro)}</td><td>${m(row.totals.dollarSales)}</td><td>${m(row.totals.dollarChanged)}</td><td>${m(row.totals.dollar)}</td><td>${m(row.totals.gbpSales)}</td><td>${m(row.totals.gbpChanged)}</td><td>${m(row.totals.gbp)}</td><td>${m(row.totals.egp)}</td><td>${m(row.totals.visa)}</td></tr>`).join("") || `<tr><td colspan="12">اختر محلًا واحدًا على الأقل لعرض التحصيل</td></tr>`}
+              <tr class="total"><td>الإجمالي</td><td>${m(total.euroSales)}</td><td>${m(total.euroChanged)}</td><td>${m(total.euro)}</td><td>${m(total.dollarSales)}</td><td>${m(total.dollarChanged)}</td><td>${m(total.dollar)}</td><td>${m(total.gbpSales)}</td><td>${m(total.gbpChanged)}</td><td>${m(total.gbp)}</td><td>${m(total.egp)}</td><td>${m(total.visa)}</td></tr>
+            </table>
+          </div>
+        </section>
+      `;
+    }
+
+    // تصدير تحصيل المحلات في PDF حسب المحلات التي تم اختيارها.
+    function exportCollectionsPdf() {
+      const selectedIds = selectedCollectionStoreIds();
+      const rows = collectionStores().filter(s => selectedIds.has(s[0])).map(s => ({ id: s[0], name: s[1], totals: storeCollectionTotals(s[0]) }));
+      const total = rows.reduce((all, row) => {
+        Object.keys(all).forEach(key => all[key] += row.totals[key]);
+        return all;
+      }, { euroSales: 0, dollarSales: 0, gbpSales: 0, euroChanged: 0, dollarChanged: 0, gbpChanged: 0, euro: 0, dollar: 0, gbp: 0, egp: 0, visa: 0 });
+      const cells = row => `<tr><td>${row.name}</td><td>${m(row.totals.euroSales)}</td><td>${m(row.totals.euroChanged)}</td><td>${m(row.totals.euro)}</td><td>${m(row.totals.dollarSales)}</td><td>${m(row.totals.dollarChanged)}</td><td>${m(row.totals.dollar)}</td><td>${m(row.totals.gbpSales)}</td><td>${m(row.totals.gbpChanged)}</td><td>${m(row.totals.gbp)}</td><td>${m(row.totals.egp)}</td><td>${m(row.totals.visa)}</td></tr>`;
+      const headers = `<tr><th>المحل</th><th>يورو محصل</th><th>تم تغييره</th><th>صافي يورو</th><th>دولار محصل</th><th>تم تغييره</th><th>صافي دولار</th><th>إنجليزي محصل</th><th>تم تغييره</th><th>صافي إنجليزي</th><th>جنيه</th><th>فيزا</th></tr>`;
+      const content = `
+        <div class="summary-grid">
+          <div class="metric">صافي اليورو - جميع المحلات<b>${m(total.euro)}</b></div>
+          <div class="metric">صافي الدولار - جميع المحلات<b>${m(total.dollar)}</b></div>
+          <div class="metric">صافي الجنيه الإنجليزي - جميع المحلات<b>${m(total.gbp)}</b></div>
+          <div class="metric">إجمالي الجنيه<b>${m(total.egp)}</b></div>
+          <div class="metric">إجمالي الفيزا<b>${m(total.visa)}</b></div>
+        </div>
+        <h2>تفاصيل تحصيل المحلات</h2>
+        <table><thead>${headers}</thead><tbody>${rows.map(cells).join("")}</tbody></table>
+        <h2>إجمالي كل المحلات</h2>
+        <table><thead>${headers}</thead><tbody><tr class="total"><td>الإجمالي</td><td>${m(total.euroSales)}</td><td>${m(total.euroChanged)}</td><td>${m(total.euro)}</td><td>${m(total.dollarSales)}</td><td>${m(total.dollarChanged)}</td><td>${m(total.dollar)}</td><td>${m(total.gbpSales)}</td><td>${m(total.gbpChanged)}</td><td>${m(total.gbp)}</td><td>${m(total.egp)}</td><td>${m(total.visa)}</td></tr></tbody></table>`;
+      printPdf("تقرير تحصيل المحلات", `الفترة: من ${period.from} إلى ${period.to}`, content, "landscape");
+    }
+
+    // فتح محل معين.
+    function openStore(storeId) {
+      store = storeId;
+      tab = "sales";
+      edit = null;
+      render();
+    }
+
+    // رسم صفحة المحل وقائمة الشيتات.
+    function render() {
+      const s = meta();
+      history.replaceState(null, "", `#MANAGEMENT-${encodeURIComponent(s[1])}`);
+
+      app.innerHTML = `
+        <div class="head">
+          <h1>${s[1]}</h1>
+          <button class="light" onclick="home()">رجوع</button>
+        </div>
+
+        <div class="tabs">
+          ${Object.entries(tabNames).map(([key, value]) => `
+            <button class="tab ${tab === key ? "on" : ""}" onclick="tab='${key}'; edit=null; render()">
+              ${value}
+            </button>
+          `).join("")}
+        </div>
+
+        <section class="panel">
+          ${dates()}
+          <div id="body"></div>
+        </section>
+      `;
+
+      draw();
+    }
+
+    // رسم فلتر الفترة من تاريخ إلى تاريخ.
+    function dates() {
+      return `
+        <div class="grid">
+          <label>من تاريخ ${dateBox("from", period.from)}</label>
+          <label>إلى تاريخ ${dateBox("to", period.to)}</label>
+            <button onclick="setPeriod({from:dateValue('from'),to:dateValue('to')}); render()">الفترة المحددة</button>
+            <button class="light" onclick="setPeriod(thisMonth()); render()">الشهر الحالي</button>
+        </div>
+      `;
+    }
+
+    // اختيار الدالة المناسبة للشيت المفتوح.
+    function draw() {
+      const pages = { sales, exchange, traders, sellers, items, expenses, profits };
+      body.innerHTML = pages[tab]();
+    }
+
+    // إضافة سجل جديد أو تعديل سجل موجود.
+    function up(list, item) {
+      const index = list.findIndex(x => x.id === item.id);
+      if (index > -1) list[index] = item;
+      else list.push(item);
+
+      save();
+      edit = null;
+      draw();
+    }
+
+    // حذف سجل من أي شيت.
+    function del(type, itemId) {
+      if (!confirm("حذف ؟")) return;
+      st()[type] = st()[type].filter(x => x.id !== itemId);
+      save();
+      draw();
+    }
+
+    // تجهيز سجل للتعديل.
+    function edt(type, itemId) {
+      edit = { type, id: itemId };
+      draw();
+    }
+
+    // إظهار أو إخفاء القوائم المنسدلة.
+    function box(id) {
+      const element = q(id);
+      element.style.display = element.style.display === "none" ? "" : "none";
+    }
+
+    /* =========================================================
+       شيت المبيعات اليومية
+       ========================================================= */
+
+    // حساب إجماليات المبيعات داخل الفترة.
+    function totals() {
+      return fl(st().sales).reduce((a, x) => {
+        a.euro += n(x.euro);
+        a.dollar += n(x.dollar);
+        a.gbp += n(x.gbp);
+        a.egp += n(x.egp);
+        a.visa += n(x.visa);
+        a.pieces += n(x.pieces);
+        return a;
+      }, { euro: 0, dollar: 0, gbp: 0, egp: 0, visa: 0, pieces: 0 });
+    }
+
+    // رسم شيت المبيعات.
+    function sales() {
+      const r = edit?.type === "sales" ? st().sales.find(x => x.id === edit.id) : {};
+      const hasPieces = meta()[2];
+      const t = totals();
+      const list = fl(st().sales);
+
+      return `
+        <h2>المبيعات اليومية</h2>
+        <div class="grid">
+          <label>التاريخ ${dateBox("sd", r.date || rememberedDate("sd"))}</label>
+          <label>اليورو <input id="se" type="number" step="0.01" value="${r.euro || ""}"></label>
+          <label>الدولار <input id="su" type="number" step="0.01" value="${r.dollar || ""}"></label>
+          <label>الجنيه الإنجليزي <input id="sb" type="number" step="0.01" value="${r.gbp || ""}"></label>
+          <label>الجنيه <input id="sg" type="number" step="0.01" value="${r.egp || ""}"></label>
+          <label>الفيزا <input id="sv" type="number" step="0.01" value="${r.visa || ""}"></label>
+          ${hasPieces ? `<label>إجمالي سعر القطع المباعة <input id="sp" type="number" step="0.01" value="${r.pieces || ""}"></label>` : ""}
+        </div>
+
+        <div class="row">
+          <button onclick="saveSale()">${r.id ? "تعديل" : "حفظ"}</button>
+          <button class="gray" onclick="box('sum')">إجمالي الشهر</button>
+          <button class="gray" onclick="box('list')">عرض كل الأيام</button>
+          <button onclick="exportSalesPdf()"> PDF</button>
+        </div>
+
+        <div id="sum" class="cards" style="display:none">
+          <div class="card">اليورو <strong>${m(t.euro)}</strong></div>
+          <div class="card">الدولار <strong>${m(t.dollar)}</strong></div>
+          <div class="card">الجنيه الإنجليزي <strong>${m(t.gbp)}</strong></div>
+          <div class="card">الجنيه <strong>${m(t.egp)}</strong></div>
+          <div class="card">الفيزا <strong>${m(t.visa)}</strong></div>
+          ${hasPieces ? `<div class="card">سعر القطع <strong>${m(t.pieces)}</strong></div>` : ""}
+        </div>
+
+        <div id="list" style="display:none">
+          ${table(
+            list,
+            "sales",
+            ["التاريخ", "يورو", "دولار", "جنيه إنجليزي", "جنيه مصري", "فيزا"].concat(hasPieces ? ["قطع"] : []),
+            x => [x.date, m(x.euro), m(x.dollar), m(x.gbp), m(x.egp), m(x.visa)].concat(hasPieces ? [m(x.pieces)] : [])
+          )}
+        </div>
+      `;
+    }
+
+    // حفظ مبيعات يوم.
+    function saveSale() {
+      up(st().sales, {
+        id: edit?.type === "sales" ? edit.id : id(),
+        date: dateValue("sd"),
+        euro: n(se.value),
+        dollar: n(su.value),
+        gbp: n(sb.value),
+        egp: n(sg.value),
+        visa: n(sv.value),
+        pieces: meta()[2] ? n(sp.value) : 0
+      });
+    }
+
+    // تصدير اليوميات الموجودة في الفترة المختارة إلى PDF.
+    function exportSalesPdf() {
+      if (tab !== "sales") return;
+      const hasPieces = meta()[2];
+      const t = totals();
+      const rows = fl(st().sales).sort((a, b) => String(a.date).localeCompare(String(b.date)));
+      const headers = ["#", "التاريخ", "يورو", "دولار", "جنيه إنجليزي", "جنيه مصري", "فيزا"].concat(hasPieces ? ["قطع"] : []);
+      const bodyRows = rows.map((x, i) => [i + 1, x.date, m(x.euro), m(x.dollar), m(x.gbp), m(x.egp), m(x.visa)].concat(hasPieces ? [m(x.pieces)] : []));
+      const summary = [
+        ["عدد الأيام", rows.length], ["إجمالي اليورو", m(t.euro)], ["إجمالي الدولار", m(t.dollar)],
+        ["إجمالي الجنيه الإنجليزي", m(t.gbp)], ["إجمالي الجنيه المصري", m(t.egp)], ["إجمالي الفيزا", m(t.visa)]
+      ].concat(hasPieces ? [["إجمالي سعر القطع", m(t.pieces)]] : []);
+      const content = `
+        <div class="summary-grid">${summary.map(x => `<div class="metric">${x[0]}<b>${x[1]}</b></div>`).join("")}</div>
+        <h2>تفاصيل المبيعات اليومية</h2>
+        <table><thead><tr>${headers.map(x => `<th>${x}</th>`).join("")}</tr></thead><tbody>
+          ${bodyRows.map(row => `<tr>${row.map(x => `<td>${x}</td>`).join("")}</tr>`).join("") || `<tr><td colspan="${headers.length}">لا توجد مبيعات خلال الفترة المختارة</td></tr>`}
+        </tbody></table>`;
+      printPdf(`تقرير اليوميات - ${meta()[1]}`, `الفترة: من ${period.from} إلى ${period.to}`, content);
+    }
+
+    /* =========================================================
+       شيت تغيير العملة
+       ========================================================= */
+
+    // حساب متوسط سعر اليورو والدولار داخل الفترة.
+    function exStats() {
+      const list = fl(st().exchange);
+      let euroAmount = 0;
+      let euroTotal = 0;
+      let dollarAmount = 0;
+      let dollarTotal = 0;
+      let gbpAmount = 0;
+      let gbpTotal = 0;
+
+      list.forEach(x => {
+        euroAmount += n(x.ea);
+        euroTotal += n(x.ea) * n(x.er);
+        dollarAmount += n(x.da);
+        dollarTotal += n(x.da) * n(x.dr);
+        gbpAmount += n(x.ba);
+        gbpTotal += n(x.ba) * n(x.br);
+      });
+
+      return {
+        eavg: euroAmount ? euroTotal / euroAmount : 0,
+        davg: dollarAmount ? dollarTotal / dollarAmount : 0,
+        bavg: gbpAmount ? gbpTotal / gbpAmount : 0,
+        et: euroTotal,
+        dt: dollarTotal,
+        bt: gbpTotal
+      };
+    }
+
+    // رسم شيت تغيير العملة.
+    function exchange() {
+      const r = edit?.type === "exchange" ? st().exchange.find(x => x.id === edit.id) : {};
+      const x = exStats();
+      const list = fl(st().exchange);
+
+      return `
+        <h2>تغيير العملة</h2>
+        <div class="grid">
+          <label>التاريخ ${dateBox("ed", r.date || rememberedDate("ed"))}</label>
+          <label>عدد اليورو <input id="ea" type="number" step="0.01" value="${r.ea || ""}"></label>
+          <label>سعر اليورو <input id="er" type="number" step="0.01" value="${r.er || ""}"></label>
+          <label>عدد الدولار <input id="da" type="number" step="0.01" value="${r.da || ""}"></label>
+          <label>سعر الدولار <input id="dr" type="number" step="0.01" value="${r.dr || ""}"></label>
+          <label>عدد الجنيه الإنجليزي <input id="ba" type="number" step="0.01" value="${r.ba || ""}"></label>
+          <label>سعر الجنيه الإنجليزي <input id="br" type="number" step="0.01" value="${r.br || ""}"></label>
+        </div>
+
+        <div class="row">
+          <button onclick="saveEx()">${r.id ? "تعديل" : "حفظ"}</button>
+          <button class="gray" onclick="box('exsum')">متوسط الشهر</button>
+          <button class="gray" onclick="box('exlist')">أيام التغيير</button>
+        </div>
+
+        <div id="exsum" class="cards" style="display:none">
+          <div class="card">متوسط اليورو <strong>${m(x.eavg)}</strong></div>
+          <div class="card">متوسط الدولار <strong>${m(x.davg)}</strong></div>
+          <div class="card">متوسط الجنيه الإنجليزي <strong>${m(x.bavg)}</strong></div>
+        </div>
+
+        <div id="exlist" style="display:none">
+          ${table(
+            list,
+            "exchange",
+            ["التاريخ", "يورو", "سعر التغيير", "الأجمالي", "دولار", "سعر التغيير", "الأجمالي", "جنيه إنجليزي", "سعر التغيير ", "الأجمالي"],
+            r => [r.date, m(r.ea), m(r.er), m(n(r.ea) * n(r.er)), m(r.da), m(r.dr), m(n(r.da) * n(r.dr)), m(r.ba), m(r.br), m(n(r.ba) * n(r.br))]
+          )}
+        </div>
+      `;
+    }
+
+    // حفظ عملية تغيير العملة.
+    function saveEx() {
+      up(st().exchange, {
+        id: edit?.type === "exchange" ? edit.id : id(),
+        date: dateValue("ed"),
+        ea: n(ea.value),
+        er: n(er.value),
+        da: n(da.value),
+        dr: n(dr.value),
+        ba: n(ba.value),
+        br: n(br.value)
+      });
+    }
+
+    /* =========================================================
+       شيت التجار
+       ========================================================= */
+
+    // اسم واضح لنوع حركة التاجر.
+    function traderKindLabel(kind) {
+      if (kind === "invoice") return "فاتورة";
+      if (kind === "return") return "مرتجع";
+      return "دفعة";
+    }
+
+    // حساب رصيد التاجر: مرحل قبل الفترة، حركة الفترة، ورصيد حتى نهاية الفترة.
+    function traderBalance(name) {
+      const tx = st().traderTx.filter(x => x.name === name);
+      const signed = x => x.kind === "invoice" ? n(x.amount) : -n(x.amount);
+
+      const opening = tx
+        .filter(x => period.from && x.date < period.from)
+        .reduce((sum, x) => sum + signed(x), 0);
+
+      const movement = tx
+        .filter(x => inP(x.date))
+        .reduce((sum, x) => sum + signed(x), 0);
+
+      const closing = tx
+        .filter(x => !period.to || x.date <= period.to)
+        .reduce((sum, x) => sum + signed(x), 0);
+
+      return { opening, movement, closing };
+    }
+
+    // حساب الرصيد الكلي لكل التجار على المحل حتى نهاية الفترة المحددة.
+    function storeTraderBalance() {
+      return st().traderTx
+        .filter(x => !period.to || x.date <= period.to)
+        .reduce((sum, x) => sum + (x.kind === "invoice" ? n(x.amount) : -n(x.amount)), 0);
+    }
+
+    // تحديث رصيد التاجر فور كتابة اسمه في خانة الإدخال.
+    function showTraderLiveBalance(name) {
+      sessionStorage.traderSearch = name;
+      const target = q("liveTraderBalance");
+      if (!target) return;
+
+      if (!name) {
+        target.innerHTML = "اكتب اسم التاجر لعرض الرصيد";
+        return;
+      }
+
+      const b = traderBalance(name);
+      target.innerHTML = `
+        الرصيد المرحل: ${m(b.opening)}
+        <br>حركة الفترة: ${m(b.movement)}
+        <br>الرصيد الحالي: ${m(b.closing)}
+      `;
+    }
+
+    // فلترة جدول معاملات التجار مباشرة أثناء كتابة الاسم.
+    // عند ترك الاسم فارغًا، يعود الجدول لعرض جميع معاملات الفترة.
+    function filterTraderTransactions(name) {
+      sessionStorage.traderSearch = name;
+      const target = q("traderTransactionRows");
+      if (!target) return;
+
+      const search = name.trim().toLowerCase();
+      const list = fl(st().traderTx).filter(x => !search || String(x.name).toLowerCase().includes(search));
+      target.innerHTML = list.map(x => `
+        <tr>
+          <td>${x.date}</td><td>${x.name}</td><td>${traderKindLabel(x.kind)}</td><td>${m(x.amount)}</td>
+          <td><button class="light" onclick="edt('traderTx','${x.id}')">تعديل</button><button class="danger" onclick="del('traderTx','${x.id}')">حذف</button></td>
+        </tr>
+      `).join("") || `<tr><td colspan="5">${search ? "لا توجد معاملات لهذا التاجر خلال الفترة" : "لا توجد معاملات خلال الفترة"}</td></tr>`;
+    }
+
+    // رسم شيت التجار ومعاملات كل تاجر.
+    function traders() {
+      const r = edit?.type === "traderTx" ? st().traderTx.find(x => x.id === edit.id) : {};
+      const search = r.name || sessionStorage.traderSearch || "";
+      const list = fl(st().traderTx);
+      const filteredList = list.filter(x => !search || String(x.name).toLowerCase().includes(search.toLowerCase()));
+      const balance = search ? traderBalance(search) : { opening: 0, movement: 0, closing: 0 };
+      const storeBalance = storeTraderBalance();
+
+      return `
+        <h2>التجار</h2>
+        <datalist id="tn">${data.traders.map(x => `<option value="${x}">`).join("")}</datalist>
+
+        <div class="grid">
+          <label>اسم التاجر <input id="trn" list="tn" value="${search}" oninput="showTraderLiveBalance(this.value); filterTraderTransactions(this.value)" onchange="sessionStorage.traderSearch=this.value; draw()"></label>
+          <label>التاريخ ${dateBox("trd", r.date || rememberedDate("trd"))}</label>
+          <label>
+            النوع
+            <select id="trk">
+              <option value="invoice">فاتورة</option>
+              <option value="payment" ${r.kind === "payment" ? "selected" : ""}>دفعة</option>
+              <option value="return" ${r.kind === "return" ? "selected" : ""}>مرتجع</option>
+            </select>
+          </label>
+          <label>القيمة <input id="tra" type="number" step="0.01" value="${r.amount || ""}"></label>
+        </div>
+
+        <div class="row">
+          <button onclick="saveTrader()">${r.id ? "تعديل" : "حفظ"}</button>
+          <button onclick="exportTraderTransactionsPdf()">تصدير معاملات التجار PDF</button>
+        </div>
+
+        <div class="cards">
+          <div class="card" id="liveTraderBalance">
+            الرصيد السابق <strong>${m(balance.opening)}</strong>
+            المعاملات <strong>${m(balance.movement)}</strong>
+            الرصيد الحالي <strong>${m(balance.closing)}</strong>
+          </div>
+          <div class="card">
+            مديونية المحل
+            <strong>${m(storeBalance)}</strong>
+          </div>
+        </div>
+
+        <hr>
+
+        <div class="row">
+          <button class="gray" onclick="box('traderMonthList')"> معاملات الشهر</button>
+        </div>
+
+        <div id="traderMonthList" style="display:none">
+          <table>
+            <tr><th>التاريخ</th><th>التاجر</th><th>النوع</th><th>القيمة</th><th>تحكم</th></tr>
+            <tbody id="traderTransactionRows">
+              ${filteredList.map(x => `
+                <tr>
+                  <td>${x.date}</td><td>${x.name}</td><td>${traderKindLabel(x.kind)}</td><td>${m(x.amount)}</td>
+                  <td><button class="light" onclick="edt('traderTx','${x.id}')">تعديل</button><button class="danger" onclick="del('traderTx','${x.id}')">حذف</button></td>
+                </tr>
+              `).join("") || `<tr><td colspan="5">${search ? "لا توجد معاملات لهذا التاجر خلال الفترة" : "لا توجد معاملات خلال الفترة"}</td></tr>`}
+            </tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    // حفظ معاملة تاجر، وإضافة اسمه لقائمة التجار العامة.
+    function saveTrader() {
+      const name = trn.value.trim();
+      if (!name) return alert("اكتب اسم التاجر");
+
+      if (!data.traders.includes(name)) data.traders.push(name);
+      data.traders.sort();
+
+      up(st().traderTx, {
+        id: edit?.type === "traderTx" ? edit.id : id(),
+        name,
+        date: dateValue("trd"),
+        kind: trk.value,
+        amount: n(tra.value)
+      });
+    }
+
+    // تصدير معاملات التجار خلال الفترة المختارة للمحل المفتوح.
+    function exportTraderTransactionsPdf() {
+      if (tab !== "traders") return;
+      const search = (sessionStorage.traderSearch || "").trim().toLowerCase();
+      const rows = fl(st().traderTx)
+        .filter(x => !search || String(x.name).toLowerCase().includes(search))
+        .sort((a, b) => String(a.date).localeCompare(String(b.date)));
+      const invoices = rows.filter(x => x.kind === "invoice").reduce((sum, x) => sum + n(x.amount), 0);
+      const payments = rows.filter(x => x.kind === "payment").reduce((sum, x) => sum + n(x.amount), 0);
+      const returns = rows.filter(x => x.kind === "return").reduce((sum, x) => sum + n(x.amount), 0);
+      const title = search ? `معاملات التاجر - ${sessionStorage.traderSearch}` : "معاملات التجار";
+      const content = `
+        <div class="summary-grid">
+          <div class="metric">عدد المعاملات<b>${rows.length}</b></div>
+          <div class="metric">إجمالي الفواتير<b>${m(invoices)}</b></div>
+          <div class="metric">إجمالي الدفعات<b>${m(payments)}</b></div>
+          <div class="metric">إجمالي المرتجعات<b>${m(returns)}</b></div>
+        </div>
+        <table><thead><tr><th>#</th><th>التاريخ</th><th>التاجر</th><th>النوع</th><th>القيمة</th></tr></thead><tbody>
+          ${rows.map((x, index) => `<tr><td>${index + 1}</td><td>${x.date}</td><td>${x.name}</td><td>${traderKindLabel(x.kind)}</td><td>${m(x.amount)}</td></tr>`).join("") || `<tr><td colspan="5">لا توجد معاملات خلال الفترة المحددة</td></tr>`}
+        </tbody></table>`;
+      printPdf(`${title} - ${meta()[1]}`, `الفترة: من ${period.from} إلى ${period.to}`, content);
+    }
+
+    /* =========================================================
+       شيت البائعين
+       ========================================================= */
+
+    // رسم شيت إضافة وحذف البائعين.
+    function sellers() {
+      return `
+        <h2>البائعين</h2>
+        <h3>بائعين العمولة</h3>
+        <div class="grid grid3">
+          <label>اسم البائع <input id="sn"></label>
+          <button onclick="addSeller()">إضافة بائع</button>
+        </div>
+
+        <table>
+          <tr><th>البائع</th><th>تحكم</th></tr>
+          ${
+            st().sellers.map(x => `
+              <tr>
+                <td>${x.name}</td>
+                <td><button class="danger" onclick="deleteSeller('${x.id}')">حذف</button></td>
+              </tr>
+            `).join("") || `<tr><td colspan="2">لا يوجد بائعين</td></tr>`
+          }
+        </table>
+
+        <hr>
+
+        <h3>راتب ثابت</h3>
+        <div class="grid grid3">
+          <label>الأسم <input id="fsn"></label>
+          <label>الراتب الثابت <input id="fss" type="number" step="0.01"></label>
+          <button onclick="addFixedSeller()">إضافة</button>
+        </div>
+
+        <table>
+          <tr><th>الأسم</th><th>الراتب</th><th>تحكم</th></tr>
+          ${
+            st().fixedSellers.map(x => `
+              <tr>
+                <td>${x.name}</td>
+                <td>${m(x.salary)}</td>
+                <td><button class="danger" onclick="deleteFixedSeller('${x.id}')">حذف</button></td>
+              </tr>
+            `).join("") || `<tr><td colspan="3">لا يوجد بيانات</td></tr>`
+          }
+        </table>
+      `;
+    }
+
+    // إضافة بائع جديد للمحل الحالي.
+    function addSeller() {
+      if (!sn.value.trim()) return;
+      st().sellers.push({ id: id(), name: sn.value.trim() });
+      save();
+      draw();
+    }
+
+    // حذف بائع من المحل الحالي.
+    function deleteSeller(sellerId) {
+      if (!confirm("حذف البائع؟")) return;
+      st().sellers = st().sellers.filter(x => x.id !== sellerId);
+      save();
+      draw();
+    }
+
+    // إضافة بائع براتب ثابت لا يدخل في عمولة البائعين.
+    function addFixedSeller() {
+      if (!fsn.value.trim()) return;
+      st().fixedSellers.push({ id: id(), name: fsn.value.trim(), salary: n(fss.value) });
+      save();
+      draw();
+    }
+
+    // حذف بائع الراتب الثابت.
+    function deleteFixedSeller(sellerId) {
+      if (!confirm("حذف ؟")) return;
+      st().fixedSellers = st().fixedSellers.filter(x => x.id !== sellerId);
+      save();
+      draw();
+    }
+
+    /* =========================================================
+       شيت تقرير الأصناف
+       ========================================================= */
+
+    // تجميع الأصناف حسب فترة معينة.
+    function itemStats(from, to) {
+      const rows = {};
+
+      st().items
+        .filter(x => x.date && (!from || x.date >= from) && (!to || x.date <= to))
+        .forEach(x => {
+          rows[x.name] ??= { qty: 0, value: 0 };
+          rows[x.name].qty += n(x.qty);
+          rows[x.name].value += n(x.value);
+        });
+
+      const list = Object.entries(rows)
+        .map(([name, value]) => ({ name, qty: value.qty, value: value.value }))
+        .sort((a, b) => b.qty - a.qty);
+
+      const totalQty = list.reduce((sum, x) => sum + x.qty, 0);
+      const totalValue = list.reduce((sum, x) => sum + x.value, 0);
+
+      return { list, totalQty, totalValue };
+    }
+
+    // قائمة أسماء الأصناف المسجلة قبل كده داخل المحل الحالي.
+    function itemNames() {
+      return [...new Set(st().items.map(x => x.name).filter(Boolean))]
+        .sort((a, b) => a.localeCompare(b, "ar"));
+    }
+
+    // رسم دائري بسيط باستخدام SVG يوضح نسبة كل صنف من عدد القطع.
+    function pieChart(stats) {
+      if (!stats.totalQty) {
+        return `<div class="card">لا توجد أصناف في الفترة المحددة</div>`;
+      }
+
+      const colors = ["#f97316", "#111214", "#b91c1c", "#6b7078", "#9ca3af", "#c2410c", "#404348", "#f59e0b"];
+      let current = 0;
+      const circles = stats.list.map((x, index) => {
+        const percent = x.qty / stats.totalQty;
+        const dash = percent * 100;
+        const circle = `
+          <circle
+            r="15.9155"
+            cx="18"
+            cy="18"
+            fill="transparent"
+            stroke="${colors[index % colors.length]}"
+            stroke-width="7"
+            stroke-dasharray="${dash} ${100 - dash}"
+            stroke-dashoffset="${25 - current}"
+          ></circle>
+        `;
+        current += dash;
+        return circle;
+      }).join("");
+
+      return `
+        <div class="chart-wrap">
+          <div>
+            <svg class="pie-svg" viewBox="0 0 36 36">
+              <circle r="15.9155" cx="18" cy="18" fill="transparent" stroke="#e5e7eb" stroke-width="8"></circle>
+              ${circles}
+            </svg>
+          </div>
+          <div>
+            ${stats.list.map((x, index) => `
+              <div class="legend-row">
+                <span class="legend-dot" style="background:${colors[index % colors.length]}"></span>
+                <span>${x.name} - ${m(x.qty)} قطعة</span>
+                <strong>${m((x.qty / stats.totalQty) * 100)}%</strong>
+              </div>
+            `).join("")}
+          </div>
+        </div>
+      `;
+    }
+
+    // رسم أعمدة للمقارنة بين فترتين.
+    function compareChart(aStats, bStats) {
+      const names = new Set([...aStats.list.map(x => x.name), ...bStats.list.map(x => x.name)]);
+      const aMap = Object.fromEntries(aStats.list.map(x => [x.name, x]));
+      const bMap = Object.fromEntries(bStats.list.map(x => [x.name, x]));
+      const rows = [...names].sort((a, b) => a.localeCompare(b, "ar"));
+      const maxQty = Math.max(1, ...rows.map(name => Math.max(n(aMap[name]?.qty), n(bMap[name]?.qty))));
+
+      if (!rows.length) {
+        return `<div class="card">لا توجد بيانات للمقارنة</div>`;
+      }
+
+      return `
+        <div class="bar-chart">
+          ${rows.map(name => {
+            const aq = n(aMap[name]?.qty);
+            const bq = n(bMap[name]?.qty);
+            return `
+              <div class="bar-row">
+                <div class="bar-name">${name}</div>
+                <div class="bar-track">
+                  <div class="bar-line" style="width:${Math.max(3, (aq / maxQty) * 100)}%;background:#f97316">الأولى: ${m(aq)}</div>
+                  <div class="bar-line" style="width:${Math.max(3, (bq / maxQty) * 100)}%;background:#111214">الثانية: ${m(bq)}</div>
+                </div>
+              </div>
+            `;
+          }).join("")}
+        </div>
+      `;
+    }
+
+    // رسم جدول الأصناف المجمع.
+    function itemStatsTable(stats) {
+      return `
+        <table>
+          <tr><th>الصنف</th><th>عدد القطع</th><th>النسبة</th><th>سعر القطع المباعة</th></tr>
+          ${
+            stats.list.map(x => `
+              <tr>
+                <td>${x.name}</td>
+                <td>${m(x.qty)}</td>
+                <td>${stats.totalQty ? m((x.qty / stats.totalQty) * 100) : 0}%</td>
+                <td>${m(x.value)}</td>
+              </tr>
+            `).join("") || `<tr><td colspan="4">لا توجد بيانات</td></tr>`
+          }
+        </table>
+      `;
+    }
+
+    // رسم شيت تقرير الأصناف.
+    function items() {
+      const r = edit?.type === "items" ? st().items.find(x => x.id === edit.id) : {};
+      const mainStats = itemStats(period.from, period.to);
+      const aFrom = sessionStorage.itemsAFrom || period.from;
+      const aTo = sessionStorage.itemsATo || period.to;
+      const bFrom = sessionStorage.itemsBFrom || period.from;
+      const bTo = sessionStorage.itemsBTo || period.to;
+      const aStats = itemStats(aFrom, aTo);
+      const bStats = itemStats(bFrom, bTo);
+
+      return `
+        <h2>تقرير الأصناف</h2>
+        <datalist id="itemNameList">
+          ${itemNames().map(name => `<option value="${name}">`).join("")}
+        </datalist>
+
+        <div class="grid">
+          <label>التاريخ ${dateBox("itd", r.date || rememberedDate("itd"))}</label>
+          <label>اسم الصنف <input id="itn" list="itemNameList" value="${r.name || ""}" placeholder="اكتب أول حرف"></label>
+          <label>عدد القطع المباعة <input id="itq" type="number" step="0.01" value="${r.qty || ""}"></label>
+          <label>سعر القطع المباعة <input id="itv" type="number" step="0.01" value="${r.value || ""}"></label>
+          <button onclick="saveItem()">${r.id ? "تعديل الصنف" : "إضافة صنف"}</button>
+          ${r.id ? `<button class="light" onclick="edit=null; draw()">إلغاء التعديل</button>` : ""}
+        </div>
+
+        <div class="row">
+          <button class="gray" onclick="box('itemsList')">عرض / إخفاء الأصناف المسجلة</button>
+        </div>
+
+        <div id="itemsList" style="display:none">
+          ${table(
+            fl(st().items),
+            "items",
+            ["التاريخ", "الصنف", "عدد القطع", "سعر القطع"],
+            x => [x.date, x.name, m(x.qty), m(x.value)]
+          )}
+        </div>
+
+        <hr>
+
+        <h3>الرسم البياني للفترة المحددة فوق</h3>
+        <div class="cards">
+          <div class="card">إجمالي القطع <strong>${m(mainStats.totalQty)}</strong></div>
+          <div class="card">إجمالي سعر القطع <strong>${m(mainStats.totalValue)}</strong></div>
+        </div>
+        ${pieChart(mainStats)}
+        ${itemStatsTable(mainStats)}
+
+        <hr>
+
+        <h3>مقارنة بين فترتين</h3>
+        <div class="grid">
+          <label>الفترة الأولى من ${dateBox("iaf", aFrom)}</label>
+          <label>الفترة الأولى إلى ${dateBox("iat", aTo)}</label>
+          <label>الفترة الثانية من ${dateBox("ibf", bFrom)}</label>
+          <label>الفترة الثانية إلى ${dateBox("ibt", bTo)}</label>
+          <button onclick="setItemCompare()">تطبيق المقارنة</button>
+        </div>
+
+        <div class="cards">
+          <div class="card">قطع الفترة الأولى <strong>${m(aStats.totalQty)}</strong></div>
+          <div class="card">قيمة الفترة الأولى <strong>${m(aStats.totalValue)}</strong></div>
+          <div class="card">قطع الفترة الثانية <strong>${m(bStats.totalQty)}</strong></div>
+          <div class="card">قيمة الفترة الثانية <strong>${m(bStats.totalValue)}</strong></div>
+        </div>
+
+        ${compareChart(aStats, bStats)}
+
+        <table>
+          <tr><th>الصنف</th><th>قطع الفترة الأولى</th><th>قطع الفترة الثانية</th><th>الفرق</th><th>قيمة الأولى</th><th>قيمة الثانية</th></tr>
+          ${itemCompareRows(aStats, bStats)}
+        </table>
+      `;
+    }
+
+    // حفظ صنف مباع.
+    function saveItem() {
+      if (!itn.value.trim()) return alert("اكتب اسم الصنف");
+
+      up(st().items, {
+        id: edit?.type === "items" ? edit.id : id(),
+        date: dateValue("itd"),
+        name: itn.value.trim(),
+        qty: n(itq.value),
+        value: n(itv.value)
+      });
+    }
+
+    // حفظ فترتي المقارنة في ذاكرة الجلسة.
+    function setItemCompare() {
+      sessionStorage.itemsAFrom = dateValue("iaf");
+      sessionStorage.itemsATo = dateValue("iat");
+      sessionStorage.itemsBFrom = dateValue("ibf");
+      sessionStorage.itemsBTo = dateValue("ibt");
+      draw();
+    }
+
+    // صفوف جدول مقارنة الأصناف.
+    function itemCompareRows(aStats, bStats) {
+      const names = new Set([...aStats.list.map(x => x.name), ...bStats.list.map(x => x.name)]);
+      const aMap = Object.fromEntries(aStats.list.map(x => [x.name, x]));
+      const bMap = Object.fromEntries(bStats.list.map(x => [x.name, x]));
+
+      return [...names].sort((a, b) => a.localeCompare(b, "ar")).map(name => {
+        const a = aMap[name] || { qty: 0, value: 0 };
+        const b = bMap[name] || { qty: 0, value: 0 };
+
+        return `
+          <tr>
+            <td>${name}</td>
+            <td>${m(a.qty)}</td>
+            <td>${m(b.qty)}</td>
+            <td>${m(b.qty - a.qty)}</td>
+            <td>${m(a.value)}</td>
+            <td>${m(b.value)}</td>
+          </tr>
+        `;
+      }).join("") || `<tr><td colspan="6">لا توجد بيانات للمقارنة</td></tr>`;
+    }
+
+    /* =========================================================
+       شيت المصروفات والمسحوبات
+       ========================================================= */
+
+    // رسم المصروفات وسلف البائعين.
+    function expenses() {
+      const expenseRecord = edit?.type === "expenses" ? st().expenses.find(x => x.id === edit.id) : {};
+      const withdrawalRecord = edit?.type === "withdrawals" ? st().withdrawals.find(x => x.id === edit.id) : {};
+      const expenseList = fl(st().expenses);
+      const withdrawalList = fl(st().withdrawals);
+      const traderPaymentList = fl(st().traderTx).filter(x => x.kind === "payment");
+      const unifiedList = unifiedOutflows();
+      const allSellers = [
+        ...st().sellers.map(s => ({ name: s.name, type: "عمولة" })),
+        ...st().fixedSellers.map(s => ({ name: s.name, type: "راتب ثابت" }))
+      ];
+
+      return `
+        <h2>المصروفات والمسحوبات</h2>
+        <div class="card">إجمالي المصروفات <strong>${m(unifiedOutflowTotal())}</strong></div>
+
+        <h3>مصروفات المحل</h3>
+        <div class="grid">
+          <label>التاريخ ${dateBox("xd", expenseRecord.date || rememberedDate("xd"))}</label>
+          <label>البند <input id="xi" value="${expenseRecord.item || ""}"></label>
+          <label>القيمة <input id="xa" type="number" step="0.01" value="${expenseRecord.amount || ""}"></label>
+          <button onclick="saveExpense()">حفظ</button>
+        </div>
+
+        <div class="row">
+          <button class="gray" onclick="box('explist')"> المصروفات</button>
+          <div class="card">الإجمالي <strong>${m(expenseList.reduce((s, x) => s + n(x.amount), 0))}</strong></div>
+        </div>
+
+        <div id="explist" style="display:none">
+          ${table(expenseList, "expenses", ["التاريخ", "البند", "القيمة"], x => [x.date, x.item, m(x.amount)])}
+        </div>
+
+        <hr>
+
+        <h3>كشف المصروفات </h3>
+        <p>التفاصيل الكاملة للمصروفات</p>
+        <div class="row">
+          <button class="gray" onclick="box('unifiedlist')">التفاصيل</button>
+          <button onclick="exportExpensesPdf()">PDF</button>
+          <div class="card">مصروفات كاش <strong>${m(expenseList.reduce((s, x) => s + n(x.amount), 0))}</strong></div>
+          <div class="card">دفعات التجار <strong>${m(traderPaymentList.reduce((s, x) => s + n(x.amount), 0))}</strong></div>
+          <div class="card">مسحوبات البائعين <strong>${m(withdrawalList.reduce((s, x) => s + n(x.amount), 0))}</strong></div>
+        </div>
+        <div id="unifiedlist" style="display:none">
+          <table>
+            <tr><th>التاريخ</th><th>البند</th><th>النوع</th><th>القيمة</th><th>المصدر</th><th>تعديل</th></tr>
+            ${unifiedList.map(x => `
+              <tr>
+                <td>${x.date}</td><td>${x.item}</td><td>${x.type}</td><td>${m(x.amount)}</td>
+                <td>${x.source === "expenses" ? "المصروفات" : x.source === "traderTx" ? "التجار" : "مسحوبات البائعين"}</td>
+                <td><button class="light" onclick="edt('${x.source}','${x.id}')">تعديل</button><button class="danger" onclick="del('${x.source}','${x.id}')">حذف</button></td>
+              </tr>
+            `).join("") || `<tr><td colspan="6">لا توجد عمليات خلال الفترة</td></tr>`}
+          </table>
+        </div>
+
+        <hr>
+
+        <h3>مسحوبات البائعين</h3>
+        <div class="grid">
+          <label>التاريخ ${dateBox("wd", withdrawalRecord.date || rememberedDate("wd"))}</label>
+          <label>
+            البائع
+            <select id="ws">
+              ${allSellers.map(s => `<option value="${s.name}" ${withdrawalRecord.seller === s.name ? "selected" : ""}>${s.name} - ${s.type}</option>`).join("")}
+            </select>
+          </label>
+          <label>القيمة <input id="wa" type="number" step="0.01" value="${withdrawalRecord.amount || ""}"></label>
+          <button onclick="saveWithdrawal()">حفظ</button>
+        </div>
+
+        <div class="row">
+          <button class="gray" onclick="box('wdlist')">المسحوبات</button>
+          <div class="card">الإجمالي <strong>${m(withdrawalList.reduce((s, x) => s + n(x.amount), 0))}</strong></div>
+        </div>
+
+        <div id="wdlist" style="display:none">
+          ${table(withdrawalList, "withdrawals", ["التاريخ", "البائع", "القيمة"], x => [x.date, x.seller, m(x.amount)])}
+        </div>
+      `;
+    }
+
+    // حفظ مصروف.
+    function saveExpense() {
+      if (!xi.value.trim()) return alert("اكتب البند");
+
+      up(st().expenses, {
+        id: edit?.type === "expenses" ? edit.id : id(),
+        date: dateValue("xd"),
+        item: xi.value.trim(),
+        amount: n(xa.value)
+      });
+    }
+
+    // حفظ سلفة أو مسحوبات بائع.
+    function saveWithdrawal() {
+      if (!st().sellers.length && !st().fixedSellers.length) return alert("أضف بائع الأول");
+
+      up(st().withdrawals, {
+        id: edit?.type === "withdrawals" ? edit.id : id(),
+        date: dateValue("wd"),
+        seller: ws.value,
+        amount: n(wa.value)
+      });
+    }
+
+    /* =========================================================
+       شيت توزيع الأرباح
+       ========================================================= */
+
+    // حساب بيانات تقرير الأرباح.
+    function profitCalc() {
+      const s = totals();
+      const e = exStats();
+      const visaDisc = s.visa * .03;
+      const grossSalesEgp = s.egp + s.visa + (s.euro * e.eavg) + (s.dollar * e.davg) + (s.gbp * e.bavg);
+      const salesEgp = grossSalesEgp - visaDisc;
+
+      return {
+        grossSalesEgp,
+        salesEgp,
+        visaDisc,
+        normalExpenses: fl(st().expenses).reduce((a, x) => a + n(x.amount), 0),
+        traderPayments: fl(st().traderTx).filter(x => x.kind === "payment").reduce((a, x) => a + n(x.amount), 0),
+        sellerWithdrawals: fl(st().withdrawals).reduce((a, x) => a + n(x.amount), 0),
+        expenses: unifiedOutflowTotal(),
+        pieces: meta()[2] ? s.pieces : 0
+      };
+    }
+
+    // تجميع السلف حسب نوع البائع حتى تُخصم من الراتب المتبقي، لا كتكلفة مكررة.
+    function sellerAdvanceSummary() {
+      const withdrawals = {};
+      const commissionNames = new Set(st().sellers.map(x => x.name));
+      const fixedNames = new Set(st().fixedSellers.map(x => x.name));
+      let commissionAdvances = 0;
+      let fixedAdvances = 0;
+
+      fl(st().withdrawals).forEach(x => {
+        const amount = n(x.amount);
+        withdrawals[x.seller] = (withdrawals[x.seller] || 0) + amount;
+        if (commissionNames.has(x.seller)) commissionAdvances += amount;
+        if (fixedNames.has(x.seller)) fixedAdvances += amount;
+      });
+
+      return { withdrawals, commissionAdvances, fixedAdvances };
+    }
+
+    // رسم تقرير الأرباح والشركاء.
+    function profits() {
+      const p = profitCalc();
+      const commission = n(sessionStorage["comm" + store]);
+      const salaryBase = Math.max(0, p.salesEgp - p.pieces);
+      const salariesTotal = salaryBase * commission / 100;
+      const fixedSalariesTotal = st().fixedSellers.reduce((sum, x) => sum + n(x.salary), 0);
+      const eachSalary = st().sellers.length ? salariesTotal / st().sellers.length : 0;
+      const advanceSummary = sellerAdvanceSummary();
+      const salariesAfterAdvances = Math.max(0, salariesTotal - advanceSummary.commissionAdvances);
+      const fixedSalariesAfterAdvances = Math.max(0, fixedSalariesTotal - advanceSummary.fixedAdvances);
+      const netProfit = p.salesEgp - (salariesAfterAdvances + fixedSalariesAfterAdvances + p.expenses);
+      const partnersPercent = st().partners.reduce((s, x) => s + n(x.percent), 0);
+      const withdrawals = advanceSummary.withdrawals;
+
+      return `
+        <h2>توزيع الأرباح وإضافة شركاء</h2>
+
+        <div class="grid grid3">
+          <label>اسم الشريك <input id="pn"></label>
+          <label>النسبة % <input id="pp" type="number" step="0.01"></label>
+          <button onclick="addPartner()">إضافة شريك</button>
+        </div>
+
+        <div class="row">
+          <button class="gray" onclick="box('plist')">الشركاء</button>
+          <b class="${partnersPercent === 100 ? "ok" : "bad"}">إجمالي النسب: ${m(partnersPercent)}%</b>
+        </div>
+
+        <div id="plist" style="display:none">
+          ${table(st().partners, "partners", ["الشريك", "النسبة"], x => [x.name, m(x.percent) + "%"])}
+        </div>
+
+        <hr>
+
+        <div class="grid grid3">
+          <label>نسبة عمولة البائعين % <input id="cm" type="number" step="0.01" value="${commission || ""}"></label>
+          <button onclick="sessionStorage['comm'+store]=cm.value; draw()">تحديث التقرير</button>
+          <button class="gray" onclick="exportProfitPdf()">تصدير PDF</button>
+        </div>
+
+        <div class="cards">
+          <div class="card">اجمالي المبيعات الكلي <strong>${m(p.grossSalesEgp)}</strong></div>
+          <div class="card">خصم الفيزا 3% <strong>${m(p.visaDisc)}</strong></div>
+          <div class="card">صافي المبيعات بعد خصم ال3% <strong>${m(p.salesEgp)}</strong></div>
+          <div class="card">إجمالي المصروفات <strong>${m(p.expenses)}</strong></div>
+          <div class="card">مصروفات كاش <strong>${m(p.normalExpenses)}</strong></div>
+          <div class="card">دفعات التجار <strong>${m(p.traderPayments)}</strong></div>
+          <div class="card">مسحوبات البائعين <strong>${m(p.sellerWithdrawals)}</strong></div>
+          <div class="card">إجمالي مرتبات البائعين <strong>${m(salariesTotal)}</strong></div>
+          <div class="card">إجمالي الرواتب الثابتة <strong>${m(fixedSalariesTotal)}</strong></div>
+          ${meta()[2] ? `<div class="card">سعر القطع المستبعد <strong>${m(p.pieces)}</strong></div>` : ""}
+          <div class="card">صافي ربح الشركاء <strong>${m(netProfit)}</strong></div>
+        </div>
+
+        <h3>مرتبات البائعين</h3>
+        <table>
+          <tr><th>البائع</th><th>المستحق</th><th>المسحوبات</th><th>الفعلي</th></tr>
+          ${
+            st().sellers.map(s => `
+              <tr>
+                <td>${s.name}</td>
+                <td>${m(eachSalary)}</td>
+                <td>${m(withdrawals[s.name] || 0)}</td>
+                <td>${m(eachSalary - (withdrawals[s.name] || 0))}</td>
+              </tr>
+            `).join("") || `<tr><td colspan="4">لا يوجد بائعين</td></tr>`
+          }
+        </table>
+
+        <h3>رواتب ثابتة</h3>
+        <table>
+          <tr><th>الأسم</th><th>الراتب الثابت</th><th>المسحوبات</th><th>الصافي</th></tr>
+          ${
+            st().fixedSellers.map(s => `
+              <tr>
+                <td>${s.name}</td>
+                <td>${m(s.salary)}</td>
+                <td>${m(withdrawals[s.name] || 0)}</td>
+                <td>${m(n(s.salary) - (withdrawals[s.name] || 0))}</td>
+              </tr>
+            `).join("") || `<tr><td colspan="4">لا يوجد بائعين براتب ثابت</td></tr>`
+          }
+        </table>
+
+        <h3>أرباح الشركاء</h3>
+        <table>
+          <tr><th>الشريك</th><th>النسبة</th><th>الربح</th></tr>
+          ${
+            st().partners.map(x => `
+              <tr>
+                <td>${x.name}</td>
+                <td>${m(x.percent)}%</td>
+                <td>${m(netProfit * n(x.percent) / 100)}</td>
+              </tr>
+            `).join("") || `<tr><td colspan="3">لا يوجد شركاء</td></tr>`
+          }
+        </table>
+      `;
+    }
+
+    // إضافة شريك بشرط ألا تتخطى النسب 100%.
+    function addPartner() {
+      const total = st().partners.reduce((s, x) => s + n(x.percent), 0);
+      const percent = n(pp.value);
+
+      if (!pn.value.trim() || percent <= 0) return alert("اكتب اسم الشريك ونسبته");
+      if (total + percent > 100) return alert("إجمالي النسب لا يتخطى 100%");
+
+      st().partners.push({ id: id(), name: pn.value.trim(), percent });
+      save();
+      draw();
+    }
+
+    /* =========================================================
+       الجداول والتقارير والنسخ الاحتياطي
+       ========================================================= */
+
+    // دالة عامة لرسم جدول بأي بيانات ومعها أزرار تعديل وحذف.
+    function table(list, type, heads, map) {
+      return `
+        <table>
+          <tr>
+            ${heads.map(h => `<th>${h}</th>`).join("")}
+            <th>تحكم</th>
+          </tr>
+          ${
+            list.map(x => `
+              <tr>
+                ${map(x).map(c => `<td>${c}</td>`).join("")}
+                <td>
+                  <button class="light" onclick="edt('${type}','${x.id}')">تعديل</button>
+                  <button class="danger" onclick="del('${type}','${x.id}')">حذف</button>
+                </td>
+              </tr>
+            `).join("") || `<tr><td colspan="${heads.length + 1}">لا توجد بيانات</td></tr>`
+          }
+        </table>
+      `;
+    }
+
+    // المحلات المختارة في تقرير أرصدة التجار.
+    function selectedTraderBalanceStoreIds() {
+      const availableIds = stores.map(s => s[0]);
+      try {
+        const saved = JSON.parse(localStorage.managementTraderBalanceStores);
+        if (Array.isArray(saved)) return new Set(saved.filter(id => availableIds.includes(id)));
+      } catch (e) {}
+      return new Set(availableIds);
+    }
+
+    function toggleTraderBalanceStore(storeId, checked) {
+      const selected = selectedTraderBalanceStoreIds();
+      if (checked) selected.add(storeId);
+      else selected.delete(storeId);
+      localStorage.managementTraderBalanceStores = JSON.stringify([...selected]);
+      traderTotals();
+    }
+
+    function selectAllTraderBalanceStores() {
+      localStorage.managementTraderBalanceStores = JSON.stringify(stores.map(s => s[0]));
+      traderTotals();
+    }
+
+    // تقرير إجمالي أرصدة التجار في المحلات المختارة.
+    function traderTotals() {
+      const rows = {};
+      let grand = 0;
+      const selectedIds = selectedTraderBalanceStoreIds();
+      const selectedStores = stores.filter(s => selectedIds.has(s[0]));
+
+      selectedStores.forEach(s => {
+        data.stores[s[0]].traderTx.forEach(t => {
+          rows[t.name] ??= { total: 0, parts: {} };
+          const value = t.kind === "invoice" ? n(t.amount) : -n(t.amount);
+          rows[t.name].total += value;
+          rows[t.name].parts[s[1]] = (rows[t.name].parts[s[1]] || 0) + value;
+          grand += value;
+        });
+      });
+
+      app.innerHTML = `
+        <h1 class="title">MANAGEMENT</h1>
+        <section class="panel">
+          <h2>إجمالي الأرصدة للتجار</h2>
+          <div class="row">
+            <button class="gray" onclick="selectAllTraderBalanceStores()">اختيار كل المحلات</button>
+            ${stores.map(s => `<label class="shop-choice"><input type="checkbox" ${selectedIds.has(s[0]) ? "checked" : ""} onchange="toggleTraderBalanceStore('${s[0]}', this.checked)">${s[1]}</label>`).join("")}
+          </div>
+          <div class="card">الإجمالي اللي عليك كله <strong>${m(grand)}</strong></div>
+          <table>
+            <tr><th>التاجر</th><th>تفصيل المحلات</th><th>الإجمالي</th></tr>
+            ${
+              Object.entries(rows).map(([name, value]) => `
+                <tr>
+                  <td>${name}</td>
+                  <td>${Object.entries(value.parts).map(([shop, total]) => `${shop}: ${m(total)}`).join(" | ")}</td>
+                  <td>${m(value.total)}</td>
+                </tr>
+              `).join("") || `<tr><td colspan="3">لا توجد أرصدة</td></tr>`
+            }
+          </table>
+        </section>
+      `;
+    }
+
+    // تنزيل نسخة احتياطية من كل بيانات البرنامج.
+    async function backup() {
+      save();
+      const file = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+      const fileName = "MANAGEMENT backup.json";
+
+      // لو المتصفح بيدعم اختيار مكان الحفظ، هيفتح نافذة اختيار المكان.
+      if (window.showSaveFilePicker) {
+        try {
+          const handle = await window.showSaveFilePicker({
+            suggestedName: fileName,
+            types: [{ description: "JSON Backup", accept: { "application/json": [".json"] } }]
+          });
+          const writable = await handle.createWritable();
+          await writable.write(file);
+          await writable.close();
+          alert("تم حفظ النسخة الاحتياطية");
+          return;
+        } catch (e) {
+          if (e.name === "AbortError") return;
+        }
+      }
+
+      // لو المتصفح لا يدعم اختيار المكان، يتم التنزيل بالطريقة العادية.
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(file);
+      link.download = fileName;
+      link.click();
+      URL.revokeObjectURL(link.href);
+    }
+
+    // استرجاع بيانات البرنامج من ملف نسخة احتياطية.
+    function restore(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          data = JSON.parse(reader.result);
+          data.customStores ||= [];
+          syncCustomStores();
+          stores.forEach(s => { data.stores[s[0]] ||= blank(); });
+          save();
+          alert("تم الاسترجاع");
+          home();
+        } catch (x) {
+          alert("ملف غير صالح");
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    // حذف كل البيانات بعد تأكيدين.
+    function clearAllData() {
+      if (!confirm("متأكد إنك عايز تحذف كل بيانات البرنامج؟")) return;
+      if (!confirm("آخر تأكيد: الحذف نهائي إلا لو عندك نسخة احتياطية.")) return;
+
+      data = {
+        traders: [],
+        customStores: data.customStores || [],
+        deletedStoreIds: data.deletedStoreIds || [],
+        stores: Object.fromEntries(stores.map(s => [s[0], blank()]))
+      };
+
+      save();
+      alert("تم حذف كل البيانات");
+      home();
+    }
+
+    // قالب موحد لتقارير PDF: يفتح نافذة طباعة يمكن منها اختيار "حفظ كـ PDF".
+    function printPdf(title, subtitle, content, orientation = "portrait") {
+      const printWindow = window.open("", "_blank");
+      if (!printWindow) return alert("اسمح بفتح نافذة الطباعة لتصدير PDF");
+
+      printWindow.document.write(`
+        <!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>${title}</title>
+        <style>
+          @page{size:A4 ${orientation};margin:14mm 12mm 16mm}
+          *{box-sizing:border-box} body{font-family:Tahoma,Arial,sans-serif;color:#142033;margin:0;font-size:12px;line-height:1.55}
+          .report-head{border-bottom:3px solid #17808b;padding:0 0 12px;margin-bottom:18px;display:flex;justify-content:space-between;gap:16px;align-items:flex-start}
+          h1{font-size:24px;margin:0;color:#0b1220} h2{font-size:16px;color:#123b52;margin:22px 0 8px;border-right:4px solid #22a6b3;padding-right:8px}
+          .brand{font-weight:900;letter-spacing:.6px;color:#17808b}.meta{margin:4px 0 0;color:#52677d}.stamp{color:#6a7d91;font-size:10px;text-align:left}
+          .summary-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;margin:10px 0 18px}.metric{border:1px solid #d5e1e8;border-radius:7px;padding:9px 11px;background:#f5f9fb}.metric b{display:block;font-size:15px;color:#0b1220;margin-top:3px}
+          table{width:100%;border-collapse:collapse;margin:8px 0 18px;page-break-inside:auto}tr{page-break-inside:avoid}th,td{border:1px solid #cddae2;padding:7px 8px;text-align:right}th{background:#123b52;color:#fff;font-size:11px}tbody tr:nth-child(even) td{background:#f5f8fa}.total td{font-weight:900;background:#dff3f4!important}.tag{display:inline-block;padding:2px 7px;border-radius:9px;background:#e4f0f6;color:#123b52;font-weight:700;font-size:10px}
+          .footer{position:fixed;bottom:-9mm;left:0;right:0;border-top:1px solid #d5e1e8;padding-top:3px;color:#6a7d91;font-size:9px;display:flex;justify-content:space-between}
+          @media print{.footer:after{content:"MANAGEMENT"}}
+        </style></head><body>
+          <header class="report-head"><div><div class="brand">MANAGEMENT</div><h1>${title}</h1><p class="meta">${subtitle}</p></div><div class="stamp">تاريخ الإصدار: ${today()}</div></header>
+          ${content}<footer class="footer"><span>التقرير المالي</span><span></span></footer>
+        </body></html>`);
+      printWindow.document.close();
+      printWindow.focus();
+      setTimeout(() => printWindow.print(), 350);
+    }
+
+    // تصدير كشف المصروفات الموحد، بجميع الأموال الخارجة خلال الفترة المختارة.
+    function exportExpensesPdf() {
+      if (tab !== "expenses") return;
+      const rows = unifiedOutflows();
+      const normal = rows.filter(x => x.source === "expenses").reduce((s, x) => s + n(x.amount), 0);
+      const traders = rows.filter(x => x.source === "traderTx").reduce((s, x) => s + n(x.amount), 0);
+      const sellers = rows.filter(x => x.source === "withdrawals").reduce((s, x) => s + n(x.amount), 0);
+      const content = `
+        <div class="summary-grid">
+          <div class="metric">إجمالي المصروفات<b>${m(normal + traders + sellers)}</b></div>
+          <div class="metric">عدد البنود<b>${rows.length}</b></div>
+          <div class="metric">المصروفات الكاش<b>${m(normal)}</b></div>
+          <div class="metric">دفعات التجار<b>${m(traders)}</b></div>
+          <div class="metric"> مسحوبات البائعين<b>${m(sellers)}</b></div>
+        </div>
+        <h2>تفاصيل المصروفات </h2>
+        <table><thead><tr><th>#</th><th>التاريخ</th><th>البند</th><th>النوع</th><th>القيمة</th><th>المصدر</th></tr></thead><tbody>
+          ${rows.map((x, i) => `<tr><td>${i + 1}</td><td>${x.date}</td><td>${x.item}</td><td><span class="tag">${x.type}</span></td><td>${m(x.amount)}</td><td>${x.source === "expenses" ? "مصروفات المحل" : x.source === "traderTx" ? "دفعات التجار" : "مسحوبات البائعين"}</td></tr>`).join("") || `<tr><td colspan="6">لا توجد عمليات خلال الفترة المختارة</td></tr>`}
+        </tbody></table>`;
+      printPdf(`كشف مصروفات - ${meta()[1]}`, `الفترة: من ${period.from} إلى ${period.to}`, content);
+    }
+
+    // تصدير تقرير الأرباح كملف PDF عن طريق نافذة الطباعة في المتصفح.
+    function exportProfitPdf() {
+      if (tab !== "profits") return;
+
+      const shopName = meta()[1];
+      const p = profitCalc();
+      const commission = n(sessionStorage["comm" + store]);
+      const salaryBase = Math.max(0, p.salesEgp - p.pieces);
+      const salariesTotal = salaryBase * commission / 100;
+      const fixedSalariesTotal = st().fixedSellers.reduce((sum, x) => sum + n(x.salary), 0);
+      const eachSalary = st().sellers.length ? salariesTotal / st().sellers.length : 0;
+      const advanceSummary = sellerAdvanceSummary();
+      const salariesAfterAdvances = Math.max(0, salariesTotal - advanceSummary.commissionAdvances);
+      const fixedSalariesAfterAdvances = Math.max(0, fixedSalariesTotal - advanceSummary.fixedAdvances);
+      const netProfit = p.salesEgp - (salariesAfterAdvances + fixedSalariesAfterAdvances + p.expenses);
+      const withdrawals = advanceSummary.withdrawals;
+
+const totalExpensesIncludingSalaries = p.expenses + salariesAfterAdvances + fixedSalariesAfterAdvances;
+
+const summaryRows = [
+  ["المبيعات قبل خصم الفيزا", m(p.grossSalesEgp)],
+  ["خصم الفيزا 3%", m(p.visaDisc)],
+  ["المبيعات بعد خصم الفيزا", m(p.salesEgp)],
+  ["إجمالي المصروفات", m(totalExpensesIncludingSalaries)],
+  ["صافي ربح الشركاء", m(netProfit)]
+];
+
+      const sellersRows = st().sellers.map(s => `
+        <tr>
+          <td>${s.name}</td>
+          <td>${m(eachSalary)}</td>
+          <td>${m(withdrawals[s.name] || 0)}</td>
+          <td>${m(eachSalary - (withdrawals[s.name] || 0))}</td>
+        </tr>
+      `).join("") || `<tr><td colspan="4">لا يوجد بائعين</td></tr>`;
+
+      const partnersRows = st().partners.map(x => `
+        <tr>
+          <td>${x.name}</td>
+          <td>${m(x.percent)}%</td>
+          <td>${m(netProfit * n(x.percent) / 100)}</td>
+        </tr>
+      `).join("") || `<tr><td colspan="3">لا يوجد شركاء</td></tr>`;
+
+      const printWindow = window.open("", "_blank");
+
+      printWindow.document.write(`
+        <!doctype html>
+        <html lang="ar" dir="rtl">
+        <head>
+          <meta charset="utf-8">
+          <title>تقرير أرباح ${shopName}</title>
+          <style>
+            @page{size:A4;margin:14mm 12mm 16mm}
+            *{box-sizing:border-box} body{font-family:Tahoma,Arial,sans-serif;margin:0;color:#142033;line-height:1.55;font-size:12px}
+            .report-head{border-bottom:3px solid #17808b;padding:0 0 12px;margin-bottom:18px}.brand{font-weight:900;color:#17808b;letter-spacing:.6px}
+            h1{margin:2px 0 6px;font-size:24px;color:#0b1220} h2{margin:22px 0 8px;font-size:16px;color:#123b52;border-right:4px solid #22a6b3;padding-right:8px}
+            .meta{margin:0 0 18px;color:#52677d}.summary{margin-top:8px}
+            table{width:100%;border-collapse:collapse;margin-top:8px;page-break-inside:auto}tr{page-break-inside:avoid}
+            th,td{border:1px solid #cddae2;padding:7px 8px;text-align:right}th{background:#123b52;color:#fff;font-size:11px}tbody tr:nth-child(even) td{background:#f5f8fa}
+            .summary td:first-child{font-weight:700;background:#f5f9fb}.total td{font-weight:900;background:#dff3f4!important}
+          </style>
+        </head>
+        <body>
+          <header class="report-head"><div class="brand">MANAGEMENT</div><h1>تقرير أرباح ${shopName}</h1></header>
+          <p class="meta">الفترة: من ${period.from} إلى ${period.to} | تاريخ الإصدار: ${today()}</p>
+
+          <h2>ملخص التقرير</h2>
+          <table class="summary">
+            ${summaryRows.map(row => `
+              <tr class="${row[0] === "صافي ربح الشركاء" ? "total" : ""}">
+                <td>${row[0]}</td>
+                <td>${row[1]}</td>
+              </tr>
+            `).join("")}
+          </table>
+
+          <h2>مرتبات البائعين</h2>
+          <table>
+            <tr><th>البائع</th><th>المستحق</th><th>المسحوبات</th><th>الفعلي</th></tr>
+            ${sellersRows}
+          </table>
+
+          <h2>أرباح الشركاء</h2>
+          <table>
+            <tr><th>الشريك</th><th>النسبة</th><th>الربح</th></tr>
+            ${partnersRows}
+          </table>
+        </body>
+        </html>
+      `);
+
+      printWindow.document.close();
+      printWindow.focus();
+      setTimeout(() => printWindow.print(), 300);
+    }
+
+    /* =========================================================
+       الحفظ بزر Enter
+       ========================================================= */
+
+    // عند الضغط على Enter يتم حفظ الشيت المفتوح حاليًا.
+    document.addEventListener("keydown", e => {
+      if (e.key !== "Enter" || e.shiftKey || !store) return;
+      if (["TEXTAREA", "BUTTON"].includes(e.target.tagName)) return;
+
+      e.preventDefault();
+
+      if (tab === "sales") saveSale();
+      else if (tab === "exchange") saveEx();
+      else if (tab === "traders") saveTrader();
+      else if (tab === "items") saveItem();
+      else if (tab === "expenses") {
+        const withdrawalFields = ["wdY", "wdM", "wdD", "ws", "wa"];
+        if (document.activeElement && withdrawalFields.includes(document.activeElement.id)) saveWithdrawal();
+        else saveExpense();
+      } else if (tab === "sellers") {
+        if (document.activeElement && ["fsn", "fss"].includes(document.activeElement.id)) addFixedSeller();
+        else addSeller();
+      } else if (tab === "profits") {
+        if (q("pn") && pn.value.trim()) addPartner();
+        else if (q("cm")) {
+          sessionStorage["comm" + store] = cm.value;
+          draw();
+        }
+      }
+    });
+
+    // أول تشغيل للبرنامج.
+    home();
+  </script>
+</body>
+</html>
