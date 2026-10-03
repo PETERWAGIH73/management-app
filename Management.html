@@ -27,11 +27,6 @@
       box-sizing: border-box;
     }
 
-    html, body {
-      overflow-x: hidden;
-      max-width: 100%;
-    }
-
     body {
       margin: 0;
       font-family: "Segoe UI", Tahoma, Arial, sans-serif;
@@ -502,165 +497,8 @@
     }
 
     /* =========================================================
-       وضع الموبايل / الكمبيوتر
+       وضع الموبايل - مبسط ومعزول
        ========================================================= */
-    body.mode-mobile {
-      font-size: 14px;
-      overflow-x: hidden;
-    }
-
-    body.mode-mobile .page {
-      width: min(100% - 16px, 480px);
-      padding: 12px 0 24px;
-      overflow-x: hidden;
-    }
-
-    body.mode-mobile .top {
-      padding: 10px 12px;
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 10px;
-      position: sticky;
-      top: 0;
-      z-index: 10;
-      max-width: 100%;
-      overflow: hidden;
-    }
-
-    body.mode-mobile .top-right {
-      align-items: flex-start;
-      flex-direction: column;
-      gap: 10px;
-      width: 100%;
-      max-width: 100%;
-      overflow: hidden;
-    }
-
-    /* الأزرار في وضع الموبايل: شبكة عمودين لتفادي الضغط الخطأ */
-    body.mode-mobile .actions {
-      width: 100%;
-      max-width: 100%;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      overflow: hidden;
-    }
-
-    body.mode-mobile .actions button {
-      width: 100%;
-      min-height: 46px;
-      padding: 10px 8px;
-      font-size: 14px;
-      margin: 0;
-      max-width: 100%;
-      white-space: normal;
-      word-break: break-word;
-    }
-
-    body.mode-mobile .actions .file {
-      display: none;
-    }
-
-    body.mode-mobile .mode-toggle {
-      grid-column: 1 / -1;
-      width: 100%;
-      min-height: 46px;
-      justify-content: center;
-      margin: 0;
-    }
-
-    body.mode-mobile .top > .danger {
-      width: 100%;
-      margin: 0;
-    }
-
-    body.mode-mobile .title {
-      font-size: 32px;
-      margin: 10px 0 14px;
-    }
-
-    body.mode-mobile .stores,
-    body.mode-mobile .grid,
-    body.mode-mobile .grid3,
-    body.mode-mobile .cards {
-      grid-template-columns: 1fr;
-    }
-
-    body.mode-mobile .tabs {
-      position: sticky;
-      top: 0;
-      z-index: 5;
-      padding: 8px;
-      margin-top: 8px;
-      background: rgba(10, 25, 43, .98);
-      border-radius: 10px;
-    }
-
-    body.mode-mobile .panel {
-      padding: 14px;
-      border-radius: 12px;
-      overflow-x: hidden;
-    }
-
-    body.mode-mobile .head {
-      flex-direction: column;
-      align-items: flex-start;
-      position: relative;
-      z-index: 1;
-    }
-
-    body.mode-mobile .head h1 {
-      font-size: 26px;
-    }
-
-    body.mode-mobile .row,
-    body.mode-mobile .grid {
-      position: relative;
-      z-index: 1;
-    }
-
-    body.mode-mobile .row button,
-    body.mode-mobile .grid button {
-      min-width: 0;
-      width: 100%;
-    }
-
-    body.mode-mobile .chart-wrap,
-    body.mode-mobile .bar-row {
-      grid-template-columns: 1fr;
-    }
-
-    /* الجداول في وضع الموبايل: سحب أفقي جوه الجدول نفسه بدون توسيع الشاشة */
-    body.mode-mobile table {
-      display: block;
-      overflow-x: auto;
-      white-space: nowrap;
-      -webkit-overflow-scrolling: touch;
-      width: 100%;
-      max-width: 100%;
-    }
-
-    body.mode-mobile table th,
-    body.mode-mobile table td {
-      white-space: nowrap;
-      padding: 7px 6px;
-      font-size: 12px;
-    }
-
-    /* الكروت الطويلة ما توسعش الشاشة */
-    body.mode-mobile .card {
-      word-break: break-word;
-      overflow-wrap: anywhere;
-    }
-
-    /* الأزرار الطويلة ما توسعش الشاشة */
-    body.mode-mobile button {
-      max-width: 100%;
-      white-space: normal;
-      word-break: break-word;
-    }
-
-    /* زر التبديل */
     .mode-toggle {
       display: inline-flex;
       align-items: center;
@@ -681,24 +519,120 @@
       transform: translateY(-1px);
     }
 
-    /* ضمان عدم تداخل الأزرار في الهيدر */
-    .top-right .actions button,
-    .top-right .actions .mode-toggle {
-      position: relative;
-      z-index: 1;
+    body.mode-mobile {
+      font-size: 14px;
     }
 
-    /* في وضع الموبايل: منع أي ضغطة خطأ */
-    body.mode-mobile .actions button,
+    body.mode-mobile .page {
+      width: min(100% - 16px, 500px);
+      padding: 12px 0 24px;
+    }
+
+    body.mode-mobile .title {
+      font-size: 32px;
+      margin: 10px 0 14px;
+    }
+
+    body.mode-mobile .stores,
+    body.mode-mobile .grid,
+    body.mode-mobile .grid3,
+    body.mode-mobile .cards {
+      grid-template-columns: 1fr;
+    }
+
+    body.mode-mobile .panel {
+      padding: 14px;
+      border-radius: 12px;
+    }
+
+    body.mode-mobile .head {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    body.mode-mobile .head h1 {
+      font-size: 26px;
+    }
+
+    body.mode-mobile .row button,
+    body.mode-mobile .grid button {
+      min-width: 0;
+      width: 100%;
+    }
+
+    body.mode-mobile .chart-wrap,
+    body.mode-mobile .bar-row {
+      grid-template-columns: 1fr;
+    }
+
+    body.mode-mobile .top {
+      padding: 10px 12px;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 8px;
+    }
+
+    body.mode-mobile .top-right {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 8px;
+      width: 100%;
+    }
+
+    body.mode-mobile .actions {
+      width: 100%;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    body.mode-mobile .actions button {
+      width: 100%;
+      min-height: 44px;
+      padding: 10px 6px;
+      font-size: 13px;
+    }
+
+    body.mode-mobile .actions .file {
+      display: none;
+    }
+
+    body.mode-mobile .mode-toggle {
+      grid-column: 1 / -1;
+      width: 100%;
+      justify-content: center;
+      min-height: 44px;
+    }
+
     body.mode-mobile .top > .danger {
-      touch-action: manipulation;
+      width: 100%;
+    }
+
+    /* =========================================================
+       الجداول: تلف جوه صندوق قابل للسحب، مش الصفحة كلها
+       ========================================================= */
+    .table-scroll {
+      width: 100%;
+      max-width: 100%;
+      overflow-x: auto;
+      overflow-y: hidden;
+      -webkit-overflow-scrolling: touch;
+      margin-top: 14px;
+    }
+
+    .table-scroll table {
+      margin-top: 0;
+      width: max-content;
+      min-width: 100%;
+    }
+
+    body.mode-mobile .table-scroll table th,
+    body.mode-mobile .table-scroll table td {
+      white-space: nowrap;
     }
 
     @media (max-width: 860px) {
-      html, body {
-        overflow-x: hidden;
-      }
-
       .stores,
       .grid,
       .grid3,
@@ -810,7 +744,7 @@
         saved.stores ||= {};
         saved.customStores ||= [];
         saved.deletedStoreIds ||= [];
-        saved.viewMode ||= "desktop"; // ✅ وضع العرض الافتراضي
+        saved.viewMode ||= "desktop";
         stores.forEach(s => {
           saved.stores[s[0]] ||= blank();
           saved.stores[s[0]].sales ||= [];
@@ -829,7 +763,7 @@
           traders: [],
           customStores: [],
           deletedStoreIds: [],
-          viewMode: "desktop", // ✅ وضع العرض الافتراضي
+          viewMode: "desktop",
           stores: Object.fromEntries(stores.map(s => [s[0], blank()]))
         };
       }
@@ -844,19 +778,14 @@
        وضع العرض: موبايل / كمبيوتر (محفوظ في JSON)
        ========================================================= */
 
-    // تطبيق وضع العرض على الـ body + تحديث شكل الزر
     function applyViewMode() {
       const mode = data.viewMode === "mobile" ? "mobile" : "desktop";
       document.body.classList.remove("mode-mobile", "mode-desktop");
       document.body.classList.add(mode === "mobile" ? "mode-mobile" : "mode-desktop");
-
       const btn = document.getElementById("modeToggleBtn");
-      if (btn) {
-        btn.textContent = mode === "mobile" ? "📱 موبايل" : "💻 كمبيوتر";
-      }
+      if (btn) btn.textContent = mode === "mobile" ? "📱 موبايل" : "💻 كمبيوتر";
     }
 
-    // التبديل بين الوضعين وحفظه في نفس بيانات JSON
     function toggleViewMode() {
       data.viewMode = data.viewMode === "mobile" ? "desktop" : "mobile";
       save();
@@ -1177,7 +1106,7 @@
             <div class="card">إجمالي الفيزا <strong>${m(total.visa)}</strong></div>
           </div>
           <h2>تفاصيل تحصيل المحلات</h2>
-          <div style="overflow:auto">
+          <div class="table-scroll">
             <table>
               <tr><th>المحل</th><th>يورو محصل</th><th>يورو تم تغييره</th><th>صافي يورو</th><th>دولار محصل</th><th>دولار تم تغييره</th><th>صافي دولار</th><th>إنجليزي محصل</th><th>إنجليزي تم تغييره</th><th>صافي إنجليزي</th><th>جنيه</th><th>فيزا</th></tr>
               ${rows.map(row => `<tr><td>${row.name}</td><td>${m(row.totals.euroSales)}</td><td>${m(row.totals.euroChanged)}</td><td>${m(row.totals.euro)}</td><td>${m(row.totals.dollarSales)}</td><td>${m(row.totals.dollarChanged)}</td><td>${m(row.totals.dollar)}</td><td>${m(row.totals.gbpSales)}</td><td>${m(row.totals.gbpChanged)}</td><td>${m(row.totals.gbp)}</td><td>${m(row.totals.egp)}</td><td>${m(row.totals.visa)}</td></tr>`).join("") || `<tr><td colspan="12">اختر محلًا واحدًا على الأقل لعرض التحصيل</td></tr>`}
@@ -1351,12 +1280,14 @@
         </div>
 
         <div id="list" style="display:none">
-          ${table(
-            list,
-            "sales",
-            ["التاريخ", "يورو", "دولار", "جنيه إنجليزي", "جنيه مصري", "فيزا"].concat(hasPieces ? ["قطع"] : []),
-            x => [x.date, m(x.euro), m(x.dollar), m(x.gbp), m(x.egp), m(x.visa)].concat(hasPieces ? [m(x.pieces)] : [])
-          )}
+          <div class="table-scroll">
+            ${table(
+              list,
+              "sales",
+              ["التاريخ", "يورو", "دولار", "جنيه إنجليزي", "جنيه مصري", "فيزا"].concat(hasPieces ? ["قطع"] : []),
+              x => [x.date, m(x.euro), m(x.dollar), m(x.gbp), m(x.egp), m(x.visa)].concat(hasPieces ? [m(x.pieces)] : [])
+            )}
+          </div>
         </div>
       `;
     }
@@ -1460,12 +1391,14 @@
         </div>
 
         <div id="exlist" style="display:none">
-          ${table(
-            list,
-            "exchange",
-            ["التاريخ", "يورو", "سعر التغيير", "الأجمالي", "دولار", "سعر التغيير", "الأجمالي", "جنيه إنجليزي", "سعر التغيير ", "الأجمالي"],
-            r => [r.date, m(r.ea), m(r.er), m(n(r.ea) * n(r.er)), m(r.da), m(r.dr), m(n(r.da) * n(r.dr)), m(r.ba), m(r.br), m(n(r.ba) * n(r.br))]
-          )}
+          <div class="table-scroll">
+            ${table(
+              list,
+              "exchange",
+              ["التاريخ", "يورو", "سعر التغيير", "الأجمالي", "دولار", "سعر التغيير", "الأجمالي", "جنيه إنجليزي", "سعر التغيير ", "الأجمالي"],
+              r => [r.date, m(r.ea), m(r.er), m(n(r.ea) * n(r.er)), m(r.da), m(r.dr), m(n(r.da) * n(r.dr)), m(r.ba), m(r.br), m(n(r.ba) * n(r.br))]
+            )}
+          </div>
         </div>
       `;
     }
@@ -1609,17 +1542,19 @@
         </div>
 
         <div id="traderMonthList" style="display:none">
-          <table>
-            <tr><th>التاريخ</th><th>التاجر</th><th>النوع</th><th>القيمة</th><th>تحكم</th></tr>
-            <tbody id="traderTransactionRows">
-              ${filteredList.map(x => `
-                <tr>
-                  <td>${x.date}</td><td>${x.name}</td><td>${traderKindLabel(x.kind)}</td><td>${m(x.amount)}</td>
-                  <td><button class="light" onclick="edt('traderTx','${x.id}')">تعديل</button><button class="danger" onclick="del('traderTx','${x.id}')">حذف</button></td>
-                </tr>
-              `).join("") || `<tr><td colspan="5">${search ? "لا توجد معاملات لهذا التاجر خلال الفترة" : "لا توجد معاملات خلال الفترة"}</td></tr>`}
-            </tbody>
-          </table>
+          <div class="table-scroll">
+            <table>
+              <tr><th>التاريخ</th><th>التاجر</th><th>النوع</th><th>القيمة</th><th>تحكم</th></tr>
+              <tbody id="traderTransactionRows">
+                ${filteredList.map(x => `
+                  <tr>
+                    <td>${x.date}</td><td>${x.name}</td><td>${traderKindLabel(x.kind)}</td><td>${m(x.amount)}</td>
+                    <td><button class="light" onclick="edt('traderTx','${x.id}')">تعديل</button><button class="danger" onclick="del('traderTx','${x.id}')">حذف</button></td>
+                  </tr>
+                `).join("") || `<tr><td colspan="5">${search ? "لا توجد معاملات لهذا التاجر خلال الفترة" : "لا توجد معاملات خلال الفترة"}</td></tr>`}
+              </tbody>
+            </table>
+          </div>
         </div>
       `;
     }
@@ -1679,17 +1614,19 @@
           <button onclick="addSeller()">إضافة بائع</button>
         </div>
 
-        <table>
-          <tr><th>البائع</th><th>تحكم</th></tr>
-          ${
-            st().sellers.map(x => `
-              <tr>
-                <td>${x.name}</td>
-                <td><button class="danger" onclick="deleteSeller('${x.id}')">حذف</button></td>
-              </tr>
-            `).join("") || `<tr><td colspan="2">لا يوجد بائعين</td></tr>`
-          }
-        </table>
+        <div class="table-scroll">
+          <table>
+            <tr><th>البائع</th><th>تحكم</th></tr>
+            ${
+              st().sellers.map(x => `
+                <tr>
+                  <td>${x.name}</td>
+                  <td><button class="danger" onclick="deleteSeller('${x.id}')">حذف</button></td>
+                </tr>
+              `).join("") || `<tr><td colspan="2">لا يوجد بائعين</td></tr>`
+            }
+          </table>
+        </div>
 
         <hr>
 
@@ -1700,18 +1637,20 @@
           <button onclick="addFixedSeller()">إضافة</button>
         </div>
 
-        <table>
-          <tr><th>الأسم</th><th>الراتب</th><th>تحكم</th></tr>
-          ${
-            st().fixedSellers.map(x => `
-              <tr>
-                <td>${x.name}</td>
-                <td>${m(x.salary)}</td>
-                <td><button class="danger" onclick="deleteFixedSeller('${x.id}')">حذف</button></td>
-              </tr>
-            `).join("") || `<tr><td colspan="3">لا يوجد بيانات</td></tr>`
-          }
-        </table>
+        <div class="table-scroll">
+          <table>
+            <tr><th>الأسم</th><th>الراتب</th><th>تحكم</th></tr>
+            ${
+              st().fixedSellers.map(x => `
+                <tr>
+                  <td>${x.name}</td>
+                  <td>${m(x.salary)}</td>
+                  <td><button class="danger" onclick="deleteFixedSeller('${x.id}')">حذف</button></td>
+                </tr>
+              `).join("") || `<tr><td colspan="3">لا يوجد بيانات</td></tr>`
+            }
+          </table>
+        </div>
       `;
     }
 
@@ -1861,19 +1800,21 @@
     // رسم جدول الأصناف المجمع.
     function itemStatsTable(stats) {
       return `
-        <table>
-          <tr><th>الصنف</th><th>عدد القطع</th><th>النسبة</th><th>سعر القطع المباعة</th></tr>
-          ${
-            stats.list.map(x => `
-              <tr>
-                <td>${x.name}</td>
-                <td>${m(x.qty)}</td>
-                <td>${stats.totalQty ? m((x.qty / stats.totalQty) * 100) : 0}%</td>
-                <td>${m(x.value)}</td>
-              </tr>
-            `).join("") || `<tr><td colspan="4">لا توجد بيانات</td></tr>`
-          }
-        </table>
+        <div class="table-scroll">
+          <table>
+            <tr><th>الصنف</th><th>عدد القطع</th><th>النسبة</th><th>سعر القطع المباعة</th></tr>
+            ${
+              stats.list.map(x => `
+                <tr>
+                  <td>${x.name}</td>
+                  <td>${m(x.qty)}</td>
+                  <td>${stats.totalQty ? m((x.qty / stats.totalQty) * 100) : 0}%</td>
+                  <td>${m(x.value)}</td>
+                </tr>
+              `).join("") || `<tr><td colspan="4">لا توجد بيانات</td></tr>`
+            }
+          </table>
+        </div>
       `;
     }
 
@@ -1908,12 +1849,14 @@
         </div>
 
         <div id="itemsList" style="display:none">
-          ${table(
-            fl(st().items),
-            "items",
-            ["التاريخ", "الصنف", "عدد القطع", "سعر القطع"],
-            x => [x.date, x.name, m(x.qty), m(x.value)]
-          )}
+          <div class="table-scroll">
+            ${table(
+              fl(st().items),
+              "items",
+              ["التاريخ", "الصنف", "عدد القطع", "سعر القطع"],
+              x => [x.date, x.name, m(x.qty), m(x.value)]
+            )}
+          </div>
         </div>
 
         <hr>
@@ -1946,10 +1889,12 @@
 
         ${compareChart(aStats, bStats)}
 
-        <table>
-          <tr><th>الصنف</th><th>قطع الفترة الأولى</th><th>قطع الفترة الثانية</th><th>الفرق</th><th>قيمة الأولى</th><th>قيمة الثانية</th></tr>
-          ${itemCompareRows(aStats, bStats)}
-        </table>
+        <div class="table-scroll">
+          <table>
+            <tr><th>الصنف</th><th>قطع الفترة الأولى</th><th>قطع الفترة الثانية</th><th>الفرق</th><th>قيمة الأولى</th><th>قيمة الثانية</th></tr>
+            ${itemCompareRows(aStats, bStats)}
+          </table>
+        </div>
       `;
     }
 
@@ -2033,7 +1978,9 @@
         </div>
 
         <div id="explist" style="display:none">
-          ${table(expenseList, "expenses", ["التاريخ", "البند", "القيمة"], x => [x.date, x.item, m(x.amount)])}
+          <div class="table-scroll">
+            ${table(expenseList, "expenses", ["التاريخ", "البند", "القيمة"], x => [x.date, x.item, m(x.amount)])}
+          </div>
         </div>
 
         <hr>
@@ -2048,16 +1995,18 @@
           <div class="card">مسحوبات البائعين <strong>${m(withdrawalList.reduce((s, x) => s + n(x.amount), 0))}</strong></div>
         </div>
         <div id="unifiedlist" style="display:none">
-          <table>
-            <tr><th>التاريخ</th><th>البند</th><th>النوع</th><th>القيمة</th><th>المصدر</th><th>تعديل</th></tr>
-            ${unifiedList.map(x => `
-              <tr>
-                <td>${x.date}</td><td>${x.item}</td><td>${x.type}</td><td>${m(x.amount)}</td>
-                <td>${x.source === "expenses" ? "المصروفات" : x.source === "traderTx" ? "التجار" : "مسحوبات البائعين"}</td>
-                <td><button class="light" onclick="edt('${x.source}','${x.id}')">تعديل</button><button class="danger" onclick="del('${x.source}','${x.id}')">حذف</button></td>
-              </tr>
-            `).join("") || `<tr><td colspan="6">لا توجد عمليات خلال الفترة</td></tr>`}
-          </table>
+          <div class="table-scroll">
+            <table>
+              <tr><th>التاريخ</th><th>البند</th><th>النوع</th><th>القيمة</th><th>المصدر</th><th>تعديل</th></tr>
+              ${unifiedList.map(x => `
+                <tr>
+                  <td>${x.date}</td><td>${x.item}</td><td>${x.type}</td><td>${m(x.amount)}</td>
+                  <td>${x.source === "expenses" ? "المصروفات" : x.source === "traderTx" ? "التجار" : "مسحوبات البائعين"}</td>
+                  <td><button class="light" onclick="edt('${x.source}','${x.id}')">تعديل</button><button class="danger" onclick="del('${x.source}','${x.id}')">حذف</button></td>
+                </tr>
+              `).join("") || `<tr><td colspan="6">لا توجد عمليات خلال الفترة</td></tr>`}
+            </table>
+          </div>
         </div>
 
         <hr>
@@ -2081,7 +2030,9 @@
         </div>
 
         <div id="wdlist" style="display:none">
-          ${table(withdrawalList, "withdrawals", ["التاريخ", "البائع", "القيمة"], x => [x.date, x.seller, m(x.amount)])}
+          <div class="table-scroll">
+            ${table(withdrawalList, "withdrawals", ["التاريخ", "البائع", "القيمة"], x => [x.date, x.seller, m(x.amount)])}
+          </div>
         </div>
       `;
     }
@@ -2182,7 +2133,9 @@
         </div>
 
         <div id="plist" style="display:none">
-          ${table(st().partners, "partners", ["الشريك", "النسبة"], x => [x.name, m(x.percent) + "%"])}
+          <div class="table-scroll">
+            ${table(st().partners, "partners", ["الشريك", "النسبة"], x => [x.name, m(x.percent) + "%"])}
+          </div>
         </div>
 
         <hr>
@@ -2208,48 +2161,54 @@
         </div>
 
         <h3>مرتبات البائعين</h3>
-        <table>
-          <tr><th>البائع</th><th>المستحق</th><th>المسحوبات</th><th>الفعلي</th></tr>
-          ${
-            st().sellers.map(s => `
-              <tr>
-                <td>${s.name}</td>
-                <td>${m(eachSalary)}</td>
-                <td>${m(withdrawals[s.name] || 0)}</td>
-                <td>${m(eachSalary - (withdrawals[s.name] || 0))}</td>
-              </tr>
-            `).join("") || `<tr><td colspan="4">لا يوجد بائعين</td></tr>`
-          }
-        </table>
+        <div class="table-scroll">
+          <table>
+            <tr><th>البائع</th><th>المستحق</th><th>المسحوبات</th><th>الفعلي</th></tr>
+            ${
+              st().sellers.map(s => `
+                <tr>
+                  <td>${s.name}</td>
+                  <td>${m(eachSalary)}</td>
+                  <td>${m(withdrawals[s.name] || 0)}</td>
+                  <td>${m(eachSalary - (withdrawals[s.name] || 0))}</td>
+                </tr>
+              `).join("") || `<tr><td colspan="4">لا يوجد بائعين</td></tr>`
+            }
+          </table>
+        </div>
 
         <h3>رواتب ثابتة</h3>
-        <table>
-          <tr><th>الأسم</th><th>الراتب الثابت</th><th>المسحوبات</th><th>الصافي</th></tr>
-          ${
-            st().fixedSellers.map(s => `
-              <tr>
-                <td>${s.name}</td>
-                <td>${m(s.salary)}</td>
-                <td>${m(withdrawals[s.name] || 0)}</td>
-                <td>${m(n(s.salary) - (withdrawals[s.name] || 0))}</td>
-              </tr>
-            `).join("") || `<tr><td colspan="4">لا يوجد بائعين براتب ثابت</td></tr>`
-          }
-        </table>
+        <div class="table-scroll">
+          <table>
+            <tr><th>الأسم</th><th>الراتب الثابت</th><th>المسحوبات</th><th>الصافي</th></tr>
+            ${
+              st().fixedSellers.map(s => `
+                <tr>
+                  <td>${s.name}</td>
+                  <td>${m(s.salary)}</td>
+                  <td>${m(withdrawals[s.name] || 0)}</td>
+                  <td>${m(n(s.salary) - (withdrawals[s.name] || 0))}</td>
+                </tr>
+              `).join("") || `<tr><td colspan="4">لا يوجد بائعين براتب ثابت</td></tr>`
+            }
+          </table>
+        </div>
 
         <h3>أرباح الشركاء</h3>
-        <table>
-          <tr><th>الشريك</th><th>النسبة</th><th>الربح</th></tr>
-          ${
-            st().partners.map(x => `
-              <tr>
-                <td>${x.name}</td>
-                <td>${m(x.percent)}%</td>
-                <td>${m(netProfit * n(x.percent) / 100)}</td>
-              </tr>
-            `).join("") || `<tr><td colspan="3">لا يوجد شركاء</td></tr>`
-          }
-        </table>
+        <div class="table-scroll">
+          <table>
+            <tr><th>الشريك</th><th>النسبة</th><th>الربح</th></tr>
+            ${
+              st().partners.map(x => `
+                <tr>
+                  <td>${x.name}</td>
+                  <td>${m(x.percent)}%</td>
+                  <td>${m(netProfit * n(x.percent) / 100)}</td>
+                </tr>
+              `).join("") || `<tr><td colspan="3">لا يوجد شركاء</td></tr>`
+            }
+          </table>
+        </div>
       `;
     }
 
@@ -2342,18 +2301,20 @@
             ${stores.map(s => `<label class="shop-choice"><input type="checkbox" ${selectedIds.has(s[0]) ? "checked" : ""} onchange="toggleTraderBalanceStore('${s[0]}', this.checked)">${s[1]}</label>`).join("")}
           </div>
           <div class="card">الإجمالي اللي عليك كله <strong>${m(grand)}</strong></div>
-          <table>
-            <tr><th>التاجر</th><th>تفصيل المحلات</th><th>الإجمالي</th></tr>
-            ${
-              Object.entries(rows).map(([name, value]) => `
-                <tr>
-                  <td>${name}</td>
-                  <td>${Object.entries(value.parts).map(([shop, total]) => `${shop}: ${m(total)}`).join(" | ")}</td>
-                  <td>${m(value.total)}</td>
-                </tr>
-              `).join("") || `<tr><td colspan="3">لا توجد أرصدة</td></tr>`
-            }
-          </table>
+          <div class="table-scroll">
+            <table>
+              <tr><th>التاجر</th><th>تفصيل المحلات</th><th>الإجمالي</th></tr>
+              ${
+                Object.entries(rows).map(([name, value]) => `
+                  <tr>
+                    <td>${name}</td>
+                    <td>${Object.entries(value.parts).map(([shop, total]) => `${shop}: ${m(total)}`).join(" | ")}</td>
+                    <td>${m(value.total)}</td>
+                  </tr>
+                `).join("") || `<tr><td colspan="3">لا توجد أرصدة</td></tr>`
+              }
+            </table>
+          </div>
         </section>
       `;
     }
@@ -2399,11 +2360,11 @@
         try {
           data = JSON.parse(reader.result);
           data.customStores ||= [];
-          data.viewMode ||= "desktop"; // ✅ استرجاع وضع العرض
+          data.viewMode ||= "desktop";
           syncCustomStores();
           stores.forEach(s => { data.stores[s[0]] ||= blank(); });
           save();
-          applyViewMode(); // ✅ تطبيق وضع العرض المسترجع
+          applyViewMode();
           alert("تم الاسترجاع");
           home();
         } catch (x) {
@@ -2422,7 +2383,7 @@
         traders: [],
         customStores: data.customStores || [],
         deletedStoreIds: data.deletedStoreIds || [],
-        viewMode: data.viewMode || "desktop", // ✅ نحافظ على اختيار المستخدم
+        viewMode: data.viewMode || "desktop",
         stores: Object.fromEntries(stores.map(s => [s[0], blank()]))
       };
 
@@ -2608,7 +2569,7 @@ const summaryRows = [
     });
 
     // أول تشغيل للبرنامج.
-    applyViewMode(); // ✅ تطبيق وضع العرض المحفوظ
+    applyViewMode();
     home();
   </script>
 </body>
