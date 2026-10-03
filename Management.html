@@ -497,7 +497,7 @@
     }
 
     /* =========================================================
-       وضع الموبايل - مبسط ومعزول
+       وضع الموبايل - بسيط ومحافظ على الشكل الأصلي
        ========================================================= */
     .mode-toggle {
       display: inline-flex;
@@ -516,102 +516,127 @@
     .mode-toggle:hover {
       background: #294564;
       color: #fff;
-      transform: translateY(-1px);
     }
 
     body.mode-mobile {
-      font-size: 14px;
+      font-size: 13px;
     }
 
     body.mode-mobile .page {
-      width: min(100% - 16px, 500px);
-      padding: 12px 0 24px;
+      width: calc(100% - 16px);
+      padding: 10px 0 24px;
     }
 
-    body.mode-mobile .title {
-      font-size: 32px;
-      margin: 10px 0 14px;
+    body.mode-mobile .top {
+      padding: 8px 10px;
+      gap: 8px;
+      flex-wrap: wrap;
     }
 
-    body.mode-mobile .stores,
-    body.mode-mobile .grid,
-    body.mode-mobile .grid3,
-    body.mode-mobile .cards {
-      grid-template-columns: 1fr;
+    body.mode-mobile .top b {
+      font-size: 16px;
     }
 
-    body.mode-mobile .panel {
-      padding: 14px;
-      border-radius: 12px;
-    }
-
-    body.mode-mobile .head {
-      flex-direction: column;
-      align-items: flex-start;
+    body.mode-mobile .top-right {
       gap: 8px;
     }
 
+    body.mode-mobile .actions {
+      gap: 6px;
+    }
+
+    body.mode-mobile .actions button,
+    body.mode-mobile .top > .danger {
+      padding: 7px 10px;
+      font-size: 12px;
+      min-width: 0;
+    }
+
+    body.mode-mobile .mode-toggle {
+      padding: 7px 10px;
+      font-size: 12px;
+    }
+
+    body.mode-mobile .title {
+      font-size: 28px;
+      margin: 10px 0 14px;
+    }
+
     body.mode-mobile .head h1 {
-      font-size: 26px;
+      font-size: 22px;
+    }
+
+    body.mode-mobile .panel {
+      padding: 12px;
+    }
+
+    body.mode-mobile h2 {
+      font-size: 18px;
+    }
+
+    body.mode-mobile h3 {
+      font-size: 15px;
+    }
+
+    body.mode-mobile .tabs {
+      padding: 8px;
+      gap: 6px;
+    }
+
+    body.mode-mobile .tab {
+      padding: 7px 10px;
+      font-size: 12px;
+    }
+
+    body.mode-mobile .grid,
+    body.mode-mobile .grid3 {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    body.mode-mobile .cards {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    body.mode-mobile .card {
+      padding: 10px;
+      font-size: 12px;
+    }
+
+    body.mode-mobile .card strong {
+      font-size: 17px;
+    }
+
+    body.mode-mobile .stores {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+
+    body.mode-mobile .store {
+      min-height: 70px;
+      font-size: 15px;
     }
 
     body.mode-mobile .row button,
     body.mode-mobile .grid button {
       min-width: 0;
-      width: 100%;
+      padding: 8px 10px;
+      font-size: 12px;
     }
 
-    body.mode-mobile .chart-wrap,
-    body.mode-mobile .bar-row {
-      grid-template-columns: 1fr;
+    body.mode-mobile label {
+      font-size: 12px;
     }
 
-    body.mode-mobile .top {
-      padding: 10px 12px;
-      flex-direction: column;
-      align-items: stretch;
-      gap: 8px;
-    }
-
-    body.mode-mobile .top-right {
-      flex-direction: column;
-      align-items: stretch;
-      gap: 8px;
-      width: 100%;
-    }
-
-    body.mode-mobile .actions {
-      width: 100%;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-    }
-
-    body.mode-mobile .actions button {
-      width: 100%;
-      min-height: 44px;
-      padding: 10px 6px;
+    body.mode-mobile input,
+    body.mode-mobile select,
+    body.mode-mobile textarea {
+      padding: 8px 10px;
       font-size: 13px;
     }
 
-    body.mode-mobile .actions .file {
-      display: none;
-    }
-
-    body.mode-mobile .mode-toggle {
-      grid-column: 1 / -1;
-      width: 100%;
-      justify-content: center;
-      min-height: 44px;
-    }
-
-    body.mode-mobile .top > .danger {
-      width: 100%;
-    }
-
-    /* =========================================================
-       الجداول: تلف جوه صندوق قابل للسحب، مش الصفحة كلها
-       ========================================================= */
+    /* الجداول: صندوق قابل للسحب، مش بيوسّع الصفحة */
     .table-scroll {
       width: 100%;
       max-width: 100%;
@@ -630,6 +655,13 @@
     body.mode-mobile .table-scroll table th,
     body.mode-mobile .table-scroll table td {
       white-space: nowrap;
+      padding: 6px 8px;
+      font-size: 11px;
+    }
+
+    body.mode-mobile .page,
+    body.mode-mobile .panel {
+      overflow-x: hidden;
     }
 
     @media (max-width: 860px) {
@@ -783,7 +815,9 @@
       document.body.classList.remove("mode-mobile", "mode-desktop");
       document.body.classList.add(mode === "mobile" ? "mode-mobile" : "mode-desktop");
       const btn = document.getElementById("modeToggleBtn");
-      if (btn) btn.textContent = mode === "mobile" ? "📱 موبايل" : "💻 كمبيوتر";
+      if (btn) {
+        btn.textContent = mode === "mobile" ? "📱 موبايل" : "💻 كمبيوتر";
+      }
     }
 
     function toggleViewMode() {
