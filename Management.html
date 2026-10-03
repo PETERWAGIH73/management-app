@@ -27,6 +27,11 @@
       box-sizing: border-box;
     }
 
+    html, body {
+      overflow-x: hidden;
+      max-width: 100%;
+    }
+
     body {
       margin: 0;
       font-family: "Segoe UI", Tahoma, Arial, sans-serif;
@@ -501,11 +506,13 @@
        ========================================================= */
     body.mode-mobile {
       font-size: 14px;
+      overflow-x: hidden;
     }
 
     body.mode-mobile .page {
       width: min(100% - 16px, 480px);
       padding: 12px 0 24px;
+      overflow-x: hidden;
     }
 
     body.mode-mobile .top {
@@ -513,6 +520,11 @@
       flex-direction: column;
       align-items: flex-start;
       gap: 10px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      max-width: 100%;
+      overflow: hidden;
     }
 
     body.mode-mobile .top-right {
@@ -520,14 +532,18 @@
       flex-direction: column;
       gap: 10px;
       width: 100%;
+      max-width: 100%;
+      overflow: hidden;
     }
 
     /* الأزرار في وضع الموبايل: شبكة عمودين لتفادي الضغط الخطأ */
     body.mode-mobile .actions {
       width: 100%;
+      max-width: 100%;
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 10px;
+      overflow: hidden;
     }
 
     body.mode-mobile .actions button {
@@ -536,6 +552,9 @@
       padding: 10px 8px;
       font-size: 14px;
       margin: 0;
+      max-width: 100%;
+      white-space: normal;
+      word-break: break-word;
     }
 
     body.mode-mobile .actions .file {
@@ -568,22 +587,36 @@
     }
 
     body.mode-mobile .tabs {
+      position: sticky;
       top: 0;
+      z-index: 5;
       padding: 8px;
+      margin-top: 8px;
+      background: rgba(10, 25, 43, .98);
+      border-radius: 10px;
     }
 
     body.mode-mobile .panel {
       padding: 14px;
       border-radius: 12px;
+      overflow-x: hidden;
     }
 
     body.mode-mobile .head {
       flex-direction: column;
       align-items: flex-start;
+      position: relative;
+      z-index: 1;
     }
 
     body.mode-mobile .head h1 {
       font-size: 26px;
+    }
+
+    body.mode-mobile .row,
+    body.mode-mobile .grid {
+      position: relative;
+      z-index: 1;
     }
 
     body.mode-mobile .row button,
@@ -597,13 +630,34 @@
       grid-template-columns: 1fr;
     }
 
+    /* الجداول في وضع الموبايل: سحب أفقي جوه الجدول نفسه بدون توسيع الشاشة */
     body.mode-mobile table {
+      display: block;
+      overflow-x: auto;
+      white-space: nowrap;
+      -webkit-overflow-scrolling: touch;
+      width: 100%;
+      max-width: 100%;
+    }
+
+    body.mode-mobile table th,
+    body.mode-mobile table td {
+      white-space: nowrap;
+      padding: 7px 6px;
       font-size: 12px;
     }
 
-    body.mode-mobile th,
-    body.mode-mobile td {
-      padding: 7px 6px;
+    /* الكروت الطويلة ما توسعش الشاشة */
+    body.mode-mobile .card {
+      word-break: break-word;
+      overflow-wrap: anywhere;
+    }
+
+    /* الأزرار الطويلة ما توسعش الشاشة */
+    body.mode-mobile button {
+      max-width: 100%;
+      white-space: normal;
+      word-break: break-word;
     }
 
     /* زر التبديل */
@@ -641,6 +695,10 @@
     }
 
     @media (max-width: 860px) {
+      html, body {
+        overflow-x: hidden;
+      }
+
       .stores,
       .grid,
       .grid3,
