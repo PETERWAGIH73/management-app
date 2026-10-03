@@ -512,6 +512,7 @@
       padding: 10px 12px;
       flex-direction: column;
       align-items: flex-start;
+      gap: 10px;
     }
 
     body.mode-mobile .top-right {
@@ -521,8 +522,37 @@
       width: 100%;
     }
 
+    /* الأزرار في وضع الموبايل: شبكة عمودين لتفادي الضغط الخطأ */
     body.mode-mobile .actions {
       width: 100%;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    body.mode-mobile .actions button {
+      width: 100%;
+      min-height: 46px;
+      padding: 10px 8px;
+      font-size: 14px;
+      margin: 0;
+    }
+
+    body.mode-mobile .actions .file {
+      display: none;
+    }
+
+    body.mode-mobile .mode-toggle {
+      grid-column: 1 / -1;
+      width: 100%;
+      min-height: 46px;
+      justify-content: center;
+      margin: 0;
+    }
+
+    body.mode-mobile .top > .danger {
+      width: 100%;
+      margin: 0;
     }
 
     body.mode-mobile .title {
@@ -595,6 +625,19 @@
       background: #294564;
       color: #fff;
       transform: translateY(-1px);
+    }
+
+    /* ضمان عدم تداخل الأزرار في الهيدر */
+    .top-right .actions button,
+    .top-right .actions .mode-toggle {
+      position: relative;
+      z-index: 1;
+    }
+
+    /* في وضع الموبايل: منع أي ضغطة خطأ */
+    body.mode-mobile .actions button,
+    body.mode-mobile .top > .danger {
+      touch-action: manipulation;
     }
 
     @media (max-width: 860px) {
