@@ -496,6 +496,107 @@
       font-weight: 900;
     }
 
+    /* =========================================================
+       وضع الموبايل / الكمبيوتر
+       ========================================================= */
+    body.mode-mobile {
+      font-size: 14px;
+    }
+
+    body.mode-mobile .page {
+      width: min(100% - 16px, 480px);
+      padding: 12px 0 24px;
+    }
+
+    body.mode-mobile .top {
+      padding: 10px 12px;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    body.mode-mobile .top-right {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 10px;
+      width: 100%;
+    }
+
+    body.mode-mobile .actions {
+      width: 100%;
+    }
+
+    body.mode-mobile .title {
+      font-size: 32px;
+      margin: 10px 0 14px;
+    }
+
+    body.mode-mobile .stores,
+    body.mode-mobile .grid,
+    body.mode-mobile .grid3,
+    body.mode-mobile .cards {
+      grid-template-columns: 1fr;
+    }
+
+    body.mode-mobile .tabs {
+      top: 0;
+      padding: 8px;
+    }
+
+    body.mode-mobile .panel {
+      padding: 14px;
+      border-radius: 12px;
+    }
+
+    body.mode-mobile .head {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    body.mode-mobile .head h1 {
+      font-size: 26px;
+    }
+
+    body.mode-mobile .row button,
+    body.mode-mobile .grid button {
+      min-width: 0;
+      width: 100%;
+    }
+
+    body.mode-mobile .chart-wrap,
+    body.mode-mobile .bar-row {
+      grid-template-columns: 1fr;
+    }
+
+    body.mode-mobile table {
+      font-size: 12px;
+    }
+
+    body.mode-mobile th,
+    body.mode-mobile td {
+      padding: 7px 6px;
+    }
+
+    /* زر التبديل */
+    .mode-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 12px;
+      border-radius: 10px;
+      background: #1c3049;
+      color: #dce9f6;
+      border: 1px solid var(--line);
+      cursor: pointer;
+      font-weight: 800;
+      box-shadow: none;
+      transition: .15s ease;
+    }
+    .mode-toggle:hover {
+      background: #294564;
+      color: #fff;
+      transform: translateY(-1px);
+    }
+
     @media (max-width: 860px) {
       .stores,
       .grid,
@@ -532,7 +633,7 @@
 </head>
 
 <body>
-  <!-- الهيدر الثابت: رجوع للرئيسية + نسخ احتياطي + استرجاع -->
+  <!-- الهيدر الثابت: رجوع للرئيسية + نسخ احتياطي + استرجاع + تبديل الوضع -->
   <header class="top">
     <div class="top-right">
       <b>T.p</b>
@@ -541,6 +642,7 @@
         <button class="gray" onclick="backup()">نسخ احتياطي</button>
         <button onclick="restoreFile.click()">استرجاع</button>
         <input class="file" id="restoreFile" type="file" accept="application/json" onchange="restore(event)">
+        <button class="mode-toggle" id="modeToggleBtn" onclick="toggleViewMode()">📱 موبايل</button>
       </div>
     </div>
     <button class="danger" onclick="clearAllData()">حذف كل البيانات</button>
@@ -607,6 +709,7 @@
         saved.stores ||= {};
         saved.customStores ||= [];
         saved.deletedStoreIds ||= [];
+        saved.viewMode ||= "desktop"; // ✅ وضع العرض الافتراضي
         stores.forEach(s => {
           saved.stores[s[0]] ||= blank();
           saved.stores[s[0]].sales ||= [];
@@ -625,6 +728,7 @@
           traders: [],
           customStores: [],
           deletedStoreIds: [],
+          viewMode: "desktop", // ✅ وضع العرض الافتراضي
           stores: Object.fromEntries(stores.map(s => [s[0], blank()]))
         };
       }
@@ -633,6 +737,29 @@
     // حفظ كل البيانات في المتصفح.
     function save() {
       localStorage.managementData = JSON.stringify(data);
+    }
+
+    /* =========================================================
+       وضع العرض: موبايل / كمبيوتر (محفوظ في JSON)
+       ========================================================= */
+
+    // تطبيق وضع العرض على الـ body + تحديث شكل الزر
+    function applyViewMode() {
+      const mode = data.viewMode === "mobile" ? "mobile" : "desktop";
+      document.body.classList.remove("mode-mobile", "mode-desktop");
+      document.body.classList.add(mode === "mobile" ? "mode-mobile" : "mode-desktop");
+
+      const btn = document.getElementById("modeToggleBtn");
+      if (btn) {
+        btn.textContent = mode === "mobile" ? "📱 موبايل" : "💻 كمبيوتر";
+      }
+    }
+
+    // التبديل بين الوضعين وحفظه في نفس بيانات JSON
+    function toggleViewMode() {
+      data.viewMode = data.viewMode === "mobile" ? "desktop" : "mobile";
+      save();
+      applyViewMode();
     }
 
     // إضافة المحلات المخصصة المحفوظة إلى قائمة المحلات عند فتح البرنامج.
@@ -2171,9 +2298,11 @@
         try {
           data = JSON.parse(reader.result);
           data.customStores ||= [];
+          data.viewMode ||= "desktop"; // ✅ استرجاع وضع العرض
           syncCustomStores();
           stores.forEach(s => { data.stores[s[0]] ||= blank(); });
           save();
+          applyViewMode(); // ✅ تطبيق وضع العرض المسترجع
           alert("تم الاسترجاع");
           home();
         } catch (x) {
@@ -2192,6 +2321,7 @@
         traders: [],
         customStores: data.customStores || [],
         deletedStoreIds: data.deletedStoreIds || [],
+        viewMode: data.viewMode || "desktop", // ✅ نحافظ على اختيار المستخدم
         stores: Object.fromEntries(stores.map(s => [s[0], blank()]))
       };
 
@@ -2377,6 +2507,7 @@ const summaryRows = [
     });
 
     // أول تشغيل للبرنامج.
+    applyViewMode(); // ✅ تطبيق وضع العرض المحفوظ
     home();
   </script>
 </body>
