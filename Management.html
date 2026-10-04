@@ -285,7 +285,6 @@
     const LS_LAST_SYNC = "managementLastSync";
     const CLIENT_ID_KEY = "managementClientId";
 
-    /* حالة عامة */
     let currentUser = null;
     let userRole = "guest";
     let isAdmin = false;
@@ -344,23 +343,42 @@
       return id;
     }
 
+    // ⚠️ دالة مركزية: تتأكد إن كل الحقول موجودة في البيانات
+    function ensureAllFields(obj) {
+      if (!obj || typeof obj !== "object") obj = {};
+      obj.traders ||= [];
+      obj.customStores ||= [];
+      obj.deletedStoreIds ||= [];
+      obj.viewMode ||= "desktop";
+      obj.stores ||= {};
+      Object.keys(obj.stores).forEach(sid => {
+        const s = obj.stores[sid];
+        if (!s || typeof s !== "object") obj.stores[sid] = blank();
+        else {
+          const ss = obj.stores[sid];
+          ss.sales ||= [];
+          ss.exchange ||= [];
+          ss.traderTx ||= [];
+          ss.sellers ||= [];
+          ss.fixedSellers ||= [];
+          ss.items ||= [];
+          ss.expenses ||= [];
+          ss.withdrawals ||= [];
+          ss.partners ||= [];
+        }
+      });
+      return obj;
+    }
+
     function loadLocal() {
       try {
         const saved = JSON.parse(localStorage[LS_KEY] || localStorage["h1group"]);
-        if (saved) {
-          saved.traders ||= [];
-          saved.stores ||= {};
-          saved.customStores ||= [];
-          saved.deletedStoreIds ||= [];
-          saved.viewMode ||= "desktop";
-          stores.forEach(s => { saved.stores[s[0]] ||= blank(); });
-          return saved;
-        }
-      } catch (e) {}
-      return {
+        if (saved) return ensureAllFields(saved);
+      } catch (e) { console.error(e); }
+      return ensureAllFields({
         traders: [], customStores: [], deletedStoreIds: [], viewMode: "desktop",
-        stores: Object.fromEntries(stores.map(s => [s[0], blank()]))
-      };
+        stores: {}
+      });
     }
 
     function saveLocal() {
@@ -399,7 +417,7 @@
       return Number.isInteger(r) ? String(r) : r.toFixed(2);
     }
     function q(sid) { return document.getElementById(sid); }
-    function st() { return data.stores[store]; }
+    function st() { return data.stores[store] || blank(); }
     function meta() { return stores.find(s => s[0] === store); }
 
     function today() {
@@ -451,13 +469,14 @@
     function setPeriod(p) { period = p; localStorage.managementPeriod = JSON.stringify(period); }
     function rememberedDate(prefix) { return localStorage[`managementDate:${store}:${prefix}`] || today(); }
     function inP(d) { return d && (!period.from || d >= period.from) && (!period.to || d <= period.to); }
-    function fl(list) { return list.filter(x => inP(x.date)); }
+    function fl(list) { return Array.isArray(list) ? list.filter(x => inP(x.date)) : []; }
 
     function unifiedOutflows() {
+      const shop = st();
       return [
-        ...fl(st().expenses).map(x => ({ ...x, source: "expenses", type: "مصروفات كاش", item: x.item })),
-        ...fl(st().traderTx).filter(x => x.kind === "payment").map(x => ({ ...x, source: "traderTx", type: "دفعة تاجر", item: `دفعة تاجر - ${x.name}` })),
-        ...fl(st().withdrawals).map(x => ({ ...x, source: "withdrawals", type: "مسحوبات", item: `مسحوبات - ${x.seller}` }))
+        ...fl(shop.expenses).map(x => ({ ...x, source: "expenses", type: "مصروفات كاش", item: x.item })),
+        ...fl(shop.traderTx).filter(x => x.kind === "payment").map(x => ({ ...x, source: "traderTx", type: "دفعة تاجر", item: `دفعة تاجر - ${x.name}` })),
+        ...fl(shop.withdrawals).map(x => ({ ...x, source: "withdrawals", type: "مسحوبات", item: `مسحوبات - ${x.seller}` }))
       ].sort((a, b) => String(b.date).localeCompare(String(a.date)));
     }
 
@@ -466,13 +485,52 @@
     function syncCustomStores() {
       data.customStores ||= [];
       data.deletedStoreIds ||= [];
-      for (let i = stores.length - 1; i >= 0; i--) {
-        if (data.deletedStoreIds.includes(stores[i][0])) stores.splice(i, 1);
-      }
+      data.stores ||= {};
+
+      const baseStores = [
+        ["cleopatra", "كليوبترا", 0],
+        ["aladdin", "علاء الدين", 0],
+        ["lobby", "اللوبي", 1],
+        ["bardi", "سيفا البردي", 1],
+        ["sindbad", "سيفا السندباد", 1],
+        ["portofino", "بورتوفينو", 1]
+      ];
+
+      stores.length = 0;
+
+      baseStores.forEach(s => {
+        if (!data.deletedStoreIds.includes(s[0])) {
+          stores.push(s);
+          if (!data.stores[s[0]]) data.stores[s[0]] = blank();
+          const ss = data.stores[s[0]];
+          ss.sales ||= [];
+          ss.exchange ||= [];
+          ss.traderTx ||= [];
+          ss.sellers ||= [];
+          ss.fixedSellers ||= [];
+          ss.items ||= [];
+          ss.expenses ||= [];
+          ss.withdrawals ||= [];
+          ss.partners ||= [];
+        }
+      });
+
       data.customStores.forEach(s => {
-        if (!Array.isArray(s) || !s[0] || !s[1] || stores.some(x => x[0] === s[0])) return;
+        if (!Array.isArray(s) || !s[0] || !s[1]) return;
+        if (data.deletedStoreIds.includes(s[0])) return;
+        if (stores.some(x => x[0] === s[0])) return;
         stores.push([s[0], s[1], s[2] ? 1 : 0]);
-        data.stores[s[0]] ||= blank();
+        if (!data.stores[s[0]]) data.stores[s[0]] = blank();
+        const ss = data.stores[s[0]];
+        ss.sales ||= [];
+        ss.exchange ||= [];
+        ss.traderTx ||= [];
+        ss.sellers ||= [];
+        ss.fixedSellers ||= [];
+        ss.items ||= [];
+        ss.expenses ||= [];
+        ss.withdrawals ||= [];
+        ss.partners ||= [];
       });
     }
 
@@ -499,6 +557,9 @@
       else if (isOnline) { el.classList.add("online"); txt.textContent = "متصل"; }
       else { el.classList.add("offline"); txt.textContent = "غير متصل"; }
     }
+  </script>
+
+  <script>
     /* =========================================================
        شاشة تسجيل الدخول
        ========================================================= */
@@ -508,12 +569,10 @@
           <div class="auth-box">
             <h1>MANAGEMENT</h1>
             <p class="subtitle">سجل دخولك للمتابعة</p>
-
             <div class="auth-tabs">
               <button class="auth-tab on" id="tabLogin" onclick="switchAuthTab('login')">تسجيل دخول</button>
               <button class="auth-tab" id="tabSignup" onclick="switchAuthTab('signup')">إنشاء حساب</button>
             </div>
-
             <div id="authForm">
               <label>الإيميل
                 <input type="email" id="authEmail" placeholder="example@email.com" autocomplete="email">
@@ -529,12 +588,8 @@
               <br id="authNameBr" style="display:none">
               <button id="authSubmit" onclick="submitAuth()" style="width:100%;min-height:46px">تسجيل الدخول</button>
             </div>
-
             <div class="auth-msg" id="authMsg"></div>
-
-            <div class="auth-link">
-              <a onclick="resetPassword()">نسيت كلمة السر؟</a>
-            </div>
+            <div class="auth-link"><a onclick="resetPassword()">نسيت كلمة السر؟</a></div>
           </div>
         </div>
       `;
@@ -604,19 +659,12 @@
         const code = e.code || "";
         if (code === "auth/invalid-credential" || code === "auth/wrong-password" || code === "auth/user-not-found") {
           msg = "الإيميل أو الباسورد غلط";
-        } else if (code === "auth/invalid-email") {
-          msg = "الإيميل غير صالح";
-        } else if (code === "auth/email-already-in-use") {
-          msg = "الإيميل ده مستخدم بالفعل. جرب تسجيل الدخول";
-        } else if (code === "auth/weak-password") {
-          msg = "الباسورد ضعيف، استخدم 6 حروف على الأقل";
-        } else if (code === "auth/too-many-requests") {
-          msg = "محاولات كثيرة، جرب بعد شوية";
-        } else if (code === "auth/network-request-failed") {
-          msg = "تحقق من اتصالك بالإنترنت";
-        } else {
-          msg = e.message || "حدث خطأ غير متوقع";
-        }
+        } else if (code === "auth/invalid-email") msg = "الإيميل غير صالح";
+        else if (code === "auth/email-already-in-use") msg = "الإيميل ده مستخدم بالفعل. جرب تسجيل الدخول";
+        else if (code === "auth/weak-password") msg = "الباسورد ضعيف، استخدم 6 حروف على الأقل";
+        else if (code === "auth/too-many-requests") msg = "محاولات كثيرة، جرب بعد شوية";
+        else if (code === "auth/network-request-failed") msg = "تحقق من اتصالك بالإنترنت";
+        else msg = e.message || "حدث خطأ غير متوقع";
         showAuthMsg(msg);
       } finally {
         btn.disabled = false;
@@ -640,9 +688,6 @@
       fbAuth.signOut().catch(e => console.error(e));
     }
 
-    /* =========================================================
-       شاشة الانتظار
-       ========================================================= */
     function renderWaitingScreen(status) {
       const isBlocked = status === "blocked";
       document.getElementById("root").innerHTML = `
@@ -660,9 +705,6 @@
       `;
     }
 
-    /* =========================================================
-       Dashboard
-       ========================================================= */
     function renderDashboard() {
       const userName = currentUserData?.name || currentUser?.email?.split("@")[0] || "مستخدم";
       const roleLabel = isAdmin ? "👑 أدمين" : "👁️ مشاهد";
@@ -696,9 +738,6 @@
       home();
     }
 
-    /* =========================================================
-       بدء المزامنة
-       ========================================================= */
     function startDataSync() {
       if (!fbDB) return;
 
@@ -719,15 +758,9 @@
           if (!remote) { saveRemote(); return; }
           if (remote._lastUpdate?.clientId === clientId) return;
           delete remote._lastUpdate;
-          remote.traders ||= [];
-          remote.stores ||= {};
-          remote.customStores ||= [];
-          remote.deletedStoreIds ||= [];
-          remote.viewMode ||= data.viewMode || "desktop";
-          stores.forEach(s => { remote.stores[s[0]] ||= blank(); });
-          data = remote;
-          saveLocal();
+          data = ensureAllFields(remote);
           syncCustomStores();
+          saveLocal();
           if (document.getElementById("app")) {
             if (store) draw();
             else home();
@@ -738,15 +771,9 @@
           const remote = snap.val();
           if (remote) {
             delete remote._lastUpdate;
-            remote.traders ||= [];
-            remote.stores ||= {};
-            remote.customStores ||= [];
-            remote.deletedStoreIds ||= [];
-            remote.viewMode ||= data.viewMode || "desktop";
-            stores.forEach(s => { remote.stores[s[0]] ||= blank(); });
-            data = remote;
-            saveLocal();
+            data = ensureAllFields(remote);
             syncCustomStores();
+            saveLocal();
             if (store) draw();
             else home();
           }
@@ -757,15 +784,9 @@
           const remote = snap.val();
           if (!remote) return;
           delete remote._lastUpdate;
-          remote.traders ||= [];
-          remote.stores ||= {};
-          remote.customStores ||= [];
-          remote.deletedStoreIds ||= [];
-          remote.viewMode ||= data.viewMode || "desktop";
-          stores.forEach(s => { remote.stores[s[0]] ||= blank(); });
-          data = remote;
-          saveLocal();
+          data = ensureAllFields(remote);
           syncCustomStores();
+          saveLocal();
           if (document.getElementById("app")) {
             if (store) draw();
             else home();
@@ -781,9 +802,6 @@
       }
     }
 
-    /* =========================================================
-       Auth State Listener
-       ========================================================= */
     function setupAuthListener() {
       if (authListenerSet) return;
       authListenerSet = true;
@@ -812,22 +830,14 @@
           if (!userData) {
             if (user.uid === ADMIN_UID) {
               userData = {
-                email: user.email,
-                name: user.displayName || user.email.split("@")[0],
-                status: "approved",
-                role: "admin",
-                blocked: false,
-                createdAt: Date.now()
+                email: user.email, name: user.displayName || user.email.split("@")[0],
+                status: "approved", role: "admin", blocked: false, createdAt: Date.now()
               };
               await fbDB.ref(`${USERS_PATH}/${user.uid}`).set(userData);
             } else {
               userData = {
-                email: user.email,
-                name: user.displayName || user.email.split("@")[0],
-                status: "pending",
-                role: "viewer",
-                blocked: false,
-                createdAt: Date.now()
+                email: user.email, name: user.displayName || user.email.split("@")[0],
+                status: "pending", role: "viewer", blocked: false, createdAt: Date.now()
               };
               await fbDB.ref(`${USERS_PATH}/${user.uid}`).set(userData);
             }
@@ -853,24 +863,18 @@
           }
 
           if (userData.blocked === true) {
-            userRole = "blocked";
-            isAdmin = false;
-            canView = false;
+            userRole = "blocked"; isAdmin = false; canView = false;
             renderWaitingScreen("blocked");
             return;
           }
 
           if (userData.status !== "approved") {
-            userRole = "pending";
-            isAdmin = false;
-            canView = false;
+            userRole = "pending"; isAdmin = false; canView = false;
             renderWaitingScreen("pending");
             return;
           }
 
-          userRole = "viewer";
-          isAdmin = false;
-          canView = true;
+          userRole = "viewer"; isAdmin = false; canView = true;
           data = loadLocal();
           syncCustomStores();
           period = loadSavedPeriod();
@@ -882,7 +886,9 @@
         }
       });
     }
+  </script>
 
+  <script>
     /* =========================================================
        التنقل والصفحات
        ========================================================= */
@@ -946,7 +952,7 @@
     }
 
     function storeCollectionTotals(storeId) {
-      const shop = data.stores[storeId];
+      const shop = ensureAllFields({ stores: { [storeId]: data.stores[storeId] } }).stores[storeId];
       const sales = shop.sales.filter(x => inP(x.date));
       const exchanged = shop.exchange.filter(x => inP(x.date));
       const sum = (list, field) => list.reduce((total, item) => total + n(item[field]), 0);
@@ -1030,6 +1036,7 @@
 
     function render() {
       const s = meta();
+      if (!s) { home(); return; }
       history.replaceState(null, "", `#MANAGEMENT-${encodeURIComponent(s[1])}`);
       document.getElementById("app").innerHTML = `
         <div class="head">
@@ -1062,11 +1069,35 @@
       `;
     }
 
-    function openStore(storeId) { store = storeId; tab = "sales"; edit = null; render(); }
+    function openStore(storeId) {
+      store = storeId;
+      tab = "sales";
+      edit = null;
+      // تأكد إن المحل عنده كل الحقول
+      if (!data.stores[storeId]) data.stores[storeId] = blank();
+      const ss = data.stores[storeId];
+      ss.sales ||= [];
+      ss.exchange ||= [];
+      ss.traderTx ||= [];
+      ss.sellers ||= [];
+      ss.fixedSellers ||= [];
+      ss.items ||= [];
+      ss.expenses ||= [];
+      ss.withdrawals ||= [];
+      ss.partners ||= [];
+      render();
+    }
 
     function draw() {
       const pages = { sales, exchange, traders, sellers, items, expenses, profits };
-      document.getElementById("body").innerHTML = pages[tab]();
+      const bodyEl = document.getElementById("body");
+      if (!bodyEl) return;
+      try {
+        bodyEl.innerHTML = pages[tab]();
+      } catch (err) {
+        console.error("Draw error in tab " + tab + ":", err);
+        bodyEl.innerHTML = `<div class="card bad">حدث خطأ في تحميل الصفحة: ${err.message}</div>`;
+      }
     }
 
     function up(list, item) {
@@ -1167,6 +1198,7 @@
         pieces: meta()[2] ? n(sp.value) : 0
       });
     }
+
     function exportSalesPdf() {
       if (tab !== "sales") return;
       const hasPieces = meta()[2];
@@ -1273,7 +1305,7 @@
     }
 
     function traderBalance(name) {
-      const tx = st().traderTx.filter(x => x.name === name);
+      const tx = (st().traderTx || []).filter(x => x.name === name);
       const signed = x => x.kind === "invoice" ? n(x.amount) : -n(x.amount);
       const opening = tx.filter(x => period.from && x.date < period.from).reduce((sum, x) => sum + signed(x), 0);
       const movement = tx.filter(x => inP(x.date)).reduce((sum, x) => sum + signed(x), 0);
@@ -1282,7 +1314,7 @@
     }
 
     function storeTraderBalance() {
-      return st().traderTx.filter(x => !period.to || x.date <= period.to).reduce((sum, x) => sum + (x.kind === "invoice" ? n(x.amount) : -n(x.amount)), 0);
+      return (st().traderTx || []).filter(x => !period.to || x.date <= period.to).reduce((sum, x) => sum + (x.kind === "invoice" ? n(x.amount) : -n(x.amount)), 0);
     }
 
     function showTraderLiveBalance(name) {
@@ -1299,7 +1331,7 @@
       const target = q("traderTransactionRows");
       if (!target) return;
       const search = name.trim().toLowerCase();
-      const list = fl(st().traderTx).filter(x => !search || String(x.name).toLowerCase().includes(search));
+      const list = fl(st().traderTx || []).filter(x => !search || String(x.name).toLowerCase().includes(search));
       target.innerHTML = list.map(x => `
         <tr>
           <td>${x.date}</td><td>${x.name}</td><td>${traderKindLabel(x.kind)}</td><td>${m(x.amount)}</td>
@@ -1309,16 +1341,16 @@
     }
 
     function traders() {
-      const r = edit?.type === "traderTx" ? st().traderTx.find(x => x.id === edit.id) : {};
+      const r = edit?.type === "traderTx" ? (st().traderTx || []).find(x => x.id === edit.id) || {} : {};
       const search = r.name || sessionStorage.traderSearch || "";
-      const list = fl(st().traderTx);
+      const list = fl(st().traderTx || []);
       const filteredList = list.filter(x => !search || String(x.name).toLowerCase().includes(search.toLowerCase()));
       const balance = search ? traderBalance(search) : { opening: 0, movement: 0, closing: 0 };
       const storeBalance = storeTraderBalance();
 
       return `
         <h2>التجار</h2>
-        <datalist id="tn">${data.traders.map(x => `<option value="${x}">`).join("")}</datalist>
+        <datalist id="tn">${(data.traders || []).map(x => `<option value="${x}">`).join("")}</datalist>
 
         ${isAdmin ? `
           <div class="grid">
@@ -1378,6 +1410,7 @@
       if (!isAdmin) return;
       const name = trn.value.trim();
       if (!name) return alert("اكتب اسم التاجر");
+      data.traders ||= [];
       if (!data.traders.includes(name)) data.traders.push(name);
       data.traders.sort();
       up(st().traderTx, {
@@ -1389,7 +1422,7 @@
     function exportTraderTransactionsPdf() {
       if (tab !== "traders") return;
       const search = (sessionStorage.traderSearch || "").trim().toLowerCase();
-      const rows = fl(st().traderTx).filter(x => !search || String(x.name).toLowerCase().includes(search)).sort((a, b) => String(a.date).localeCompare(String(b.date)));
+      const rows = fl(st().traderTx || []).filter(x => !search || String(x.name).toLowerCase().includes(search)).sort((a, b) => String(a.date).localeCompare(String(b.date)));
       const invoices = rows.filter(x => x.kind === "invoice").reduce((s, x) => s + n(x.amount), 0);
       const payments = rows.filter(x => x.kind === "payment").reduce((s, x) => s + n(x.amount), 0);
       const returns = rows.filter(x => x.kind === "return").reduce((s, x) => s + n(x.amount), 0);
@@ -1411,6 +1444,10 @@
        شيت البائعين
        ========================================================= */
     function sellers() {
+      const shop = st();
+      const sellers = shop.sellers || [];
+      const fixedSellers = shop.fixedSellers || [];
+
       return `
         <h2>البائعين</h2>
         <h3>بائعين العمولة</h3>
@@ -1424,7 +1461,7 @@
         <div class="table-scroll">
           <table>
             <tr><th>البائع</th>${isAdmin ? "<th>تحكم</th>" : ""}</tr>
-            ${st().sellers.map(x => `<tr><td>${x.name}</td>${isAdmin ? `<td><button class="danger" onclick="deleteSeller('${x.id}')">حذف</button></td>` : ""}</tr>`).join("") || `<tr><td colspan="${isAdmin ? 2 : 1}">لا يوجد بائعين</td></tr>`}
+            ${sellers.map(x => `<tr><td>${x.name}</td>${isAdmin ? `<td><button class="danger" onclick="deleteSeller('${x.id}')">حذف</button></td>` : ""}</tr>`).join("") || `<tr><td colspan="${isAdmin ? 2 : 1}">لا يوجد بائعين</td></tr>`}
           </table>
         </div>
 
@@ -1441,7 +1478,7 @@
         <div class="table-scroll">
           <table>
             <tr><th>الأسم</th><th>الراتب</th>${isAdmin ? "<th>تحكم</th>" : ""}</tr>
-            ${st().fixedSellers.map(x => `<tr><td>${x.name}</td><td>${m(x.salary)}</td>${isAdmin ? `<td><button class="danger" onclick="deleteFixedSeller('${x.id}')">حذف</button></td>` : ""}</tr>`).join("") || `<tr><td colspan="${isAdmin ? 3 : 2}">لا يوجد بيانات</td></tr>`}
+            ${fixedSellers.map(x => `<tr><td>${x.name}</td><td>${m(x.salary)}</td>${isAdmin ? `<td><button class="danger" onclick="deleteFixedSeller('${x.id}')">حذف</button></td>` : ""}</tr>`).join("") || `<tr><td colspan="${isAdmin ? 3 : 2}">لا يوجد بيانات</td></tr>`}
           </table>
         </div>
       `;
@@ -1480,7 +1517,7 @@
        ========================================================= */
     function itemStats(from, to) {
       const rows = {};
-      st().items.filter(x => x.date && (!from || x.date >= from) && (!to || x.date <= to)).forEach(x => {
+      (st().items || []).filter(x => x.date && (!from || x.date >= from) && (!to || x.date <= to)).forEach(x => {
         rows[x.name] ??= { qty: 0, value: 0 };
         rows[x.name].qty += n(x.qty);
         rows[x.name].value += n(x.value);
@@ -1492,7 +1529,7 @@
     }
 
     function itemNames() {
-      return [...new Set(st().items.map(x => x.name).filter(Boolean))].sort((a, b) => a.localeCompare(b, "ar"));
+      return [...new Set((st().items || []).map(x => x.name).filter(Boolean))].sort((a, b) => a.localeCompare(b, "ar"));
     }
 
     function pieChart(stats) {
@@ -1565,7 +1602,7 @@
     }
 
     function items() {
-      const r = edit?.type === "items" ? st().items.find(x => x.id === edit.id) : {};
+      const r = edit?.type === "items" ? (st().items || []).find(x => x.id === edit.id) || {} : {};
       const mainStats = itemStats(period.from, period.to);
       const aFrom = sessionStorage.itemsAFrom || period.from;
       const aTo = sessionStorage.itemsATo || period.to;
@@ -1594,7 +1631,7 @@
 
         <div id="itemsList" style="display:none">
           <div class="table-scroll">
-            ${table(fl(st().items), "items", ["التاريخ", "الصنف", "عدد القطع", "سعر القطع"], x => [x.date, x.name, m(x.qty), m(x.value)])}
+            ${table(fl(st().items || []), "items", ["التاريخ", "الصنف", "عدد القطع", "سعر القطع"], x => [x.date, x.name, m(x.qty), m(x.value)])}
           </div>
         </div>
 
@@ -1670,15 +1707,16 @@
        شيت المصروفات
        ========================================================= */
     function expenses() {
-      const expenseRecord = edit?.type === "expenses" ? st().expenses.find(x => x.id === edit.id) : {};
-      const withdrawalRecord = edit?.type === "withdrawals" ? st().withdrawals.find(x => x.id === edit.id) : {};
-      const expenseList = fl(st().expenses);
-      const withdrawalList = fl(st().withdrawals);
-      const traderPaymentList = fl(st().traderTx).filter(x => x.kind === "payment");
+      const shop = st();
+      const expenseRecord = edit?.type === "expenses" ? (shop.expenses || []).find(x => x.id === edit.id) || {} : {};
+      const withdrawalRecord = edit?.type === "withdrawals" ? (shop.withdrawals || []).find(x => x.id === edit.id) || {} : {};
+      const expenseList = fl(shop.expenses || []);
+      const withdrawalList = fl(shop.withdrawals || []);
+      const traderPaymentList = fl(shop.traderTx || []).filter(x => x.kind === "payment");
       const unifiedList = unifiedOutflows();
       const allSellers = [
-        ...st().sellers.map(s => ({ name: s.name, type: "عمولة" })),
-        ...st().fixedSellers.map(s => ({ name: s.name, type: "راتب ثابت" }))
+        ...(shop.sellers || []).map(s => ({ name: s.name, type: "عمولة" })),
+        ...(shop.fixedSellers || []).map(s => ({ name: s.name, type: "راتب ثابت" }))
       ];
 
       return `
@@ -1792,9 +1830,9 @@
       const salesEgp = grossSalesEgp - visaDisc;
       return {
         grossSalesEgp, salesEgp, visaDisc,
-        normalExpenses: fl(st().expenses).reduce((a, x) => a + n(x.amount), 0),
-        traderPayments: fl(st().traderTx).filter(x => x.kind === "payment").reduce((a, x) => a + n(x.amount), 0),
-        sellerWithdrawals: fl(st().withdrawals).reduce((a, x) => a + n(x.amount), 0),
+        normalExpenses: fl(st().expenses || []).reduce((a, x) => a + n(x.amount), 0),
+        traderPayments: fl(st().traderTx || []).filter(x => x.kind === "payment").reduce((a, x) => a + n(x.amount), 0),
+        sellerWithdrawals: fl(st().withdrawals || []).reduce((a, x) => a + n(x.amount), 0),
         expenses: unifiedOutflowTotal(),
         pieces: meta()[2] ? s.pieces : 0
       };
@@ -1802,10 +1840,10 @@
 
     function sellerAdvanceSummary() {
       const withdrawals = {};
-      const commissionNames = new Set(st().sellers.map(x => x.name));
-      const fixedNames = new Set(st().fixedSellers.map(x => x.name));
+      const commissionNames = new Set((st().sellers || []).map(x => x.name));
+      const fixedNames = new Set((st().fixedSellers || []).map(x => x.name));
       let commissionAdvances = 0, fixedAdvances = 0;
-      fl(st().withdrawals).forEach(x => {
+      fl(st().withdrawals || []).forEach(x => {
         const amount = n(x.amount);
         withdrawals[x.seller] = (withdrawals[x.seller] || 0) + amount;
         if (commissionNames.has(x.seller)) commissionAdvances += amount;
@@ -1815,17 +1853,18 @@
     }
 
     function profits() {
+      const shop = st();
       const p = profitCalc();
       const commission = n(sessionStorage["comm" + store]);
       const salaryBase = Math.max(0, p.salesEgp - p.pieces);
       const salariesTotal = salaryBase * commission / 100;
-      const fixedSalariesTotal = st().fixedSellers.reduce((sum, x) => sum + n(x.salary), 0);
-      const eachSalary = st().sellers.length ? salariesTotal / st().sellers.length : 0;
+      const fixedSalariesTotal = (shop.fixedSellers || []).reduce((sum, x) => sum + n(x.salary), 0);
+      const eachSalary = (shop.sellers || []).length ? salariesTotal / shop.sellers.length : 0;
       const advanceSummary = sellerAdvanceSummary();
       const salariesAfterAdvances = Math.max(0, salariesTotal - advanceSummary.commissionAdvances);
       const fixedSalariesAfterAdvances = Math.max(0, fixedSalariesTotal - advanceSummary.fixedAdvances);
       const netProfit = p.salesEgp - (salariesAfterAdvances + fixedSalariesAfterAdvances + p.expenses);
-      const partnersPercent = st().partners.reduce((s, x) => s + n(x.percent), 0);
+      const partnersPercent = (shop.partners || []).reduce((s, x) => s + n(x.percent), 0);
       const withdrawals = advanceSummary.withdrawals;
 
       return `
@@ -1846,7 +1885,7 @@
 
         <div id="plist" style="display:none">
           <div class="table-scroll">
-            ${table(st().partners, "partners", ["الشريك", "النسبة"], x => [x.name, m(x.percent) + "%"])}
+            ${table(shop.partners || [], "partners", ["الشريك", "النسبة"], x => [x.name, m(x.percent) + "%"])}
           </div>
         </div>
 
@@ -1875,7 +1914,7 @@
         <div class="table-scroll">
           <table>
             <tr><th>البائع</th><th>المستحق</th><th>المسحوبات</th><th>الفعلي</th></tr>
-            ${st().sellers.map(s => `<tr><td>${s.name}</td><td>${m(eachSalary)}</td><td>${m(withdrawals[s.name] || 0)}</td><td>${m(eachSalary - (withdrawals[s.name] || 0))}</td></tr>`).join("") || `<tr><td colspan="4">لا يوجد بائعين</td></tr>`}
+            ${(shop.sellers || []).map(s => `<tr><td>${s.name}</td><td>${m(eachSalary)}</td><td>${m(withdrawals[s.name] || 0)}</td><td>${m(eachSalary - (withdrawals[s.name] || 0))}</td></tr>`).join("") || `<tr><td colspan="4">لا يوجد بائعين</td></tr>`}
           </table>
         </div>
 
@@ -1883,7 +1922,7 @@
         <div class="table-scroll">
           <table>
             <tr><th>الأسم</th><th>الراتب الثابت</th><th>المسحوبات</th><th>الصافي</th></tr>
-            ${st().fixedSellers.map(s => `<tr><td>${s.name}</td><td>${m(s.salary)}</td><td>${m(withdrawals[s.name] || 0)}</td><td>${m(n(s.salary) - (withdrawals[s.name] || 0))}</td></tr>`).join("") || `<tr><td colspan="4">لا يوجد بائعين براتب ثابت</td></tr>`}
+            ${(shop.fixedSellers || []).map(s => `<tr><td>${s.name}</td><td>${m(s.salary)}</td><td>${m(withdrawals[s.name] || 0)}</td><td>${m(n(s.salary) - (withdrawals[s.name] || 0))}</td></tr>`).join("") || `<tr><td colspan="4">لا يوجد بائعين براتب ثابت</td></tr>`}
           </table>
         </div>
 
@@ -1891,7 +1930,7 @@
         <div class="table-scroll">
           <table>
             <tr><th>الشريك</th><th>النسبة</th><th>الربح</th></tr>
-            ${st().partners.map(x => `<tr><td>${x.name}</td><td>${m(x.percent)}%</td><td>${m(netProfit * n(x.percent) / 100)}</td></tr>`).join("") || `<tr><td colspan="3">لا يوجد شركاء</td></tr>`}
+            ${(shop.partners || []).map(x => `<tr><td>${x.name}</td><td>${m(x.percent)}%</td><td>${m(netProfit * n(x.percent) / 100)}</td></tr>`).join("") || `<tr><td colspan="3">لا يوجد شركاء</td></tr>`}
           </table>
         </div>
       `;
@@ -1905,7 +1944,7 @@
 
     function addPartner() {
       if (!isAdmin) return;
-      const total = st().partners.reduce((s, x) => s + n(x.percent), 0);
+      const total = (st().partners || []).reduce((s, x) => s + n(x.percent), 0);
       const percent = n(pp.value);
       if (!pn.value.trim() || percent <= 0) return alert("اكتب اسم الشريك ونسبته");
       if (total + percent > 100) return alert("إجمالي النسب لا يتخطى 100%");
@@ -1967,7 +2006,8 @@
       const selectedStores = stores.filter(s => selectedIds.has(s[0]));
 
       selectedStores.forEach(s => {
-        data.stores[s[0]].traderTx.forEach(t => {
+        const shop = ensureAllFields({ stores: { [s[0]]: data.stores[s[0]] } }).stores[s[0]];
+        (shop.traderTx || []).forEach(t => {
           rows[t.name] ??= { total: 0, parts: {} };
           const value = t.kind === "invoice" ? n(t.amount) : -n(t.amount);
           rows[t.name].total += value;
@@ -2002,7 +2042,7 @@
     }
 
     /* =========================================================
-       إدارة المستخدمين (للأدمين)
+       إدارة المستخدمين
        ========================================================= */
     async function renderUsersPage() {
       if (!isAdmin) return;
@@ -2095,10 +2135,9 @@
           const remote = snap.val();
           if (remote) {
             delete remote._lastUpdate;
-            data = remote;
-            stores.forEach(s => { data.stores[s[0]] ||= blank(); });
-            saveLocal();
+            data = ensureAllFields(remote);
             syncCustomStores();
+            saveLocal();
             if (store) draw(); else home();
             alert("تم تنزيل البيانات ✅");
           } else {
@@ -2147,11 +2186,8 @@
       const reader = new FileReader();
       reader.onload = () => {
         try {
-          data = JSON.parse(reader.result);
-          data.customStores ||= [];
-          data.viewMode ||= "desktop";
+          data = ensureAllFields(JSON.parse(reader.result));
           syncCustomStores();
-          stores.forEach(s => { data.stores[s[0]] ||= blank(); });
           save();
           applyViewMode();
           alert("تم الاسترجاع");
@@ -2168,13 +2204,14 @@
       if (!isAdmin) return;
       if (!confirm("متأكد إنك عايز تحذف كل بيانات البرنامج؟")) return;
       if (!confirm("آخر تأكيد: الحذف نهائي إلا لو عندك نسخة احتياطية.")) return;
-      data = {
+      data = ensureAllFields({
         traders: [],
         customStores: data.customStores || [],
         deletedStoreIds: data.deletedStoreIds || [],
         viewMode: data.viewMode || "desktop",
-        stores: Object.fromEntries(stores.map(s => [s[0], blank()]))
-      };
+        stores: {}
+      });
+      stores.forEach(s => { data.stores[s[0]] = blank(); });
       save();
       alert("تم حذف كل البيانات");
       home();
@@ -2251,13 +2288,14 @@
 
     function exportProfitPdf() {
       if (tab !== "profits") return;
+      const shop = st();
       const shopName = meta()[1];
       const p = profitCalc();
       const commission = n(sessionStorage["comm" + store]);
       const salaryBase = Math.max(0, p.salesEgp - p.pieces);
       const salariesTotal = salaryBase * commission / 100;
-      const fixedSalariesTotal = st().fixedSellers.reduce((sum, x) => sum + n(x.salary), 0);
-      const eachSalary = st().sellers.length ? salariesTotal / st().sellers.length : 0;
+      const fixedSalariesTotal = (shop.fixedSellers || []).reduce((sum, x) => sum + n(x.salary), 0);
+      const eachSalary = (shop.sellers || []).length ? salariesTotal / shop.sellers.length : 0;
       const advanceSummary = sellerAdvanceSummary();
       const salariesAfterAdvances = Math.max(0, salariesTotal - advanceSummary.commissionAdvances);
       const fixedSalariesAfterAdvances = Math.max(0, fixedSalariesTotal - advanceSummary.fixedAdvances);
@@ -2272,8 +2310,8 @@
         ["إجمالي المصروفات", m(totalExpensesIncludingSalaries)],
         ["صافي ربح الشركاء", m(netProfit)]
       ];
-      const sellersRows = st().sellers.map(s => `<tr><td>${s.name}</td><td>${m(eachSalary)}</td><td>${m(withdrawals[s.name] || 0)}</td><td>${m(eachSalary - (withdrawals[s.name] || 0))}</td></tr>`).join("") || `<tr><td colspan="4">لا يوجد بائعين</td></tr>`;
-      const partnersRows = st().partners.map(x => `<tr><td>${x.name}</td><td>${m(x.percent)}%</td><td>${m(netProfit * n(x.percent) / 100)}</td></tr>`).join("") || `<tr><td colspan="3">لا يوجد شركاء</td></tr>`;
+      const sellersRows = (shop.sellers || []).map(s => `<tr><td>${s.name}</td><td>${m(eachSalary)}</td><td>${m(withdrawals[s.name] || 0)}</td><td>${m(eachSalary - (withdrawals[s.name] || 0))}</td></tr>`).join("") || `<tr><td colspan="4">لا يوجد بائعين</td></tr>`;
+      const partnersRows = (shop.partners || []).map(x => `<tr><td>${x.name}</td><td>${m(x.percent)}%</td><td>${m(netProfit * n(x.percent) / 100)}</td></tr>`).join("") || `<tr><td colspan="3">لا يوجد شركاء</td></tr>`;
 
       const w = window.open("", "_blank");
       w.document.write(`
