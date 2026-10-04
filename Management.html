@@ -696,10 +696,10 @@
             <span class="waiting-icon">${isBlocked ? "⛔" : "⏳"}</span>
             <h2>${isBlocked ? "تم حظر حسابك" : "حسابك في انتظار الموافقة"}</h2>
             <p>${isBlocked
-              ? "تم حظر حسابك من قبل المدير. لو تظن إن ده خطأ، تواصل مع المدير."
-              : "تم إنشاء حسابك بنجاح ✅<br>لازم المدير يوافق على حسابك قبل ما تقدر تشوف البيانات."
+              ? "تم حظر حسابك. ."
+              : "تم إنشاء حساب بنجاح ✅<br>انت في انتظار الموافقة من النظام."
             }</p>
-            <button class="light" onclick="logout()" style="width:100%;min-height:46px">🚪 تسجيل خروج</button>
+            <button class="light" onclick="logout()" style="width:100%;min-height:46px">🚪  خروج</button>
           </div>
         </div>
       `;
@@ -707,7 +707,7 @@
 
     function renderDashboard() {
       const userName = currentUserData?.name || currentUser?.email?.split("@")[0] || "مستخدم";
-      const roleLabel = isAdmin ? "👑 أدمين" : "👁️ مشاهد";
+      const roleLabel = isAdmin ? " admin" : " visitor";
 
       document.getElementById("root").innerHTML = `
         <header class="top">
