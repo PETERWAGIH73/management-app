@@ -6,342 +6,210 @@
   <title>MANAGEMENT</title>
 
   <style>
-    /* =========================================================
-       ألوان وشكل البرنامج العام
-       ========================================================= */
     :root {
-      --black: #0b1220;
-      --ink: #e7edf7;
-      --muted: #9caec4;
-      --line: #283a52;
-      --panel: #111d2e;
-      --panel-soft: #17263a;
-      --orange: #22a6b3;
-      --orange-dark: #17808b;
-      --red: #dc5a67;
-      --green: #50d09a;
-      --dark-bg: #07111f;
-      --shadow: 0 18px 45px rgba(0, 0, 0, .36);
+      --black: #0b1220; --ink: #e7edf7; --muted: #9caec4;
+      --line: #283a52; --panel: #111d2e; --panel-soft: #17263a;
+      --orange: #22a6b3; --orange-dark: #17808b;
+      --red: #dc5a67; --green: #50d09a; --yellow: #f0b429;
+      --dark-bg: #07111f; --shadow: 0 18px 45px rgba(0, 0, 0, .36);
     }
-
     * { box-sizing: border-box; }
-
     body {
       margin: 0;
       font-family: "Segoe UI", Tahoma, Arial, sans-serif;
       background: radial-gradient(circle at top right, #173553 0, var(--dark-bg) 42%, #050b14 100%);
-      color: var(--ink);
-      font-size: 15px;
-      line-height: 1.55;
+      color: var(--ink); font-size: 15px; line-height: 1.55;
     }
-
     button, input, select, textarea { font: inherit; }
-
     button {
-      border: 0;
-      border-radius: 10px;
-      padding: 11px 16px;
-      background: var(--orange);
-      color: white;
-      font-weight: 800;
-      cursor: pointer;
-      box-shadow: 0 8px 18px rgba(249, 115, 22, .18);
+      border: 0; border-radius: 10px; padding: 11px 16px;
+      background: var(--orange); color: white; font-weight: 800;
+      cursor: pointer; box-shadow: 0 8px 18px rgba(249, 115, 22, .18);
       transition: .15s ease;
     }
-
     button:hover { background: var(--orange-dark); transform: translateY(-1px); }
-
-    .gray { background: #22334a; box-shadow: 0 8px 18px rgba(0, 0, 0, .22); }
+    button:disabled { opacity: .6; cursor: not-allowed; }
+    .gray { background: #22334a; box-shadow: 0 8px 18px rgba(0,0,0,.22); }
     .gray:hover { background: #304862; }
-
     .light { background: #1c3049; color: #dce9f6; border: 1px solid var(--line); box-shadow: none; }
-    .light:hover { background: #294564; color: #ffffff; }
-
-    .danger { background: var(--red); box-shadow: 0 8px 18px rgba(185, 28, 28, .18); }
+    .light:hover { background: #294564; color: #fff; }
+    .danger { background: var(--red); box-shadow: 0 8px 18px rgba(185,28,28,.18); }
     .danger:hover { background: #b93f51; }
-
+    .success { background: #2a8f5f; }
+    .success:hover { background: #237a50; }
+    .warn { background: #b8860b; }
+    .warn:hover { background: #9c7209; }
     input, select, textarea {
-      width: 100%;
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      padding: 11px 12px;
-      background: #0d1828;
-      color: var(--ink);
-      outline: none;
+      width: 100%; border: 1px solid var(--line); border-radius: 10px;
+      padding: 11px 12px; background: #0d1828; color: var(--ink); outline: none;
     }
-
     input[type="checkbox"] { width: auto; accent-color: var(--orange); }
-
-    .shop-choice {
-      display: inline-flex;
-      align-items: center;
-      gap: 7px;
-      padding: 8px 11px;
-      border: 1px solid var(--line);
-      border-radius: 9px;
-      background: var(--panel-soft);
-      color: var(--ink);
-      cursor: pointer;
-    }
-
     input:focus, select:focus, textarea:focus {
-      border-color: var(--orange);
-      box-shadow: 0 0 0 3px rgba(34, 166, 179, .20);
+      border-color: var(--orange); box-shadow: 0 0 0 3px rgba(34,166,179,.20);
     }
-
     label { display: grid; gap: 7px; font-size: 13px; color: var(--muted); font-weight: 800; }
     textarea { min-height: 46px; resize: vertical; }
-
-    /* =========================================================
-       الهيدر، الصفحة الرئيسية، والكروت
-       ========================================================= */
+    .shop-choice {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 8px 11px; border: 1px solid var(--line);
+      border-radius: 9px; background: var(--panel-soft);
+      color: var(--ink); cursor: pointer;
+    }
     .top {
-      position: sticky;
-      top: 0;
-      z-index: 8;
-      display: flex;
-      justify-content: space-between;
-      gap: 14px;
-      align-items: center;
-      padding: 12px 22px;
-      background: rgba(7, 17, 31, .96);
-      border-bottom: 3px solid var(--orange);
-      color: white;
-      box-shadow: 0 8px 28px rgba(0, 0, 0, .22);
+      position: sticky; top: 0; z-index: 8;
+      display: flex; justify-content: space-between; gap: 14px;
+      align-items: center; padding: 12px 22px;
+      background: rgba(7,17,31,.96); border-bottom: 3px solid var(--orange);
+      color: white; box-shadow: 0 8px 28px rgba(0,0,0,.22);
     }
-
     .top b { font-size: 20px; letter-spacing: .8px; }
-
     .top-right { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
-
     .actions, .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
-
     .row button, .grid button { margin-top: 4px; min-width: 120px; }
-
-    .chart-wrap {
-      display: grid;
-      grid-template-columns: minmax(240px, 340px) 1fr;
-      gap: 22px;
-      align-items: center;
-      margin-top: 16px;
-      padding: 18px;
-      border: 1px solid var(--line);
-      border-radius: 14px;
-      background: #0d1828;
-    }
-
-    .pie-svg {
-      width: min(320px, 100%);
-      height: auto;
-      display: block;
-      margin: auto;
-      transform: rotate(-90deg);
-      filter: drop-shadow(0 8px 18px rgba(0, 0, 0, .12));
-    }
-
-    .legend-row {
-      display: grid;
-      grid-template-columns: 18px 1fr auto;
-      gap: 10px;
-      align-items: center;
-      padding: 9px 0;
-      border-bottom: 1px solid var(--line);
-    }
-
-    .legend-row:last-child { border-bottom: 0; }
-
-    .legend-dot { width: 14px; height: 14px; border-radius: 50%; display: inline-block; }
-
-    .bar-chart {
-      display: grid;
-      gap: 14px;
-      margin-top: 16px;
-      padding: 18px;
-      border: 1px solid var(--line);
-      border-radius: 14px;
-      background: #0d1828;
-    }
-
-    .bar-row { display: grid; grid-template-columns: minmax(120px, 180px) 1fr; gap: 12px; align-items: center; }
-
-    .bar-name { font-weight: 800; color: var(--ink); }
-    .bar-track { display: grid; gap: 6px; }
-
-    .bar-line {
-      height: 22px;
-      min-width: 2px;
-      border-radius: 8px;
-      color: white;
-      display: flex;
-      align-items: center;
-      padding: 0 8px;
-      font-size: 12px;
-      font-weight: 800;
-      white-space: nowrap;
-    }
-
     .page { width: min(1060px, calc(100% - 34px)); margin: auto; padding: 18px 0 32px; }
-
     .title {
-      text-align: center;
-      font-size: clamp(38px, 6vw, 70px);
-      margin: 18px 0 20px;
-      font-weight: 900;
-      color: white;
-      letter-spacing: 1px;
+      text-align: center; font-size: clamp(38px, 6vw, 70px);
+      margin: 18px 0 20px; font-weight: 900; color: white; letter-spacing: 1px;
     }
-
     .stores { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-
     .store {
-      width: 100%;
-      min-height: 92px;
+      width: 100%; min-height: 92px;
       background: linear-gradient(145deg, #182a41, #101c2d);
-      color: var(--ink);
-      border: 1px solid #2e4967;
-      box-shadow: var(--shadow);
-      font-size: clamp(17px, 1.7vw, 23px);
+      color: var(--ink); border: 1px solid #2e4967;
+      box-shadow: var(--shadow); font-size: clamp(17px, 1.7vw, 23px);
       border-bottom: 5px solid var(--orange);
     }
-
     .store-tile { position: relative; }
-
     .delete-store {
-      position: absolute;
-      top: 8px;
-      left: 8px;
-      z-index: 1;
-      min-width: 0;
-      padding: 4px 7px;
-      border-radius: 7px;
-      font-size: 11px;
-      box-shadow: none;
+      position: absolute; top: 8px; left: 8px; z-index: 1;
+      min-width: 0; padding: 4px 7px; border-radius: 7px;
+      font-size: 11px; box-shadow: none;
     }
-
     .store:hover { background: #1c5262; color: white; border-color: #36b7bf; }
-
-    .wide { display: block; width: min(560px, 100%); margin: 14px auto 0; min-height: 54px; font-size: 17px; }
-
+    .wide { display: block; width: min(560px,100%); margin: 14px auto 0; min-height: 54px; font-size: 17px; }
     .panel {
-      background: var(--panel);
-      border: 1px solid var(--line);
-      border-radius: 14px;
-      box-shadow: var(--shadow);
-      padding: 22px;
-      margin-top: 18px;
+      background: var(--panel); border: 1px solid var(--line);
+      border-radius: 14px; box-shadow: var(--shadow);
+      padding: 22px; margin-top: 18px;
     }
-
     .head { display: flex; justify-content: space-between; align-items: center; gap: 14px; margin-bottom: 12px; }
-    .head h1 { margin: 0; font-size: clamp(28px, 4vw, 46px); color: white; font-weight: 750; }
-
+    .head h1 { margin: 0; font-size: clamp(28px,4vw,46px); color: white; font-weight: 750; }
     .tabs {
-      position: sticky;
-      top: 68px;
-      z-index: 6;
-      display: flex;
-      gap: 10px;
-      overflow: auto;
-      padding: 12px 10px 14px;
-      border: 1px solid rgba(255, 255, 255, .10);
-      border-radius: 14px;
-      margin-bottom: 18px;
-      background: rgba(10, 25, 43, .96);
-      box-shadow: 0 12px 30px rgba(0, 0, 0, .22);
+      position: sticky; top: 68px; z-index: 6;
+      display: flex; gap: 10px; overflow: auto;
+      padding: 12px 10px 14px; border: 1px solid rgba(255,255,255,.10);
+      border-radius: 14px; margin-bottom: 18px;
+      background: rgba(10,25,43,.96); box-shadow: 0 12px 30px rgba(0,0,0,.22);
       backdrop-filter: blur(8px);
     }
-
     .tab { white-space: nowrap; background: #14243a; color: var(--ink); border: 1px solid var(--line); box-shadow: none; }
     .tab.on { background: var(--orange); color: white; border-color: var(--black); }
-
     .grid { display: grid; grid-template-columns: repeat(4, minmax(150px, 1fr)); gap: 14px; align-items: end; }
     .grid3 { grid-template-columns: repeat(3, minmax(150px, 1fr)); }
     .datebox { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 7px; }
-
     .cards { display: grid; grid-template-columns: repeat(4, minmax(155px, 1fr)); gap: 12px; margin-top: 16px; }
-
     .card { background: var(--panel-soft); border: 1px solid var(--line); border-radius: 12px; padding: 14px; color: var(--muted); }
-    .card strong { display: block; font-size: 22px; color: #ffffff; margin-top: 4px; }
-
-    h2 { font-size: 24px; margin: 2px 0 16px; color: #ffffff; font-weight: 750; }
+    .card strong { display: block; font-size: 22px; color: #fff; margin-top: 4px; }
+    h2 { font-size: 24px; margin: 2px 0 16px; color: #fff; font-weight: 750; }
     h3 { font-size: 18px; margin: 22px 0 12px; color: #c8d6e6; font-weight: 700; }
-
     hr { border: 0; border-top: 1px solid var(--line); margin: 22px 0; }
-
     table {
-      width: 100%;
-      border-collapse: separate;
-      border-spacing: 0;
-      margin-top: 14px;
-      background: #0d1828;
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      overflow: hidden;
+      width: 100%; border-collapse: separate; border-spacing: 0;
+      margin-top: 14px; background: #0d1828; border: 1px solid var(--line);
+      border-radius: 12px; overflow: hidden;
     }
-
     th, td { border-bottom: 1px solid var(--line); padding: 11px 10px; text-align: right; vertical-align: top; }
     th { background: var(--black); color: white; font-size: 13px; }
     tr:last-child td { border-bottom: 0; }
     tbody tr:hover td { background: #14243a; }
     td button { padding: 8px 11px; border-radius: 8px; margin: 4px; }
-
     .file { position: absolute; opacity: 0; width: 1px; height: 1px; }
-
     .ok { color: var(--green); font-weight: 900; }
     .bad { color: var(--red); font-weight: 900; }
-
-    /* =========================================================
-       مؤشر حالة Firebase
-       ========================================================= */
+    .pending { color: var(--yellow); font-weight: 900; }
+    .chart-wrap {
+      display: grid; grid-template-columns: minmax(240px, 340px) 1fr;
+      gap: 22px; align-items: center; margin-top: 16px;
+      padding: 18px; border: 1px solid var(--line); border-radius: 14px;
+      background: #0d1828;
+    }
+    .pie-svg { width: min(320px, 100%); height: auto; display: block; margin: auto; transform: rotate(-90deg); }
+    .legend-row {
+      display: grid; grid-template-columns: 18px 1fr auto;
+      gap: 10px; align-items: center; padding: 9px 0;
+      border-bottom: 1px solid var(--line);
+    }
+    .legend-row:last-child { border-bottom: 0; }
+    .legend-dot { width: 14px; height: 14px; border-radius: 50%; display: inline-block; }
+    .bar-chart { display: grid; gap: 14px; margin-top: 16px; padding: 18px; border: 1px solid var(--line); border-radius: 14px; background: #0d1828; }
+    .bar-row { display: grid; grid-template-columns: minmax(120px,180px) 1fr; gap: 12px; align-items: center; }
+    .bar-name { font-weight: 800; color: var(--ink); }
+    .bar-track { display: grid; gap: 6px; }
+    .bar-line {
+      height: 22px; min-width: 2px; border-radius: 8px; color: white;
+      display: flex; align-items: center; padding: 0 8px;
+      font-size: 12px; font-weight: 800; white-space: nowrap;
+    }
     .sync-status {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 6px 10px;
-      border-radius: 9px;
-      font-size: 12px;
-      font-weight: 800;
-      border: 1px solid var(--line);
-      background: #1c3049;
-      color: #dce9f6;
-      cursor: pointer;
-      user-select: none;
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 10px; border-radius: 9px; font-size: 12px;
+      font-weight: 800; border: 1px solid var(--line);
+      background: #1c3049; color: #dce9f6; cursor: pointer; user-select: none;
     }
-
-    .sync-dot {
-      width: 9px;
-      height: 9px;
-      border-radius: 50%;
-      background: #7a8ca0;
-      flex-shrink: 0;
-    }
-
+    .sync-dot { width: 9px; height: 9px; border-radius: 50%; background: #7a8ca0; flex-shrink: 0; }
     .sync-status.online .sync-dot { background: var(--green); box-shadow: 0 0 8px var(--green); animation: pulse 2s infinite; }
     .sync-status.offline .sync-dot { background: var(--red); }
     .sync-status.syncing .sync-dot { background: var(--orange); animation: pulse 1s infinite; }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: .4; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .4; } }
+    .auth-screen { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; }
+    .auth-box {
+      background: var(--panel); border: 1px solid var(--line);
+      border-radius: 18px; box-shadow: var(--shadow);
+      padding: 32px; width: min(420px, 100%);
     }
-
-    /* =========================================================
-       وضع الموبايل
-       ========================================================= */
+    .auth-box h1 { text-align: center; font-size: 32px; margin: 0 0 8px; color: white; letter-spacing: 1px; font-weight: 900; }
+    .auth-box .subtitle { text-align: center; color: var(--muted); font-size: 13px; margin-bottom: 24px; }
+    .auth-tabs { display: flex; background: #0d1828; border-radius: 10px; padding: 4px; margin-bottom: 20px; gap: 4px; }
+    .auth-tab {
+      flex: 1; padding: 10px; text-align: center; border-radius: 8px;
+      background: transparent; color: var(--muted); border: 0;
+      box-shadow: none; font-weight: 800; cursor: pointer; font-size: 13px;
+    }
+    .auth-tab.on { background: var(--orange); color: white; box-shadow: none; }
+    .auth-tab:hover:not(.on) { background: #14243a; color: var(--ink); transform: none; }
+    .auth-msg {
+      margin-top: 14px; padding: 10px 12px; border-radius: 9px;
+      font-size: 13px; font-weight: 700; text-align: center; display: none;
+    }
+    .auth-msg.error { background: rgba(220,90,103,.15); color: #ff8a96; border: 1px solid rgba(220,90,103,.3); display: block; }
+    .auth-msg.success { background: rgba(80,208,154,.15); color: #6ee6b0; border: 1px solid rgba(80,208,154,.3); display: block; }
+    .auth-msg.info { background: rgba(34,166,179,.15); color: #5ed4de; border: 1px solid rgba(34,166,179,.3); display: block; }
+    .auth-link { text-align: center; margin-top: 16px; font-size: 13px; color: var(--muted); }
+    .auth-link a { color: var(--orange); cursor: pointer; text-decoration: underline; font-weight: 800; }
+    .auth-link a:hover { color: #5ed4de; }
+    .waiting-screen { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; text-align: center; }
+    .waiting-box {
+      background: var(--panel); border: 1px solid var(--line);
+      border-radius: 18px; box-shadow: var(--shadow);
+      padding: 40px; width: min(500px, 100%);
+    }
+    .waiting-icon { font-size: 64px; margin-bottom: 16px; display: block; }
+    .waiting-box h2 { margin: 0 0 12px; font-size: 22px; }
+    .waiting-box p { color: var(--muted); margin: 0 0 20px; line-height: 1.7; }
+    .user-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 10px; border-radius: 9px; font-size: 12px;
+      font-weight: 800; border: 1px solid var(--line);
+      background: #1c3049; color: #dce9f6;
+    }
+    .user-badge.admin { background: #2a8f5f; color: white; border-color: #2a8f5f; }
     .mode-toggle {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 8px 12px;
-      border-radius: 10px;
-      background: #1c3049;
-      color: #dce9f6;
-      border: 1px solid var(--line);
-      cursor: pointer;
-      font-weight: 800;
-      box-shadow: none;
-      transition: .15s ease;
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 12px; border-radius: 10px;
+      background: #1c3049; color: #dce9f6;
+      border: 1px solid var(--line); cursor: pointer;
+      font-weight: 800; box-shadow: none; transition: .15s ease;
     }
-
     body.mode-mobile { font-size: 13px; }
     body.mode-mobile .page { width: calc(100% - 16px); padding: 10px 0 24px; }
     body.mode-mobile .top { padding: 8px 10px; gap: 8px; flex-wrap: wrap; }
@@ -349,7 +217,8 @@
     body.mode-mobile .top-right { gap: 8px; }
     body.mode-mobile .actions { gap: 6px; }
     body.mode-mobile .actions button, body.mode-mobile .top > .danger { padding: 7px 10px; font-size: 12px; min-width: 0; }
-    body.mode-mobile .mode-toggle { padding: 7px 10px; font-size: 12px; }
+    body.mode-mobile .mode-toggle, body.mode-mobile .user-badge { padding: 6px 8px; font-size: 11px; }
+    body.mode-mobile .sync-status { padding: 5px 8px; font-size: 11px; }
     body.mode-mobile .title { font-size: 28px; margin: 10px 0 14px; }
     body.mode-mobile .head h1 { font-size: 22px; }
     body.mode-mobile .panel { padding: 12px; }
@@ -357,8 +226,8 @@
     body.mode-mobile h3 { font-size: 15px; }
     body.mode-mobile .tabs { padding: 8px; gap: 6px; }
     body.mode-mobile .tab { padding: 7px 10px; font-size: 12px; }
-    body.mode-mobile .grid, body.mode-mobile .grid3 { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
-    body.mode-mobile .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+    body.mode-mobile .grid, body.mode-mobile .grid3 { grid-template-columns: repeat(2, minmax(0,1fr)); gap: 8px; }
+    body.mode-mobile .cards { grid-template-columns: repeat(2, minmax(0,1fr)); gap: 8px; }
     body.mode-mobile .card { padding: 10px; font-size: 12px; }
     body.mode-mobile .card strong { font-size: 17px; }
     body.mode-mobile .stores { grid-template-columns: repeat(2, 1fr); gap: 8px; }
@@ -366,12 +235,12 @@
     body.mode-mobile .row button, body.mode-mobile .grid button { min-width: 0; padding: 8px 10px; font-size: 12px; }
     body.mode-mobile label { font-size: 12px; }
     body.mode-mobile input, body.mode-mobile select, body.mode-mobile textarea { padding: 8px 10px; font-size: 13px; }
-
+    body.mode-mobile .auth-box { padding: 24px; }
+    body.mode-mobile .auth-box h1 { font-size: 26px; }
     .table-scroll { width: 100%; max-width: 100%; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; margin-top: 14px; }
     .table-scroll table { margin-top: 0; width: max-content; min-width: 100%; }
     body.mode-mobile .table-scroll table th, body.mode-mobile .table-scroll table td { white-space: nowrap; padding: 6px 8px; font-size: 11px; }
     body.mode-mobile .page, body.mode-mobile .panel { overflow-x: hidden; }
-
     @media (max-width: 860px) {
       .stores, .grid, .grid3, .cards { grid-template-columns: 1fr; }
       .top { align-items: flex-start; flex-direction: column; }
@@ -384,43 +253,15 @@
 </head>
 
 <body>
-  <!-- الهيدر الثابت -->
-  <header class="top">
-    <div class="top-right">
-      <b>T.p</b>
-      <div class="actions">
-        <button class="light" onclick="home()">الرئيسية</button>
-        <button class="gray" onclick="backup()">نسخ احتياطي</button>
-        <button onclick="restoreFile.click()">استرجاع</button>
-        <input class="file" id="restoreFile" type="file" accept="application/json" onchange="restore(event)">
-        <button class="mode-toggle" id="modeToggleBtn" onclick="toggleViewMode()">📱 موبايل</button>
-        <span class="sync-status" id="syncStatus" onclick="manualSync()" title="اضغط للمزامنة اليدوية">
-          <span class="sync-dot"></span>
-          <span id="syncText">جاري الاتصال...</span>
-        </span>
-      </div>
-    </div>
-    <button class="danger" onclick="clearAllData()">حذف كل البيانات</button>
-  </header>
+  <div id="root"></div>
 
-  <main class="page" id="app"></main>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 
-  <script type="module">
+  <script>
     /* =========================================================
-       استيراد مكتبات Firebase
-       ========================================================= */
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import {
-      getDatabase,
-      ref,
-      set,
-      get,
-      onValue,
-      serverTimestamp
-    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
-
-    /* =========================================================
-       إعدادات Firebase
+       Firebase Init
        ========================================================= */
     const firebaseConfig = {
       apiKey: "AIzaSyD8ViNohFXIu6oPU3m5H_lxlcvGERX2tZo",
@@ -432,27 +273,40 @@
       appId: "1:925263845723:web:482be2e470b9a381bfa27e"
     };
 
-    /* =========================================================
-       مفاتيح التخزين
-       ========================================================= */
-    const FB_PATH = "management/data";           // المسار في Firebase
-    const LS_KEY = "managementData";              // مفتاح localStorage
-    const LS_BACKUP_KEY = "managementDataBackup"; // نسخة احتياطية محلية
-    const LS_LAST_SYNC = "managementLastSync";    // آخر مزامنة
-    const CLIENT_ID_KEY = "managementClientId";   // هوية الجهاز
+    firebase.initializeApp(firebaseConfig);
+    const fbAuth = firebase.auth();
+    const fbDB = firebase.database();
 
-    /* =========================================================
-       حالة الاتصال
-       ========================================================= */
-    let fbApp = null;
-    let fbDB = null;
+    const ADMIN_UID = "lywCmAAMFtMqKsebBb9ouXtwjpH2";
+    const FB_PATH = "management/data";
+    const USERS_PATH = "management/users";
+    const LS_KEY = "managementData";
+    const LS_BACKUP_KEY = "managementDataBackup";
+    const LS_LAST_SYNC = "managementLastSync";
+    const CLIENT_ID_KEY = "managementClientId";
+
+    /* حالة عامة */
+    let currentUser = null;
+    let userRole = "guest";
+    let isAdmin = false;
+    let canView = false;
+    let currentUserData = null;
+
+    let data = null;
+    let store = "";
+    let tab = "sales";
+    let edit = null;
+    let period = null;
     let isOnline = false;
     let isSyncing = false;
     let clientId = "";
-    let lastSaveWasLocal = false;
+    let authMode = "login";
+    let fbDataListener = null;
+    let fbConnListener = null;
+    let authListenerSet = false;
 
     /* =========================================================
-       بيانات ثابتة: المحلات وأسماء الشيتات
+       الثوابت
        ========================================================= */
     const stores = [
       ["cleopatra", "كليوبترا", 0],
@@ -474,28 +328,13 @@
     };
 
     const blank = () => ({
-      sales: [],
-      exchange: [],
-      traderTx: [],
-      sellers: [],
-      fixedSellers: [],
-      items: [],
-      expenses: [],
-      withdrawals: [],
-      partners: []
+      sales: [], exchange: [], traderTx: [], sellers: [], fixedSellers: [],
+      items: [], expenses: [], withdrawals: [], partners: []
     });
 
-    let data = null;
-    let store = "";
-    let tab = "sales";
-    let edit = null;
-    let period = loadSavedPeriod();
-
     /* =========================================================
-       التهيئة الأولى
+       أدوات
        ========================================================= */
-
-    // هوية الجهاز (عشان نعرف مين اللي عمل آخر تعديل)
     function getClientId() {
       let id = localStorage[CLIENT_ID_KEY];
       if (!id) {
@@ -505,7 +344,6 @@
       return id;
     }
 
-    // تحميل البيانات المحلية
     function loadLocal() {
       try {
         const saved = JSON.parse(localStorage[LS_KEY] || localStorage["h1group"]);
@@ -515,210 +353,128 @@
           saved.customStores ||= [];
           saved.deletedStoreIds ||= [];
           saved.viewMode ||= "desktop";
-          stores.forEach(s => {
-            saved.stores[s[0]] ||= blank();
-            saved.stores[s[0]].sales ||= [];
-            saved.stores[s[0]].exchange ||= [];
-            saved.stores[s[0]].traderTx ||= [];
-            saved.stores[s[0]].sellers ||= [];
-            saved.stores[s[0]].fixedSellers ||= [];
-            saved.stores[s[0]].items ||= [];
-            saved.stores[s[0]].expenses ||= [];
-            saved.stores[s[0]].withdrawals ||= [];
-            saved.stores[s[0]].partners ||= [];
-          });
+          stores.forEach(s => { saved.stores[s[0]] ||= blank(); });
           return saved;
         }
       } catch (e) {}
       return {
-        traders: [],
-        customStores: [],
-        deletedStoreIds: [],
-        viewMode: "desktop",
+        traders: [], customStores: [], deletedStoreIds: [], viewMode: "desktop",
         stores: Object.fromEntries(stores.map(s => [s[0], blank()]))
       };
     }
 
-    // حفظ محلي (سريع ودايماً يشتغل)
     function saveLocal() {
       try {
         localStorage[LS_KEY] = JSON.stringify(data);
         localStorage[LS_BACKUP_KEY] = JSON.stringify(data);
-      } catch (e) {
-        console.error("خطأ في الحفظ المحلي:", e);
-      }
+      } catch (e) { console.error("Local save failed:", e); }
     }
 
-    // حفظ في Firebase
-    async function saveRemote() {
-      if (!fbDB) return;
-      try {
-        isSyncing = true;
-        updateSyncUI();
-        await set(ref(fbDB, FB_PATH), {
-          ...data,
-          _lastUpdate: {
-            clientId: clientId,
-            time: Date.now(),
-            iso: new Date().toISOString()
-          }
-        });
-        localStorage[LS_LAST_SYNC] = Date.now().toString();
-        lastSaveWasLocal = false;
-      } catch (e) {
-        console.error("خطأ في Firebase:", e);
-        lastSaveWasLocal = true;
-      } finally {
-        isSyncing = false;
-        updateSyncUI();
-      }
-    }
-
-    // حفظ شامل (محلي + Firebase)
     function save() {
       saveLocal();
-      saveRemote();
+      if (isAdmin) saveRemote();
     }
 
-    /* =========================================================
-       مزامنة Firebase
-       ========================================================= */
-
-    async function initFirebase() {
-      try {
-        fbApp = initializeApp(firebaseConfig);
-        fbDB = getDatabase(fbApp);
-
-        // الاستماع للتغييرات لحظيًا
-        const dataRef = ref(fbDB, FB_PATH);
-        onValue(dataRef, snapshot => {
-          const remote = snapshot.val();
-          if (!remote) {
-            // Firebase فاضي — نرفع البيانات المحلية
-            console.log("Firebase فاضي، رفع البيانات المحلية...");
-            saveRemote();
-            return;
-          }
-
-          // لو التعديل ده من نفس الجهاز، تجاهل
-          if (remote._lastUpdate?.clientId === clientId) {
-            return;
-          }
-
-          // نسحب البيانات من Firebase
-          delete remote._lastUpdate;
-
-          // تأكد من وجود كل الحقول
-          remote.traders ||= [];
-          remote.stores ||= {};
-          remote.customStores ||= [];
-          remote.deletedStoreIds ||= [];
-          remote.viewMode ||= "desktop";
-          stores.forEach(s => {
-            remote.stores[s[0]] ||= blank();
-          });
-
-          // تحديث البيانات المحلية
-          data = remote;
-          saveLocal();
-
-          // إعادة رسم الواجهة
-          syncCustomStores();
-          applyViewMode();
-          if (store) {
-            draw();
-          } else {
-            // لو في الصفحة الرئيسية
-            home();
-          }
-        }, error => {
-          console.error("خطأ في الاستماع:", error);
-          isOnline = false;
-          updateSyncUI();
-        });
-
-        // متصل
-        isOnline = true;
-        updateSyncUI();
-      } catch (e) {
-        console.error("فشل الاتصال بـ Firebase:", e);
-        isOnline = false;
-        updateSyncUI();
-      }
-    }
-
-    // مزامنة يدوية
-    async function manualSync() {
-      if (!fbDB) {
-        alert("Firebase غير متصل. تحقق من الإنترنت.");
-        return;
-      }
-      if (isSyncing) return;
-
-      const choice = confirm(
-        "ماذا تريد أن تفعل؟\n\n" +
-        "OK = رفع البيانات المحلية إلى Firebase (سيتم استبدال النسخة السحابية)\n" +
-        "Cancel = تنزيل البيانات من Firebase (سيتم استبدال البيانات المحلية)"
-      );
-
-      try {
-        isSyncing = true;
-        updateSyncUI();
-
-        if (choice) {
-          // رفع
-          await saveRemote();
-          alert("تم رفع البيانات إلى Firebase ✅");
-        } else {
-          // تنزيل
-          const snapshot = await get(ref(fbDB, FB_PATH));
-          const remote = snapshot.val();
-          if (remote) {
-            delete remote._lastUpdate;
-            data = remote;
-            stores.forEach(s => { data.stores[s[0]] ||= blank(); });
-            saveLocal();
-            syncCustomStores();
-            applyViewMode();
-            if (store) draw();
-            else home();
-            alert("تم تنزيل البيانات من Firebase ✅");
-          } else {
-            alert("لا توجد بيانات في Firebase");
-          }
-        }
-      } catch (e) {
-        console.error(e);
-        alert("حدث خطأ في المزامنة");
-      } finally {
+    function saveRemote() {
+      if (!fbDB || !isAdmin) return Promise.resolve();
+      isSyncing = true;
+      updateSyncUI();
+      return fbDB.ref(FB_PATH).set({
+        ...data,
+        _lastUpdate: { clientId, time: Date.now() }
+      }).then(() => {
+        localStorage[LS_LAST_SYNC] = Date.now().toString();
+      }).catch(e => {
+        console.error("Firebase save failed:", e);
+      }).finally(() => {
         isSyncing = false;
         updateSyncUI();
-      }
+      });
     }
 
-    // تحديث مؤشر الحالة
-    function updateSyncUI() {
-      const el = document.getElementById("syncStatus");
-      const txt = document.getElementById("syncText");
-      if (!el || !txt) return;
+    function id() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+    function n(v) { return Number(v) || 0; }
+    function m(v) {
+      const r = Math.round(n(v) * 100) / 100;
+      return Number.isInteger(r) ? String(r) : r.toFixed(2);
+    }
+    function q(sid) { return document.getElementById(sid); }
+    function st() { return data.stores[store]; }
+    function meta() { return stores.find(s => s[0] === store); }
 
-      el.classList.remove("online", "offline", "syncing");
-
-      if (isSyncing) {
-        el.classList.add("syncing");
-        txt.textContent = "جاري المزامنة...";
-      } else if (isOnline) {
-        el.classList.add("online");
-        txt.textContent = "متصل";
-      } else {
-        el.classList.add("offline");
-        txt.textContent = "غير متصل";
-      }
+    function today() {
+      const d = new Date();
+      return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
     }
 
-    /* =========================================================
-       وضع العرض
-       ========================================================= */
+    function parts(v) {
+      const x = (v || today()).split("-");
+      return { y: n(x[0]) || new Date().getFullYear(), m: n(x[1]) || new Date().getMonth()+1, d: n(x[2]) || new Date().getDate() };
+    }
+
+    function dateBox(prefix, value) {
+      const p = parts(value);
+      const cy = new Date().getFullYear();
+      let years = "", months = "", days = "";
+      for (let y = cy - 6; y <= cy + 2; y++) years += `<option value="${y}" ${p.y===y?"selected":""}>${y}</option>`;
+      for (let mo = 1; mo <= 12; mo++) months += `<option value="${mo}" ${p.m===mo?"selected":""}>${mo}</option>`;
+      for (let d = 1; d <= 31; d++) days += `<option value="${d}" ${p.d===d?"selected":""}>${d}</option>`;
+      return `<div class="datebox"><select id="${prefix}Y">${years}</select><select id="${prefix}M">${months}</select><select id="${prefix}D">${days}</select></div>`;
+    }
+
+    function dateValue(prefix) {
+      const y = n(q(prefix+"Y").value);
+      const mo = n(q(prefix+"M").value);
+      let d = n(q(prefix+"D").value);
+      const last = new Date(y, mo, 0).getDate();
+      if (d > last) d = last;
+      const v = `${y}-${String(mo).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+      if (store) localStorage[`managementDate:${store}:${prefix}`] = v;
+      return v;
+    }
+
+    function thisMonth() {
+      const d = new Date();
+      const y = d.getFullYear(), mo = String(d.getMonth()+1).padStart(2,"0");
+      const last = new Date(y, d.getMonth()+1, 0).getDate();
+      return { from: `${y}-${mo}-01`, to: `${y}-${mo}-${last}` };
+    }
+
+    function loadSavedPeriod() {
+      try {
+        const s = JSON.parse(localStorage.managementPeriod);
+        if (s?.from && s?.to) return s;
+      } catch (e) {}
+      return thisMonth();
+    }
+
+    function setPeriod(p) { period = p; localStorage.managementPeriod = JSON.stringify(period); }
+    function rememberedDate(prefix) { return localStorage[`managementDate:${store}:${prefix}`] || today(); }
+    function inP(d) { return d && (!period.from || d >= period.from) && (!period.to || d <= period.to); }
+    function fl(list) { return list.filter(x => inP(x.date)); }
+
+    function unifiedOutflows() {
+      return [
+        ...fl(st().expenses).map(x => ({ ...x, source: "expenses", type: "مصروفات كاش", item: x.item })),
+        ...fl(st().traderTx).filter(x => x.kind === "payment").map(x => ({ ...x, source: "traderTx", type: "دفعة تاجر", item: `دفعة تاجر - ${x.name}` })),
+        ...fl(st().withdrawals).map(x => ({ ...x, source: "withdrawals", type: "مسحوبات", item: `مسحوبات - ${x.seller}` }))
+      ].sort((a, b) => String(b.date).localeCompare(String(a.date)));
+    }
+
+    function unifiedOutflowTotal() { return unifiedOutflows().reduce((s, x) => s + n(x.amount), 0); }
+
+    function syncCustomStores() {
+      data.customStores ||= [];
+      data.deletedStoreIds ||= [];
+      for (let i = stores.length - 1; i >= 0; i--) {
+        if (data.deletedStoreIds.includes(stores[i][0])) stores.splice(i, 1);
+      }
+      data.customStores.forEach(s => {
+        if (!Array.isArray(s) || !s[0] || !s[1] || stores.some(x => x[0] === s[0])) return;
+        stores.push([s[0], s[1], s[2] ? 1 : 0]);
+        data.stores[s[0]] ||= blank();
+      });
+    }
 
     function applyViewMode() {
       const mode = data.viewMode === "mobile" ? "mobile" : "desktop";
@@ -734,160 +490,428 @@
       applyViewMode();
     }
 
+    function updateSyncUI() {
+      const el = document.getElementById("syncStatus");
+      const txt = document.getElementById("syncText");
+      if (!el || !txt) return;
+      el.classList.remove("online", "offline", "syncing");
+      if (isSyncing) { el.classList.add("syncing"); txt.textContent = "جاري المزامنة..."; }
+      else if (isOnline) { el.classList.add("online"); txt.textContent = "متصل"; }
+      else { el.classList.add("offline"); txt.textContent = "غير متصل"; }
+    }
     /* =========================================================
-       دوال مساعدة عامة
+       شاشة تسجيل الدخول
        ========================================================= */
+    function renderAuthScreen() {
+      document.getElementById("root").innerHTML = `
+        <div class="auth-screen">
+          <div class="auth-box">
+            <h1>MANAGEMENT</h1>
+            <p class="subtitle">سجل دخولك للمتابعة</p>
 
-    function syncCustomStores() {
-      data.customStores ||= [];
-      data.deletedStoreIds ||= [];
-      for (let index = stores.length - 1; index >= 0; index--) {
-        if (data.deletedStoreIds.includes(stores[index][0])) stores.splice(index, 1);
-      }
-      data.customStores.forEach(s => {
-        if (!Array.isArray(s) || !s[0] || !s[1] || stores.some(x => x[0] === s[0])) return;
-        stores.push([s[0], s[1], s[2] ? 1 : 0]);
-        data.stores[s[0]] ||= blank();
+            <div class="auth-tabs">
+              <button class="auth-tab on" id="tabLogin" onclick="switchAuthTab('login')">تسجيل دخول</button>
+              <button class="auth-tab" id="tabSignup" onclick="switchAuthTab('signup')">إنشاء حساب</button>
+            </div>
+
+            <div id="authForm">
+              <label>الإيميل
+                <input type="email" id="authEmail" placeholder="example@email.com" autocomplete="email">
+              </label>
+              <br>
+              <label>الباسورد
+                <input type="password" id="authPassword" placeholder="••••••••" autocomplete="current-password">
+              </label>
+              <br>
+              <label id="authNameWrap" style="display:none">الاسم
+                <input type="text" id="authName" placeholder="اسمك">
+              </label>
+              <br id="authNameBr" style="display:none">
+              <button id="authSubmit" onclick="submitAuth()" style="width:100%;min-height:46px">تسجيل الدخول</button>
+            </div>
+
+            <div class="auth-msg" id="authMsg"></div>
+
+            <div class="auth-link">
+              <a onclick="resetPassword()">نسيت كلمة السر؟</a>
+            </div>
+          </div>
+        </div>
+      `;
+      setTimeout(() => document.getElementById("authEmail")?.focus(), 100);
+      ["authEmail", "authPassword"].forEach(id => {
+        document.getElementById(id)?.addEventListener("keypress", e => {
+          if (e.key === "Enter") submitAuth();
+        });
       });
     }
 
-    function id() {
-      return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+    function switchAuthTab(mode) {
+      authMode = mode;
+      document.getElementById("tabLogin").classList.toggle("on", mode === "login");
+      document.getElementById("tabSignup").classList.toggle("on", mode === "signup");
+      document.getElementById("authNameWrap").style.display = mode === "signup" ? "" : "none";
+      document.getElementById("authNameBr").style.display = mode === "signup" ? "" : "none";
+      document.getElementById("authSubmit").textContent = mode === "login" ? "تسجيل الدخول" : "إنشاء حساب";
+      document.getElementById("authPassword").autocomplete = mode === "login" ? "current-password" : "new-password";
+      hideAuthMsg();
     }
 
-    function n(value) { return Number(value) || 0; }
-
-    function m(value) {
-      const rounded = Math.round(n(value) * 100) / 100;
-      return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(2);
+    function showAuthMsg(text, type = "error") {
+      const el = document.getElementById("authMsg");
+      if (!el) return;
+      el.textContent = text;
+      el.className = "auth-msg " + type;
     }
 
-    function q(selectorId) { return document.getElementById(selectorId); }
-    function st() { return data.stores[store]; }
-    function meta() { return stores.find(s => s[0] === store); }
+    function hideAuthMsg() {
+      const el = document.getElementById("authMsg");
+      if (el) { el.className = "auth-msg"; el.textContent = ""; }
+    }
+
+    async function submitAuth() {
+      const email = document.getElementById("authEmail").value.trim();
+      const password = document.getElementById("authPassword").value;
+      const name = document.getElementById("authName")?.value.trim() || "";
+
+      if (!email || !password) { showAuthMsg("اكتب الإيميل والباسورد"); return; }
+      if (password.length < 6) { showAuthMsg("الباسورد لازم يكون 6 حروف على الأقل"); return; }
+
+      const btn = document.getElementById("authSubmit");
+      btn.disabled = true;
+      btn.textContent = "...";
+
+      try {
+        if (authMode === "login") {
+          await fbAuth.signInWithEmailAndPassword(email, password);
+        } else {
+          const cred = await fbAuth.createUserWithEmailAndPassword(email, password);
+          await fbDB.ref(`${USERS_PATH}/${cred.user.uid}`).set({
+            email: email,
+            name: name || email.split("@")[0],
+            status: "pending",
+            role: "viewer",
+            blocked: false,
+            createdAt: Date.now()
+          });
+          if (name) {
+            try { await cred.user.updateProfile({ displayName: name }); } catch (e) {}
+          }
+        }
+      } catch (e) {
+        console.error(e);
+        let msg = "حدث خطأ";
+        const code = e.code || "";
+        if (code === "auth/invalid-credential" || code === "auth/wrong-password" || code === "auth/user-not-found") {
+          msg = "الإيميل أو الباسورد غلط";
+        } else if (code === "auth/invalid-email") {
+          msg = "الإيميل غير صالح";
+        } else if (code === "auth/email-already-in-use") {
+          msg = "الإيميل ده مستخدم بالفعل. جرب تسجيل الدخول";
+        } else if (code === "auth/weak-password") {
+          msg = "الباسورد ضعيف، استخدم 6 حروف على الأقل";
+        } else if (code === "auth/too-many-requests") {
+          msg = "محاولات كثيرة، جرب بعد شوية";
+        } else if (code === "auth/network-request-failed") {
+          msg = "تحقق من اتصالك بالإنترنت";
+        } else {
+          msg = e.message || "حدث خطأ غير متوقع";
+        }
+        showAuthMsg(msg);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = authMode === "login" ? "تسجيل الدخول" : "إنشاء حساب";
+      }
+    }
+
+    async function resetPassword() {
+      const email = document.getElementById("authEmail").value.trim();
+      if (!email) { showAuthMsg("اكتب الإيميل الأول"); return; }
+      try {
+        await fbAuth.sendPasswordResetEmail(email);
+        showAuthMsg("تم إرسال رابط إعادة التعيين على إيميلك", "success");
+      } catch (e) {
+        showAuthMsg("فشل الإرسال. تأكد من الإيميل");
+      }
+    }
+
+    function logout() {
+      if (!confirm("تسجيل الخروج؟")) return;
+      fbAuth.signOut().catch(e => console.error(e));
+    }
 
     /* =========================================================
-       دوال التاريخ
+       شاشة الانتظار
        ========================================================= */
-
-    function today() {
-      const d = new Date();
-      const y = d.getFullYear();
-      const mo = String(d.getMonth() + 1).padStart(2, "0");
-      const day = String(d.getDate()).padStart(2, "0");
-      return `${y}-${mo}-${day}`;
-    }
-
-    function parts(value) {
-      const x = (value || today()).split("-");
-      return {
-        y: n(x[0]) || new Date().getFullYear(),
-        m: n(x[1]) || new Date().getMonth() + 1,
-        d: n(x[2]) || new Date().getDate()
-      };
-    }
-
-    function dateBox(prefix, value) {
-      const p = parts(value);
-      const currentYear = new Date().getFullYear();
-      let years = "", months = "", days = "";
-
-      for (let y = currentYear - 6; y <= currentYear + 2; y++) {
-        years += `<option value="${y}" ${p.y === y ? "selected" : ""}>${y}</option>`;
-      }
-      for (let month = 1; month <= 12; month++) {
-        months += `<option value="${month}" ${p.m === month ? "selected" : ""}>${month}</option>`;
-      }
-      for (let day = 1; day <= 31; day++) {
-        days += `<option value="${day}" ${p.d === day ? "selected" : ""}>${day}</option>`;
-      }
-
-      return `
-        <div class="datebox">
-          <select id="${prefix}Y">${years}</select>
-          <select id="${prefix}M">${months}</select>
-          <select id="${prefix}D">${days}</select>
+    function renderWaitingScreen(status) {
+      const isBlocked = status === "blocked";
+      document.getElementById("root").innerHTML = `
+        <div class="waiting-screen">
+          <div class="waiting-box">
+            <span class="waiting-icon">${isBlocked ? "⛔" : "⏳"}</span>
+            <h2>${isBlocked ? "تم حظر حسابك" : "حسابك في انتظار الموافقة"}</h2>
+            <p>${isBlocked
+              ? "تم حظر حسابك من قبل المدير. لو تظن إن ده خطأ، تواصل مع المدير."
+              : "تم إنشاء حسابك بنجاح ✅<br>لازم المدير يوافق على حسابك قبل ما تقدر تشوف البيانات."
+            }</p>
+            <button class="light" onclick="logout()" style="width:100%;min-height:46px">🚪 تسجيل خروج</button>
+          </div>
         </div>
       `;
     }
 
-    function dateValue(prefix) {
-      const y = n(q(prefix + "Y").value);
-      const month = n(q(prefix + "M").value);
-      let day = n(q(prefix + "D").value);
-      const lastDay = new Date(y, month, 0).getDate();
-      if (day > lastDay) day = lastDay;
-      const value = `${y}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-      if (store) localStorage[`managementDate:${store}:${prefix}`] = value;
-      return value;
-    }
+    /* =========================================================
+       Dashboard
+       ========================================================= */
+    function renderDashboard() {
+      const userName = currentUserData?.name || currentUser?.email?.split("@")[0] || "مستخدم";
+      const roleLabel = isAdmin ? "👑 أدمين" : "👁️ مشاهد";
 
-    function thisMonth() {
-      const d = new Date();
-      const y = d.getFullYear();
-      const month = String(d.getMonth() + 1).padStart(2, "0");
-      const lastDay = new Date(y, d.getMonth() + 1, 0).getDate();
-      return { from: `${y}-${month}-01`, to: `${y}-${month}-${lastDay}` };
-    }
-
-    function loadSavedPeriod() {
-      try {
-        const saved = JSON.parse(localStorage.managementPeriod);
-        if (saved?.from && saved?.to) return saved;
-      } catch (e) {}
-      return thisMonth();
-    }
-
-    function setPeriod(next) {
-      period = next;
-      localStorage.managementPeriod = JSON.stringify(period);
-    }
-
-    function rememberedDate(prefix) {
-      return localStorage[`managementDate:${store}:${prefix}`] || today();
-    }
-
-    function inP(date) {
-      return date && (!period.from || date >= period.from) && (!period.to || date <= period.to);
-    }
-
-    function fl(list) { return list.filter(x => inP(x.date)); }
-
-    function unifiedOutflows() {
-      return [
-        ...fl(st().expenses).map(x => ({ ...x, source: "expenses", type: "مصروفات كاش", item: x.item })),
-        ...fl(st().traderTx).filter(x => x.kind === "payment").map(x => ({ ...x, source: "traderTx", type: "دفعة تاجر", item: `دفعة تاجر - ${x.name}` })),
-        ...fl(st().withdrawals).map(x => ({ ...x, source: "withdrawals", type: "مسحوبات ", item: `مسحوبات  - ${x.seller}` }))
-      ].sort((a, b) => String(b.date).localeCompare(String(a.date)));
-    }
-
-    function unifiedOutflowTotal() {
-      return unifiedOutflows().reduce((sum, x) => sum + n(x.amount), 0);
+      document.getElementById("root").innerHTML = `
+        <header class="top">
+          <div class="top-right">
+            <b>T.p</b>
+            <div class="actions">
+              <button class="light" onclick="home()">الرئيسية</button>
+              ${isAdmin ? `
+                <button class="gray" onclick="backup()">نسخ احتياطي</button>
+                <button onclick="document.getElementById('restoreFile').click()">استرجاع</button>
+                <input class="file" id="restoreFile" type="file" accept="application/json" onchange="restore(event)">
+                <button class="warn" onclick="renderUsersPage()">👥 المستخدمين</button>
+              ` : ""}
+              <button class="mode-toggle" id="modeToggleBtn" onclick="toggleViewMode()">📱 موبايل</button>
+              <span class="sync-status" id="syncStatus" onclick="manualSync()" title="اضغط للمزامنة اليدوية">
+                <span class="sync-dot"></span>
+                <span id="syncText">جاري الاتصال...</span>
+              </span>
+              <span class="user-badge ${isAdmin ? 'admin' : ''}">${roleLabel} - ${userName}</span>
+              <button class="light" onclick="logout()">🚪 خروج</button>
+            </div>
+          </div>
+          ${isAdmin ? `<button class="danger" onclick="clearAllData()">حذف كل البيانات</button>` : ""}
+        </header>
+        <main class="page" id="app"></main>
+      `;
+      applyViewMode();
+      home();
     }
 
     /* =========================================================
-       التنقل وعرض الصفحات
+       بدء المزامنة
        ========================================================= */
+    function startDataSync() {
+      if (!fbDB) return;
 
+      if (!fbConnListener) {
+        fbConnListener = fbDB.ref(".info/connected");
+        fbConnListener.on("value", snap => {
+          isOnline = snap.val() === true;
+          updateSyncUI();
+        });
+      }
+
+      const dataRef = fbDB.ref(FB_PATH);
+
+      if (isAdmin) {
+        if (fbDataListener) dataRef.off("value", fbDataListener);
+        fbDataListener = dataRef.on("value", snap => {
+          const remote = snap.val();
+          if (!remote) { saveRemote(); return; }
+          if (remote._lastUpdate?.clientId === clientId) return;
+          delete remote._lastUpdate;
+          remote.traders ||= [];
+          remote.stores ||= {};
+          remote.customStores ||= [];
+          remote.deletedStoreIds ||= [];
+          remote.viewMode ||= data.viewMode || "desktop";
+          stores.forEach(s => { remote.stores[s[0]] ||= blank(); });
+          data = remote;
+          saveLocal();
+          syncCustomStores();
+          if (document.getElementById("app")) {
+            if (store) draw();
+            else home();
+          }
+        }, err => console.error("Read error:", err));
+      } else if (canView) {
+        fbDB.ref(FB_PATH).once("value").then(snap => {
+          const remote = snap.val();
+          if (remote) {
+            delete remote._lastUpdate;
+            remote.traders ||= [];
+            remote.stores ||= {};
+            remote.customStores ||= [];
+            remote.deletedStoreIds ||= [];
+            remote.viewMode ||= data.viewMode || "desktop";
+            stores.forEach(s => { remote.stores[s[0]] ||= blank(); });
+            data = remote;
+            saveLocal();
+            syncCustomStores();
+            if (store) draw();
+            else home();
+          }
+        }).catch(err => console.error("Viewer read error:", err));
+
+        if (fbDataListener) dataRef.off("value", fbDataListener);
+        fbDataListener = dataRef.on("value", snap => {
+          const remote = snap.val();
+          if (!remote) return;
+          delete remote._lastUpdate;
+          remote.traders ||= [];
+          remote.stores ||= {};
+          remote.customStores ||= [];
+          remote.deletedStoreIds ||= [];
+          remote.viewMode ||= data.viewMode || "desktop";
+          stores.forEach(s => { remote.stores[s[0]] ||= blank(); });
+          data = remote;
+          saveLocal();
+          syncCustomStores();
+          if (document.getElementById("app")) {
+            if (store) draw();
+            else home();
+          }
+        }, err => console.error("Viewer read error:", err));
+      }
+    }
+
+    function stopDataSync() {
+      if (fbDataListener) {
+        fbDB.ref(FB_PATH).off("value", fbDataListener);
+        fbDataListener = null;
+      }
+    }
+
+    /* =========================================================
+       Auth State Listener
+       ========================================================= */
+    function setupAuthListener() {
+      if (authListenerSet) return;
+      authListenerSet = true;
+
+      fbAuth.onAuthStateChanged(async user => {
+        stopDataSync();
+
+        if (!user) {
+          currentUser = null;
+          currentUserData = null;
+          isAdmin = false;
+          canView = false;
+          userRole = "guest";
+          data = loadLocal();
+          syncCustomStores();
+          renderAuthScreen();
+          return;
+        }
+
+        currentUser = user;
+
+        try {
+          const snap = await fbDB.ref(`${USERS_PATH}/${user.uid}`).once("value");
+          let userData = snap.val();
+
+          if (!userData) {
+            if (user.uid === ADMIN_UID) {
+              userData = {
+                email: user.email,
+                name: user.displayName || user.email.split("@")[0],
+                status: "approved",
+                role: "admin",
+                blocked: false,
+                createdAt: Date.now()
+              };
+              await fbDB.ref(`${USERS_PATH}/${user.uid}`).set(userData);
+            } else {
+              userData = {
+                email: user.email,
+                name: user.displayName || user.email.split("@")[0],
+                status: "pending",
+                role: "viewer",
+                blocked: false,
+                createdAt: Date.now()
+              };
+              await fbDB.ref(`${USERS_PATH}/${user.uid}`).set(userData);
+            }
+          }
+
+          currentUserData = userData;
+
+          if (user.uid === ADMIN_UID) {
+            isAdmin = true;
+            canView = true;
+            userRole = "admin";
+            if (userData.status !== "approved" || userData.role !== "admin") {
+              await fbDB.ref(`${USERS_PATH}/${user.uid}`).update({
+                status: "approved", role: "admin", blocked: false
+              });
+            }
+            data = loadLocal();
+            syncCustomStores();
+            period = loadSavedPeriod();
+            renderDashboard();
+            startDataSync();
+            return;
+          }
+
+          if (userData.blocked === true) {
+            userRole = "blocked";
+            isAdmin = false;
+            canView = false;
+            renderWaitingScreen("blocked");
+            return;
+          }
+
+          if (userData.status !== "approved") {
+            userRole = "pending";
+            isAdmin = false;
+            canView = false;
+            renderWaitingScreen("pending");
+            return;
+          }
+
+          userRole = "viewer";
+          isAdmin = false;
+          canView = true;
+          data = loadLocal();
+          syncCustomStores();
+          period = loadSavedPeriod();
+          renderDashboard();
+          startDataSync();
+        } catch (e) {
+          console.error("Auth state error:", e);
+          renderAuthScreen();
+        }
+      });
+    }
+
+    /* =========================================================
+       التنقل والصفحات
+       ========================================================= */
     function home() {
       store = "";
       edit = null;
       history.replaceState(null, "", "#MANAGEMENT");
 
-      app.innerHTML = `
+      document.getElementById("app").innerHTML = `
         <h1 class="title">MANAGEMENT</h1>
         <section class="stores">
-          ${stores.map(s => `<div class="store-tile"><button class="store" onclick="window.openStore('${s[0]}')">${s[1]}</button><button class="danger delete-store" onclick="window.deleteStore('${s[0]}')">حذف</button></div>`).join("")}
+          ${stores.map(s => `
+            <div class="store-tile">
+              <button class="store" onclick="openStore('${s[0]}')">${s[1]}</button>
+              ${isAdmin ? `<button class="danger delete-store" onclick="deleteStore('${s[0]}')">حذف</button>` : ""}
+            </div>
+          `).join("")}
         </section>
-        <section class="panel">
-          <h2>إضافة محل</h2>
-          <div class="grid grid3">
-            <label>اسم المحل <input id="newStoreName" placeholder="اكتب اسم المحل"></label>
-            <button onclick="window.addStore()">إضافة محل جديد</button>
-          </div>
-        </section>
-        <button class="wide" onclick="window.collections()">تحصيل المحلات</button>
-        <button class="wide" onclick="window.traderTotals()">إجمالي الأرصدة للتجار</button>
+        ${isAdmin ? `
+          <section class="panel">
+            <h2>إضافة محل</h2>
+            <div class="grid grid3">
+              <label>اسم المحل <input id="newStoreName" placeholder="اكتب اسم المحل"></label>
+              <button onclick="addStore()">إضافة محل جديد</button>
+            </div>
+          </section>
+        ` : ""}
+        <button class="wide" onclick="collections()">تحصيل المحلات</button>
+        <button class="wide" onclick="traderTotals()">إجمالي الأرصدة للتجار</button>
       `;
     }
 
@@ -895,7 +919,6 @@
       const name = q("newStoreName").value.trim();
       if (!name) return alert("اكتب اسم المحل");
       if (stores.some(s => s[1] === name)) return alert("هذا المحل موجود بالفعل");
-
       const newStore = [`store-${id()}`, name, 1];
       stores.push(newStore);
       data.customStores ||= [];
@@ -906,11 +929,11 @@
     }
 
     function deleteStore(storeId) {
+      if (!isAdmin) return;
       const index = stores.findIndex(s => s[0] === storeId);
       if (index < 0) return;
       const name = stores[index][1];
       if (!confirm(`حذف محل ${name} وكل بياناته؟`)) return;
-
       stores.splice(index, 1);
       delete data.stores[storeId];
       data.customStores = (data.customStores || []).filter(s => s[0] !== storeId);
@@ -940,10 +963,8 @@
       };
     }
 
-    function collectionStores() { return stores; }
-
     function selectedCollectionStoreIds() {
-      const availableIds = collectionStores().map(s => s[0]);
+      const availableIds = stores.map(s => s[0]);
       try {
         const saved = JSON.parse(localStorage.managementCollectionStores);
         if (Array.isArray(saved)) return new Set(saved.filter(id => availableIds.includes(id)));
@@ -953,14 +974,13 @@
 
     function toggleCollectionStore(storeId, checked) {
       const selected = selectedCollectionStoreIds();
-      if (checked) selected.add(storeId);
-      else selected.delete(storeId);
+      if (checked) selected.add(storeId); else selected.delete(storeId);
       localStorage.managementCollectionStores = JSON.stringify([...selected]);
       collections();
     }
 
     function selectAllCollectionStores() {
-      localStorage.managementCollectionStores = JSON.stringify(collectionStores().map(s => s[0]));
+      localStorage.managementCollectionStores = JSON.stringify(stores.map(s => s[0]));
       collections();
     }
 
@@ -968,28 +988,27 @@
       store = "";
       edit = null;
       history.replaceState(null, "", "#MANAGEMENT-COLLECTIONS");
-      const availableStores = collectionStores();
       const selectedIds = selectedCollectionStoreIds();
-      const rows = availableStores.filter(s => selectedIds.has(s[0])).map(s => ({ id: s[0], name: s[1], totals: storeCollectionTotals(s[0]) }));
+      const rows = stores.filter(s => selectedIds.has(s[0])).map(s => ({ id: s[0], name: s[1], totals: storeCollectionTotals(s[0]) }));
       const total = rows.reduce((all, row) => {
         Object.keys(all).forEach(key => all[key] += row.totals[key]);
         return all;
       }, { euroSales: 0, dollarSales: 0, gbpSales: 0, euroChanged: 0, dollarChanged: 0, gbpChanged: 0, euro: 0, dollar: 0, gbp: 0, egp: 0, visa: 0 });
 
-      app.innerHTML = `
-        <div class="head"><h1>تحصيل المحلات</h1><button class="light" onclick="window.home()">رجوع</button></div>
+      document.getElementById("app").innerHTML = `
+        <div class="head"><h1>تحصيل المحلات</h1><button class="light" onclick="home()">رجوع</button></div>
         <section class="panel">
           <div class="grid">
             <label>من تاريخ ${dateBox("from", period.from)}</label>
             <label>إلى تاريخ ${dateBox("to", period.to)}</label>
-            <button onclick="window.setPeriod({from:window.dateValue('from'),to:window.dateValue('to')}); window.collections()">الفترة المحددة</button>
-            <button class="light" onclick="window.setPeriod(window.thisMonth()); window.collections()">الشهر الحالي</button>
+            <button onclick="setPeriod({from:dateValue('from'),to:dateValue('to')}); collections()">الفترة المحددة</button>
+            <button class="light" onclick="setPeriod(thisMonth()); collections()">الشهر الحالي</button>
           </div>
           <div class="row">
-            <button class="gray" onclick="window.selectAllCollectionStores()">اختيار كل المحلات</button>
-            ${availableStores.map(s => `<label class="shop-choice"><input type="checkbox" ${selectedIds.has(s[0]) ? "checked" : ""} onchange="window.toggleCollectionStore('${s[0]}', this.checked)">${s[1]}</label>`).join("")}
+            <button class="gray" onclick="selectAllCollectionStores()">اختيار كل المحلات</button>
+            ${stores.map(s => `<label class="shop-choice"><input type="checkbox" ${selectedIds.has(s[0]) ? "checked" : ""} onchange="toggleCollectionStore('${s[0]}', this.checked)">${s[1]}</label>`).join("")}
           </div>
-          <div class="row"><button onclick="window.exportCollectionsPdf()">تصدير تحصيل المحلات PDF</button></div>
+          <div class="row"><button onclick="exportCollectionsPdf()">تصدير تحصيل المحلات PDF</button></div>
           <div class="cards">
             <div class="card">صافي اليورو <strong>${m(total.euro)}</strong></div>
             <div class="card">صافي الدولار <strong>${m(total.dollar)}</strong></div>
@@ -1009,125 +1028,79 @@
       `;
     }
 
-    function exportCollectionsPdf() {
-      const selectedIds = selectedCollectionStoreIds();
-      const rows = collectionStores().filter(s => selectedIds.has(s[0])).map(s => ({ id: s[0], name: s[1], totals: storeCollectionTotals(s[0]) }));
-      const total = rows.reduce((all, row) => {
-        Object.keys(all).forEach(key => all[key] += row.totals[key]);
-        return all;
-      }, { euroSales: 0, dollarSales: 0, gbpSales: 0, euroChanged: 0, dollarChanged: 0, gbpChanged: 0, euro: 0, dollar: 0, gbp: 0, egp: 0, visa: 0 });
-      const cells = row => `<tr><td>${row.name}</td><td>${m(row.totals.euroSales)}</td><td>${m(row.totals.euroChanged)}</td><td>${m(row.totals.euro)}</td><td>${m(row.totals.dollarSales)}</td><td>${m(row.totals.dollarChanged)}</td><td>${m(row.totals.dollar)}</td><td>${m(row.totals.gbpSales)}</td><td>${m(row.totals.gbpChanged)}</td><td>${m(row.totals.gbp)}</td><td>${m(row.totals.egp)}</td><td>${m(row.totals.visa)}</td></tr>`;
-      const headers = `<tr><th>المحل</th><th>يورو محصل</th><th>تم تغييره</th><th>صافي يورو</th><th>دولار محصل</th><th>تم تغييره</th><th>صافي دولار</th><th>إنجليزي محصل</th><th>تم تغييره</th><th>صافي إنجليزي</th><th>جنيه</th><th>فيزا</th></tr>`;
-      const content = `
-        <div class="summary-grid">
-          <div class="metric">صافي اليورو - جميع المحلات<b>${m(total.euro)}</b></div>
-          <div class="metric">صافي الدولار - جميع المحلات<b>${m(total.dollar)}</b></div>
-          <div class="metric">صافي الجنيه الإنجليزي - جميع المحلات<b>${m(total.gbp)}</b></div>
-          <div class="metric">إجمالي الجنيه<b>${m(total.egp)}</b></div>
-          <div class="metric">إجمالي الفيزا<b>${m(total.visa)}</b></div>
-        </div>
-        <h2>تفاصيل تحصيل المحلات</h2>
-        <table><thead>${headers}</thead><tbody>${rows.map(cells).join("")}</tbody></table>
-        <h2>إجمالي كل المحلات</h2>
-        <table><thead>${headers}</thead><tbody><tr class="total"><td>الإجمالي</td><td>${m(total.euroSales)}</td><td>${m(total.euroChanged)}</td><td>${m(total.euro)}</td><td>${m(total.dollarSales)}</td><td>${m(total.dollarChanged)}</td><td>${m(total.dollar)}</td><td>${m(total.gbpSales)}</td><td>${m(total.gbpChanged)}</td><td>${m(total.gbp)}</td><td>${m(total.egp)}</td><td>${m(total.visa)}</td></tr></tbody></table>`;
-      printPdf("تقرير تحصيل المحلات", `الفترة: من ${period.from} إلى ${period.to}`, content, "landscape");
-    }
-
-    function openStore(storeId) {
-      store = storeId;
-      tab = "sales";
-      edit = null;
-      render();
-    }
-
     function render() {
       const s = meta();
       history.replaceState(null, "", `#MANAGEMENT-${encodeURIComponent(s[1])}`);
-
-      app.innerHTML = `
+      document.getElementById("app").innerHTML = `
         <div class="head">
           <h1>${s[1]}</h1>
-          <button class="light" onclick="window.home()">رجوع</button>
+          <button class="light" onclick="home()">رجوع</button>
         </div>
-
         <div class="tabs">
           ${Object.entries(tabNames).map(([key, value]) => `
-            <button class="tab ${tab === key ? "on" : ""}" onclick="window.switchTab('${key}')">
-              ${value}
-            </button>
+            <button class="tab ${tab === key ? "on" : ""}" onclick="switchTab('${key}')">${value}</button>
           `).join("")}
         </div>
-
         <section class="panel">
           ${dates()}
           <div id="body"></div>
         </section>
       `;
-
       draw();
     }
 
-    function switchTab(key) {
-      tab = key;
-      edit = null;
-      render();
-    }
+    function switchTab(key) { tab = key; edit = null; render(); }
 
     function dates() {
       return `
         <div class="grid">
           <label>من تاريخ ${dateBox("from", period.from)}</label>
           <label>إلى تاريخ ${dateBox("to", period.to)}</label>
-            <button onclick="window.setPeriod({from:window.dateValue('from'),to:window.dateValue('to')}); window.render()">الفترة المحددة</button>
-            <button class="light" onclick="window.setPeriod(window.thisMonth()); window.render()">الشهر الحالي</button>
+          <button onclick="setPeriod({from:dateValue('from'),to:dateValue('to')}); render()">الفترة المحددة</button>
+          <button class="light" onclick="setPeriod(thisMonth()); render()">الشهر الحالي</button>
         </div>
       `;
     }
 
+    function openStore(storeId) { store = storeId; tab = "sales"; edit = null; render(); }
+
     function draw() {
       const pages = { sales, exchange, traders, sellers, items, expenses, profits };
-      body.innerHTML = pages[tab]();
+      document.getElementById("body").innerHTML = pages[tab]();
     }
 
     function up(list, item) {
+      if (!isAdmin) return alert("ليس لديك صلاحية للتعديل");
       const index = list.findIndex(x => x.id === item.id);
-      if (index > -1) list[index] = item;
-      else list.push(item);
-
-      save();
-      edit = null;
-      draw();
+      if (index > -1) list[index] = item; else list.push(item);
+      save(); edit = null; draw();
     }
 
     function del(type, itemId) {
+      if (!isAdmin) return alert("ليس لديك صلاحية للحذف");
       if (!confirm("حذف ؟")) return;
       st()[type] = st()[type].filter(x => x.id !== itemId);
-      save();
-      draw();
+      save(); draw();
     }
 
     function edt(type, itemId) {
+      if (!isAdmin) return;
       edit = { type, id: itemId };
       draw();
     }
 
     function box(id) {
       const element = q(id);
-      element.style.display = element.style.display === "none" ? "" : "none";
+      if (element) element.style.display = element.style.display === "none" ? "" : "none";
     }
 
     /* =========================================================
        شيت المبيعات
        ========================================================= */
-
     function totals() {
       return fl(st().sales).reduce((a, x) => {
-        a.euro += n(x.euro);
-        a.dollar += n(x.dollar);
-        a.gbp += n(x.gbp);
-        a.egp += n(x.egp);
-        a.visa += n(x.visa);
-        a.pieces += n(x.pieces);
+        a.euro += n(x.euro); a.dollar += n(x.dollar); a.gbp += n(x.gbp);
+        a.egp += n(x.egp); a.visa += n(x.visa); a.pieces += n(x.pieces);
         return a;
       }, { euro: 0, dollar: 0, gbp: 0, egp: 0, visa: 0, pieces: 0 });
     }
@@ -1140,22 +1113,29 @@
 
       return `
         <h2>المبيعات اليومية</h2>
-        <div class="grid">
-          <label>التاريخ ${dateBox("sd", r.date || rememberedDate("sd"))}</label>
-          <label>اليورو <input id="se" type="number" step="0.01" value="${r.euro || ""}"></label>
-          <label>الدولار <input id="su" type="number" step="0.01" value="${r.dollar || ""}"></label>
-          <label>الجنيه الإنجليزي <input id="sb" type="number" step="0.01" value="${r.gbp || ""}"></label>
-          <label>الجنيه <input id="sg" type="number" step="0.01" value="${r.egp || ""}"></label>
-          <label>الفيزا <input id="sv" type="number" step="0.01" value="${r.visa || ""}"></label>
-          ${hasPieces ? `<label>إجمالي سعر القطع المباعة <input id="sp" type="number" step="0.01" value="${r.pieces || ""}"></label>` : ""}
-        </div>
-
-        <div class="row">
-          <button onclick="window.saveSale()">${r.id ? "تعديل" : "حفظ"}</button>
-          <button class="gray" onclick="window.box('sum')">إجمالي الشهر</button>
-          <button class="gray" onclick="window.box('list')">عرض كل الأيام</button>
-          <button onclick="window.exportSalesPdf()"> PDF</button>
-        </div>
+        ${isAdmin ? `
+          <div class="grid">
+            <label>التاريخ ${dateBox("sd", r.date || rememberedDate("sd"))}</label>
+            <label>اليورو <input id="se" type="number" step="0.01" value="${r.euro || ""}"></label>
+            <label>الدولار <input id="su" type="number" step="0.01" value="${r.dollar || ""}"></label>
+            <label>الجنيه الإنجليزي <input id="sb" type="number" step="0.01" value="${r.gbp || ""}"></label>
+            <label>الجنيه <input id="sg" type="number" step="0.01" value="${r.egp || ""}"></label>
+            <label>الفيزا <input id="sv" type="number" step="0.01" value="${r.visa || ""}"></label>
+            ${hasPieces ? `<label>إجمالي سعر القطع المباعة <input id="sp" type="number" step="0.01" value="${r.pieces || ""}"></label>` : ""}
+          </div>
+          <div class="row">
+            <button onclick="saveSale()">${r.id ? "تعديل" : "حفظ"}</button>
+            <button class="gray" onclick="box('sum')">إجمالي الشهر</button>
+            <button class="gray" onclick="box('list')">عرض كل الأيام</button>
+            <button onclick="exportSalesPdf()">PDF</button>
+          </div>
+        ` : `
+          <div class="row">
+            <button class="gray" onclick="box('sum')">إجمالي الشهر</button>
+            <button class="gray" onclick="box('list')">عرض كل الأيام</button>
+            <button onclick="exportSalesPdf()">PDF</button>
+          </div>
+        `}
 
         <div id="sum" class="cards" style="display:none">
           <div class="card">اليورو <strong>${m(t.euro)}</strong></div>
@@ -1178,6 +1158,7 @@
     }
 
     function saveSale() {
+      if (!isAdmin) return;
       up(st().sales, {
         id: edit?.type === "sales" ? edit.id : id(),
         date: dateValue("sd"),
@@ -1186,7 +1167,6 @@
         pieces: meta()[2] ? n(sp.value) : 0
       });
     }
-
     function exportSalesPdf() {
       if (tab !== "sales") return;
       const hasPieces = meta()[2];
@@ -1210,17 +1190,14 @@
     /* =========================================================
        شيت تغيير العملة
        ========================================================= */
-
     function exStats() {
       const list = fl(st().exchange);
       let euroAmount = 0, euroTotal = 0, dollarAmount = 0, dollarTotal = 0, gbpAmount = 0, gbpTotal = 0;
-
       list.forEach(x => {
         euroAmount += n(x.ea); euroTotal += n(x.ea) * n(x.er);
         dollarAmount += n(x.da); dollarTotal += n(x.da) * n(x.dr);
         gbpAmount += n(x.ba); gbpTotal += n(x.ba) * n(x.br);
       });
-
       return {
         eavg: euroAmount ? euroTotal / euroAmount : 0,
         davg: dollarAmount ? dollarTotal / dollarAmount : 0,
@@ -1236,21 +1213,27 @@
 
       return `
         <h2>تغيير العملة</h2>
-        <div class="grid">
-          <label>التاريخ ${dateBox("ed", r.date || rememberedDate("ed"))}</label>
-          <label>عدد اليورو <input id="ea" type="number" step="0.01" value="${r.ea || ""}"></label>
-          <label>سعر اليورو <input id="er" type="number" step="0.01" value="${r.er || ""}"></label>
-          <label>عدد الدولار <input id="da" type="number" step="0.01" value="${r.da || ""}"></label>
-          <label>سعر الدولار <input id="dr" type="number" step="0.01" value="${r.dr || ""}"></label>
-          <label>عدد الجنيه الإنجليزي <input id="ba" type="number" step="0.01" value="${r.ba || ""}"></label>
-          <label>سعر الجنيه الإنجليزي <input id="br" type="number" step="0.01" value="${r.br || ""}"></label>
-        </div>
-
-        <div class="row">
-          <button onclick="window.saveEx()">${r.id ? "تعديل" : "حفظ"}</button>
-          <button class="gray" onclick="window.box('exsum')">متوسط الشهر</button>
-          <button class="gray" onclick="window.box('exlist')">أيام التغيير</button>
-        </div>
+        ${isAdmin ? `
+          <div class="grid">
+            <label>التاريخ ${dateBox("ed", r.date || rememberedDate("ed"))}</label>
+            <label>عدد اليورو <input id="ea" type="number" step="0.01" value="${r.ea || ""}"></label>
+            <label>سعر اليورو <input id="er" type="number" step="0.01" value="${r.er || ""}"></label>
+            <label>عدد الدولار <input id="da" type="number" step="0.01" value="${r.da || ""}"></label>
+            <label>سعر الدولار <input id="dr" type="number" step="0.01" value="${r.dr || ""}"></label>
+            <label>عدد الجنيه الإنجليزي <input id="ba" type="number" step="0.01" value="${r.ba || ""}"></label>
+            <label>سعر الجنيه الإنجليزي <input id="br" type="number" step="0.01" value="${r.br || ""}"></label>
+          </div>
+          <div class="row">
+            <button onclick="saveEx()">${r.id ? "تعديل" : "حفظ"}</button>
+            <button class="gray" onclick="box('exsum')">متوسط الشهر</button>
+            <button class="gray" onclick="box('exlist')">أيام التغيير</button>
+          </div>
+        ` : `
+          <div class="row">
+            <button class="gray" onclick="box('exsum')">متوسط الشهر</button>
+            <button class="gray" onclick="box('exlist')">أيام التغيير</button>
+          </div>
+        `}
 
         <div id="exsum" class="cards" style="display:none">
           <div class="card">متوسط اليورو <strong>${m(x.eavg)}</strong></div>
@@ -1261,8 +1244,8 @@
         <div id="exlist" style="display:none">
           <div class="table-scroll">
             ${table(list, "exchange",
-              ["التاريخ", "يورو", "سعر التغيير", "الأجمالي", "دولار", "سعر التغيير", "الأجمالي", "جنيه إنجليزي", "سعر التغيير ", "الأجمالي"],
-              r => [r.date, m(r.ea), m(r.er), m(n(r.ea) * n(r.er)), m(r.da), m(r.dr), m(n(r.da) * n(r.dr)), m(r.ba), m(r.br), m(n(r.ba) * n(r.br))]
+              ["التاريخ", "يورو", "سعر التغيير", "الأجمالي", "دولار", "سعر التغيير", "الأجمالي", "جنيه إنجليزي", "سعر التغيير", "الأجمالي"],
+              rr => [rr.date, m(rr.ea), m(rr.er), m(n(rr.ea) * n(rr.er)), m(rr.da), m(rr.dr), m(n(rr.da) * n(rr.dr)), m(rr.ba), m(rr.br), m(n(rr.ba) * n(rr.br))]
             )}
           </div>
         </div>
@@ -1270,6 +1253,7 @@
     }
 
     function saveEx() {
+      if (!isAdmin) return;
       up(st().exchange, {
         id: edit?.type === "exchange" ? edit.id : id(),
         date: dateValue("ed"),
@@ -1282,7 +1266,6 @@
     /* =========================================================
        شيت التجار
        ========================================================= */
-
     function traderKindLabel(kind) {
       if (kind === "invoice") return "فاتورة";
       if (kind === "return") return "مرتجع";
@@ -1306,10 +1289,7 @@
       sessionStorage.traderSearch = name;
       const target = q("liveTraderBalance");
       if (!target) return;
-      if (!name) {
-        target.innerHTML = "اكتب اسم التاجر لعرض الرصيد";
-        return;
-      }
+      if (!name) { target.innerHTML = "اكتب اسم التاجر لعرض الرصيد"; return; }
       const b = traderBalance(name);
       target.innerHTML = `الرصيد المرحل: ${m(b.opening)}<br>حركة الفترة: ${m(b.movement)}<br>الرصيد الحالي: ${m(b.closing)}`;
     }
@@ -1323,7 +1303,7 @@
       target.innerHTML = list.map(x => `
         <tr>
           <td>${x.date}</td><td>${x.name}</td><td>${traderKindLabel(x.kind)}</td><td>${m(x.amount)}</td>
-          <td><button class="light" onclick="window.edt('traderTx','${x.id}')">تعديل</button><button class="danger" onclick="window.del('traderTx','${x.id}')">حذف</button></td>
+          <td>${isAdmin ? `<button class="light" onclick="edt('traderTx','${x.id}')">تعديل</button><button class="danger" onclick="del('traderTx','${x.id}')">حذف</button>` : "-"}</td>
         </tr>
       `).join("") || `<tr><td colspan="5">${search ? "لا توجد معاملات لهذا التاجر خلال الفترة" : "لا توجد معاملات خلال الفترة"}</td></tr>`;
     }
@@ -1340,23 +1320,29 @@
         <h2>التجار</h2>
         <datalist id="tn">${data.traders.map(x => `<option value="${x}">`).join("")}</datalist>
 
-        <div class="grid">
-          <label>اسم التاجر <input id="trn" list="tn" value="${search}" oninput="window.showTraderLiveBalance(this.value); window.filterTraderTransactions(this.value)" onchange="sessionStorage.traderSearch=this.value; window.draw()"></label>
-          <label>التاريخ ${dateBox("trd", r.date || rememberedDate("trd"))}</label>
-          <label>النوع
-            <select id="trk">
-              <option value="invoice">فاتورة</option>
-              <option value="payment" ${r.kind === "payment" ? "selected" : ""}>دفعة</option>
-              <option value="return" ${r.kind === "return" ? "selected" : ""}>مرتجع</option>
-            </select>
-          </label>
-          <label>القيمة <input id="tra" type="number" step="0.01" value="${r.amount || ""}"></label>
-        </div>
-
-        <div class="row">
-          <button onclick="window.saveTrader()">${r.id ? "تعديل" : "حفظ"}</button>
-          <button onclick="window.exportTraderTransactionsPdf()">تصدير معاملات التجار PDF</button>
-        </div>
+        ${isAdmin ? `
+          <div class="grid">
+            <label>اسم التاجر <input id="trn" list="tn" value="${search}" oninput="showTraderLiveBalance(this.value); filterTraderTransactions(this.value)" onchange="sessionStorage.traderSearch=this.value; draw()"></label>
+            <label>التاريخ ${dateBox("trd", r.date || rememberedDate("trd"))}</label>
+            <label>النوع
+              <select id="trk">
+                <option value="invoice">فاتورة</option>
+                <option value="payment" ${r.kind === "payment" ? "selected" : ""}>دفعة</option>
+                <option value="return" ${r.kind === "return" ? "selected" : ""}>مرتجع</option>
+              </select>
+            </label>
+            <label>القيمة <input id="tra" type="number" step="0.01" value="${r.amount || ""}"></label>
+          </div>
+          <div class="row">
+            <button onclick="saveTrader()">${r.id ? "تعديل" : "حفظ"}</button>
+            <button onclick="exportTraderTransactionsPdf()">تصدير معاملات التجار PDF</button>
+          </div>
+        ` : `
+          <div class="row">
+            <label>بحث باسم التاجر <input id="trn" list="tn" value="${search}" oninput="showTraderLiveBalance(this.value); filterTraderTransactions(this.value)"></label>
+            <button onclick="exportTraderTransactionsPdf()">تصدير معاملات التجار PDF</button>
+          </div>
+        `}
 
         <div class="cards">
           <div class="card" id="liveTraderBalance">
@@ -1368,19 +1354,19 @@
         </div>
 
         <hr>
-        <div class="row"><button class="gray" onclick="window.box('traderMonthList')"> معاملات الشهر</button></div>
+        <div class="row"><button class="gray" onclick="box('traderMonthList')">معاملات الشهر</button></div>
 
         <div id="traderMonthList" style="display:none">
           <div class="table-scroll">
             <table>
-              <tr><th>التاريخ</th><th>التاجر</th><th>النوع</th><th>القيمة</th><th>تحكم</th></tr>
+              <tr><th>التاريخ</th><th>التاجر</th><th>النوع</th><th>القيمة</th>${isAdmin ? "<th>تحكم</th>" : ""}</tr>
               <tbody id="traderTransactionRows">
                 ${filteredList.map(x => `
                   <tr>
                     <td>${x.date}</td><td>${x.name}</td><td>${traderKindLabel(x.kind)}</td><td>${m(x.amount)}</td>
-                    <td><button class="light" onclick="window.edt('traderTx','${x.id}')">تعديل</button><button class="danger" onclick="window.del('traderTx','${x.id}')">حذف</button></td>
+                    ${isAdmin ? `<td><button class="light" onclick="edt('traderTx','${x.id}')">تعديل</button><button class="danger" onclick="del('traderTx','${x.id}')">حذف</button></td>` : ""}
                   </tr>
-                `).join("") || `<tr><td colspan="5">${search ? "لا توجد معاملات لهذا التاجر خلال الفترة" : "لا توجد معاملات خلال الفترة"}</td></tr>`}
+                `).join("") || `<tr><td colspan="${isAdmin ? 5 : 4}">لا توجد معاملات</td></tr>`}
               </tbody>
             </table>
           </div>
@@ -1389,6 +1375,7 @@
     }
 
     function saveTrader() {
+      if (!isAdmin) return;
       const name = trn.value.trim();
       if (!name) return alert("اكتب اسم التاجر");
       if (!data.traders.includes(name)) data.traders.push(name);
@@ -1403,9 +1390,9 @@
       if (tab !== "traders") return;
       const search = (sessionStorage.traderSearch || "").trim().toLowerCase();
       const rows = fl(st().traderTx).filter(x => !search || String(x.name).toLowerCase().includes(search)).sort((a, b) => String(a.date).localeCompare(String(b.date)));
-      const invoices = rows.filter(x => x.kind === "invoice").reduce((sum, x) => sum + n(x.amount), 0);
-      const payments = rows.filter(x => x.kind === "payment").reduce((sum, x) => sum + n(x.amount), 0);
-      const returns = rows.filter(x => x.kind === "return").reduce((sum, x) => sum + n(x.amount), 0);
+      const invoices = rows.filter(x => x.kind === "invoice").reduce((s, x) => s + n(x.amount), 0);
+      const payments = rows.filter(x => x.kind === "payment").reduce((s, x) => s + n(x.amount), 0);
+      const returns = rows.filter(x => x.kind === "return").reduce((s, x) => s + n(x.amount), 0);
       const title = search ? `معاملات التاجر - ${sessionStorage.traderSearch}` : "معاملات التجار";
       const content = `
         <div class="summary-grid">
@@ -1415,7 +1402,7 @@
           <div class="metric">إجمالي المرتجعات<b>${m(returns)}</b></div>
         </div>
         <table><thead><tr><th>#</th><th>التاريخ</th><th>التاجر</th><th>النوع</th><th>القيمة</th></tr></thead><tbody>
-          ${rows.map((x, index) => `<tr><td>${index + 1}</td><td>${x.date}</td><td>${x.name}</td><td>${traderKindLabel(x.kind)}</td><td>${m(x.amount)}</td></tr>`).join("") || `<tr><td colspan="5">لا توجد معاملات خلال الفترة المحددة</td></tr>`}
+          ${rows.map((x, i) => `<tr><td>${i + 1}</td><td>${x.date}</td><td>${x.name}</td><td>${traderKindLabel(x.kind)}</td><td>${m(x.amount)}</td></tr>`).join("") || `<tr><td colspan="5">لا توجد معاملات</td></tr>`}
         </tbody></table>`;
       printPdf(`${title} - ${meta()[1]}`, `الفترة: من ${period.from} إلى ${period.to}`, content);
     }
@@ -1423,73 +1410,74 @@
     /* =========================================================
        شيت البائعين
        ========================================================= */
-
     function sellers() {
       return `
         <h2>البائعين</h2>
         <h3>بائعين العمولة</h3>
-        <div class="grid grid3">
-          <label>اسم البائع <input id="sn"></label>
-          <button onclick="window.addSeller()">إضافة بائع</button>
-        </div>
+        ${isAdmin ? `
+          <div class="grid grid3">
+            <label>اسم البائع <input id="sn"></label>
+            <button onclick="addSeller()">إضافة بائع</button>
+          </div>
+        ` : ""}
 
         <div class="table-scroll">
           <table>
-            <tr><th>البائع</th><th>تحكم</th></tr>
-            ${st().sellers.map(x => `<tr><td>${x.name}</td><td><button class="danger" onclick="window.deleteSeller('${x.id}')">حذف</button></td></tr>`).join("") || `<tr><td colspan="2">لا يوجد بائعين</td></tr>`}
+            <tr><th>البائع</th>${isAdmin ? "<th>تحكم</th>" : ""}</tr>
+            ${st().sellers.map(x => `<tr><td>${x.name}</td>${isAdmin ? `<td><button class="danger" onclick="deleteSeller('${x.id}')">حذف</button></td>` : ""}</tr>`).join("") || `<tr><td colspan="${isAdmin ? 2 : 1}">لا يوجد بائعين</td></tr>`}
           </table>
         </div>
 
         <hr>
-
         <h3>راتب ثابت</h3>
-        <div class="grid grid3">
-          <label>الأسم <input id="fsn"></label>
-          <label>الراتب الثابت <input id="fss" type="number" step="0.01"></label>
-          <button onclick="window.addFixedSeller()">إضافة</button>
-        </div>
+        ${isAdmin ? `
+          <div class="grid grid3">
+            <label>الأسم <input id="fsn"></label>
+            <label>الراتب الثابت <input id="fss" type="number" step="0.01"></label>
+            <button onclick="addFixedSeller()">إضافة</button>
+          </div>
+        ` : ""}
 
         <div class="table-scroll">
           <table>
-            <tr><th>الأسم</th><th>الراتب</th><th>تحكم</th></tr>
-            ${st().fixedSellers.map(x => `<tr><td>${x.name}</td><td>${m(x.salary)}</td><td><button class="danger" onclick="window.deleteFixedSeller('${x.id}')">حذف</button></td></tr>`).join("") || `<tr><td colspan="3">لا يوجد بيانات</td></tr>`}
+            <tr><th>الأسم</th><th>الراتب</th>${isAdmin ? "<th>تحكم</th>" : ""}</tr>
+            ${st().fixedSellers.map(x => `<tr><td>${x.name}</td><td>${m(x.salary)}</td>${isAdmin ? `<td><button class="danger" onclick="deleteFixedSeller('${x.id}')">حذف</button></td>` : ""}</tr>`).join("") || `<tr><td colspan="${isAdmin ? 3 : 2}">لا يوجد بيانات</td></tr>`}
           </table>
         </div>
       `;
     }
 
     function addSeller() {
+      if (!isAdmin) return;
       if (!sn.value.trim()) return;
       st().sellers.push({ id: id(), name: sn.value.trim() });
-      save();
-      draw();
+      save(); draw();
     }
 
     function deleteSeller(sellerId) {
+      if (!isAdmin) return;
       if (!confirm("حذف البائع؟")) return;
       st().sellers = st().sellers.filter(x => x.id !== sellerId);
-      save();
-      draw();
+      save(); draw();
     }
 
     function addFixedSeller() {
+      if (!isAdmin) return;
       if (!fsn.value.trim()) return;
       st().fixedSellers.push({ id: id(), name: fsn.value.trim(), salary: n(fss.value) });
-      save();
-      draw();
+      save(); draw();
     }
 
     function deleteFixedSeller(sellerId) {
+      if (!isAdmin) return;
       if (!confirm("حذف ؟")) return;
       st().fixedSellers = st().fixedSellers.filter(x => x.id !== sellerId);
-      save();
-      draw();
+      save(); draw();
     }
 
     /* =========================================================
        شيت الأصناف
        ========================================================= */
-
     function itemStats(from, to) {
       const rows = {};
       st().items.filter(x => x.date && (!from || x.date >= from) && (!to || x.date <= to)).forEach(x => {
@@ -1518,7 +1506,6 @@
         current += dash;
         return circle;
       }).join("");
-
       return `
         <div class="chart-wrap">
           <div>
@@ -1547,7 +1534,6 @@
       const rows = [...names].sort((a, b) => a.localeCompare(b, "ar"));
       const maxQty = Math.max(1, ...rows.map(name => Math.max(n(aMap[name]?.qty), n(bMap[name]?.qty))));
       if (!rows.length) return `<div class="card">لا توجد بيانات للمقارنة</div>`;
-
       return `
         <div class="bar-chart">
           ${rows.map(name => {
@@ -1592,16 +1578,19 @@
         <h2>تقرير الأصناف</h2>
         <datalist id="itemNameList">${itemNames().map(name => `<option value="${name}">`).join("")}</datalist>
 
-        <div class="grid">
-          <label>التاريخ ${dateBox("itd", r.date || rememberedDate("itd"))}</label>
-          <label>اسم الصنف <input id="itn" list="itemNameList" value="${r.name || ""}" placeholder="اكتب أول حرف"></label>
-          <label>عدد القطع المباعة <input id="itq" type="number" step="0.01" value="${r.qty || ""}"></label>
-          <label>سعر القطع المباعة <input id="itv" type="number" step="0.01" value="${r.value || ""}"></label>
-          <button onclick="window.saveItem()">${r.id ? "تعديل الصنف" : "إضافة صنف"}</button>
-          ${r.id ? `<button class="light" onclick="window.cancelEdit()">إلغاء التعديل</button>` : ""}
-        </div>
-
-        <div class="row"><button class="gray" onclick="window.box('itemsList')">عرض / إخفاء الأصناف المسجلة</button></div>
+        ${isAdmin ? `
+          <div class="grid">
+            <label>التاريخ ${dateBox("itd", r.date || rememberedDate("itd"))}</label>
+            <label>اسم الصنف <input id="itn" list="itemNameList" value="${r.name || ""}" placeholder="اكتب أول حرف"></label>
+            <label>عدد القطع المباعة <input id="itq" type="number" step="0.01" value="${r.qty || ""}"></label>
+            <label>سعر القطع المباعة <input id="itv" type="number" step="0.01" value="${r.value || ""}"></label>
+            <button onclick="saveItem()">${r.id ? "تعديل الصنف" : "إضافة صنف"}</button>
+            ${r.id ? `<button class="light" onclick="edit=null; draw()">إلغاء التعديل</button>` : ""}
+          </div>
+          <div class="row"><button class="gray" onclick="box('itemsList')">عرض / إخفاء الأصناف المسجلة</button></div>
+        ` : `
+          <div class="row"><button class="gray" onclick="box('itemsList')">عرض / إخفاء الأصناف المسجلة</button></div>
+        `}
 
         <div id="itemsList" style="display:none">
           <div class="table-scroll">
@@ -1625,7 +1614,7 @@
           <label>الفترة الأولى إلى ${dateBox("iat", aTo)}</label>
           <label>الفترة الثانية من ${dateBox("ibf", bFrom)}</label>
           <label>الفترة الثانية إلى ${dateBox("ibt", bTo)}</label>
-          <button onclick="window.setItemCompare()">تطبيق المقارنة</button>
+          <button onclick="setItemCompare()">تطبيق المقارنة</button>
         </div>
 
         <div class="cards">
@@ -1646,9 +1635,8 @@
       `;
     }
 
-    function cancelEdit() { edit = null; draw(); }
-
     function saveItem() {
+      if (!isAdmin) return;
       if (!itn.value.trim()) return alert("اكتب اسم الصنف");
       up(st().items, {
         id: edit?.type === "items" ? edit.id : id(),
@@ -1681,7 +1669,6 @@
     /* =========================================================
        شيت المصروفات
        ========================================================= */
-
     function expenses() {
       const expenseRecord = edit?.type === "expenses" ? st().expenses.find(x => x.id === edit.id) : {};
       const withdrawalRecord = edit?.type === "withdrawals" ? st().withdrawals.find(x => x.id === edit.id) : {};
@@ -1699,15 +1686,17 @@
         <div class="card">إجمالي المصروفات <strong>${m(unifiedOutflowTotal())}</strong></div>
 
         <h3>مصروفات المحل</h3>
-        <div class="grid">
-          <label>التاريخ ${dateBox("xd", expenseRecord.date || rememberedDate("xd"))}</label>
-          <label>البند <input id="xi" value="${expenseRecord.item || ""}"></label>
-          <label>القيمة <input id="xa" type="number" step="0.01" value="${expenseRecord.amount || ""}"></label>
-          <button onclick="window.saveExpense()">حفظ</button>
-        </div>
+        ${isAdmin ? `
+          <div class="grid">
+            <label>التاريخ ${dateBox("xd", expenseRecord.date || rememberedDate("xd"))}</label>
+            <label>البند <input id="xi" value="${expenseRecord.item || ""}"></label>
+            <label>القيمة <input id="xa" type="number" step="0.01" value="${expenseRecord.amount || ""}"></label>
+            <button onclick="saveExpense()">حفظ</button>
+          </div>
+        ` : ""}
 
         <div class="row">
-          <button class="gray" onclick="window.box('explist')"> المصروفات</button>
+          <button class="gray" onclick="box('explist')">المصروفات</button>
           <div class="card">الإجمالي <strong>${m(expenseList.reduce((s, x) => s + n(x.amount), 0))}</strong></div>
         </div>
 
@@ -1721,8 +1710,8 @@
         <h3>كشف المصروفات</h3>
         <p>التفاصيل الكاملة للمصروفات</p>
         <div class="row">
-          <button class="gray" onclick="window.box('unifiedlist')">التفاصيل</button>
-          <button onclick="window.exportExpensesPdf()">PDF</button>
+          <button class="gray" onclick="box('unifiedlist')">التفاصيل</button>
+          <button onclick="exportExpensesPdf()">PDF</button>
           <div class="card">مصروفات كاش <strong>${m(expenseList.reduce((s, x) => s + n(x.amount), 0))}</strong></div>
           <div class="card">دفعات التجار <strong>${m(traderPaymentList.reduce((s, x) => s + n(x.amount), 0))}</strong></div>
           <div class="card">مسحوبات البائعين <strong>${m(withdrawalList.reduce((s, x) => s + n(x.amount), 0))}</strong></div>
@@ -1730,33 +1719,35 @@
         <div id="unifiedlist" style="display:none">
           <div class="table-scroll">
             <table>
-              <tr><th>التاريخ</th><th>البند</th><th>النوع</th><th>القيمة</th><th>المصدر</th><th>تعديل</th></tr>
+              <tr><th>التاريخ</th><th>البند</th><th>النوع</th><th>القيمة</th><th>المصدر</th>${isAdmin ? "<th>تعديل</th>" : ""}</tr>
               ${unifiedList.map(x => `
                 <tr>
                   <td>${x.date}</td><td>${x.item}</td><td>${x.type}</td><td>${m(x.amount)}</td>
                   <td>${x.source === "expenses" ? "المصروفات" : x.source === "traderTx" ? "التجار" : "مسحوبات البائعين"}</td>
-                  <td><button class="light" onclick="window.edt('${x.source}','${x.id}')">تعديل</button><button class="danger" onclick="window.del('${x.source}','${x.id}')">حذف</button></td>
+                  ${isAdmin ? `<td><button class="light" onclick="edt('${x.source}','${x.id}')">تعديل</button><button class="danger" onclick="del('${x.source}','${x.id}')">حذف</button></td>` : ""}
                 </tr>
-              `).join("") || `<tr><td colspan="6">لا توجد عمليات خلال الفترة</td></tr>`}
+              `).join("") || `<tr><td colspan="${isAdmin ? 6 : 5}">لا توجد عمليات خلال الفترة</td></tr>`}
             </table>
           </div>
         </div>
 
         <hr>
         <h3>مسحوبات البائعين</h3>
-        <div class="grid">
-          <label>التاريخ ${dateBox("wd", withdrawalRecord.date || rememberedDate("wd"))}</label>
-          <label>البائع
-            <select id="ws">
-              ${allSellers.map(s => `<option value="${s.name}" ${withdrawalRecord.seller === s.name ? "selected" : ""}>${s.name} - ${s.type}</option>`).join("")}
-            </select>
-          </label>
-          <label>القيمة <input id="wa" type="number" step="0.01" value="${withdrawalRecord.amount || ""}"></label>
-          <button onclick="window.saveWithdrawal()">حفظ</button>
-        </div>
+        ${isAdmin ? `
+          <div class="grid">
+            <label>التاريخ ${dateBox("wd", withdrawalRecord.date || rememberedDate("wd"))}</label>
+            <label>البائع
+              <select id="ws">
+                ${allSellers.map(s => `<option value="${s.name}" ${withdrawalRecord.seller === s.name ? "selected" : ""}>${s.name} - ${s.type}</option>`).join("")}
+              </select>
+            </label>
+            <label>القيمة <input id="wa" type="number" step="0.01" value="${withdrawalRecord.amount || ""}"></label>
+            <button onclick="saveWithdrawal()">حفظ</button>
+          </div>
+        ` : ""}
 
         <div class="row">
-          <button class="gray" onclick="window.box('wdlist')">المسحوبات</button>
+          <button class="gray" onclick="box('wdlist')">المسحوبات</button>
           <div class="card">الإجمالي <strong>${m(withdrawalList.reduce((s, x) => s + n(x.amount), 0))}</strong></div>
         </div>
 
@@ -1769,6 +1760,7 @@
     }
 
     function saveExpense() {
+      if (!isAdmin) return;
       if (!xi.value.trim()) return alert("اكتب البند");
       up(st().expenses, {
         id: edit?.type === "expenses" ? edit.id : id(),
@@ -1779,6 +1771,7 @@
     }
 
     function saveWithdrawal() {
+      if (!isAdmin) return;
       if (!st().sellers.length && !st().fixedSellers.length) return alert("أضف بائع الأول");
       up(st().withdrawals, {
         id: edit?.type === "withdrawals" ? edit.id : id(),
@@ -1791,7 +1784,6 @@
     /* =========================================================
        شيت الأرباح
        ========================================================= */
-
     function profitCalc() {
       const s = totals();
       const e = exStats();
@@ -1839,14 +1831,16 @@
       return `
         <h2>توزيع الأرباح وإضافة شركاء</h2>
 
-        <div class="grid grid3">
-          <label>اسم الشريك <input id="pn"></label>
-          <label>النسبة % <input id="pp" type="number" step="0.01"></label>
-          <button onclick="window.addPartner()">إضافة شريك</button>
-        </div>
+        ${isAdmin ? `
+          <div class="grid grid3">
+            <label>اسم الشريك <input id="pn"></label>
+            <label>النسبة % <input id="pp" type="number" step="0.01"></label>
+            <button onclick="addPartner()">إضافة شريك</button>
+          </div>
+        ` : ""}
 
         <div class="row">
-          <button class="gray" onclick="window.box('plist')">الشركاء</button>
+          <button class="gray" onclick="box('plist')">الشركاء</button>
           <b class="${partnersPercent === 100 ? "ok" : "bad"}">إجمالي النسب: ${m(partnersPercent)}%</b>
         </div>
 
@@ -1858,9 +1852,9 @@
 
         <hr>
         <div class="grid grid3">
-          <label>نسبة عمولة البائعين % <input id="cm" type="number" step="0.01" value="${commission || ""}"></label>
-          <button onclick="window.updateCommission()">تحديث التقرير</button>
-          <button class="gray" onclick="window.exportProfitPdf()">تصدير PDF</button>
+          <label>نسبة عمولة البائعين % <input id="cm" type="number" step="0.01" value="${commission || ""}" ${isAdmin ? "" : "disabled"}></label>
+          ${isAdmin ? `<button onclick="updateCommission()">تحديث التقرير</button>` : ""}
+          <button class="gray" onclick="exportProfitPdf()">تصدير PDF</button>
         </div>
 
         <div class="cards">
@@ -1904,44 +1898,47 @@
     }
 
     function updateCommission() {
+      if (!isAdmin) return;
       sessionStorage["comm" + store] = cm.value;
       draw();
     }
 
     function addPartner() {
+      if (!isAdmin) return;
       const total = st().partners.reduce((s, x) => s + n(x.percent), 0);
       const percent = n(pp.value);
       if (!pn.value.trim() || percent <= 0) return alert("اكتب اسم الشريك ونسبته");
       if (total + percent > 100) return alert("إجمالي النسب لا يتخطى 100%");
       st().partners.push({ id: id(), name: pn.value.trim(), percent });
-      save();
-      draw();
+      save(); draw();
     }
 
     /* =========================================================
-       الجداول والتقارير
+       الجداول
        ========================================================= */
-
     function table(list, type, heads, map) {
       return `
         <table>
           <tr>
             ${heads.map(h => `<th>${h}</th>`).join("")}
-            <th>تحكم</th>
+            ${isAdmin ? "<th>تحكم</th>" : ""}
           </tr>
           ${list.map(x => `
             <tr>
               ${map(x).map(c => `<td>${c}</td>`).join("")}
-              <td>
-                <button class="light" onclick="window.edt('${type}','${x.id}')">تعديل</button>
-                <button class="danger" onclick="window.del('${type}','${x.id}')">حذف</button>
-              </td>
+              ${isAdmin ? `<td>
+                <button class="light" onclick="edt('${type}','${x.id}')">تعديل</button>
+                <button class="danger" onclick="del('${type}','${x.id}')">حذف</button>
+              </td>` : ""}
             </tr>
-          `).join("") || `<tr><td colspan="${heads.length + 1}">لا توجد بيانات</td></tr>`}
+          `).join("") || `<tr><td colspan="${heads.length + (isAdmin ? 1 : 0)}">لا توجد بيانات</td></tr>`}
         </table>
       `;
     }
 
+    /* =========================================================
+       تقرير أرصدة التجار
+       ========================================================= */
     function selectedTraderBalanceStoreIds() {
       const availableIds = stores.map(s => s[0]);
       try {
@@ -1953,8 +1950,7 @@
 
     function toggleTraderBalanceStore(storeId, checked) {
       const selected = selectedTraderBalanceStoreIds();
-      if (checked) selected.add(storeId);
-      else selected.delete(storeId);
+      if (checked) selected.add(storeId); else selected.delete(storeId);
       localStorage.managementTraderBalanceStores = JSON.stringify([...selected]);
       traderTotals();
     }
@@ -1980,13 +1976,13 @@
         });
       });
 
-      app.innerHTML = `
+      document.getElementById("app").innerHTML = `
         <h1 class="title">MANAGEMENT</h1>
         <section class="panel">
           <h2>إجمالي الأرصدة للتجار</h2>
           <div class="row">
-            <button class="gray" onclick="window.selectAllTraderBalanceStores()">اختيار كل المحلات</button>
-            ${stores.map(s => `<label class="shop-choice"><input type="checkbox" ${selectedIds.has(s[0]) ? "checked" : ""} onchange="window.toggleTraderBalanceStore('${s[0]}', this.checked)">${s[1]}</label>`).join("")}
+            <button class="gray" onclick="selectAllTraderBalanceStores()">اختيار كل المحلات</button>
+            ${stores.map(s => `<label class="shop-choice"><input type="checkbox" ${selectedIds.has(s[0]) ? "checked" : ""} onchange="toggleTraderBalanceStore('${s[0]}', this.checked)">${s[1]}</label>`).join("")}
           </div>
           <div class="card">الإجمالي اللي عليك كله <strong>${m(grand)}</strong></div>
           <div class="table-scroll">
@@ -2006,11 +2002,118 @@
     }
 
     /* =========================================================
+       إدارة المستخدمين (للأدمين)
+       ========================================================= */
+    async function renderUsersPage() {
+      if (!isAdmin) return;
+      document.getElementById("app").innerHTML = `<div class="head"><h1>المستخدمين</h1><button class="light" onclick="home()">رجوع</button></div><section class="panel"><p>جاري التحميل...</p></section>`;
+
+      try {
+        const snap = await fbDB.ref(USERS_PATH).once("value");
+        const users = snap.val() || {};
+        const entries = Object.entries(users);
+
+        document.getElementById("app").innerHTML = `
+          <div class="head"><h1>👥 إدارة المستخدمين</h1><button class="light" onclick="home()">رجوع</button></div>
+          <section class="panel">
+            <h2>كل المستخدمين (${entries.length})</h2>
+            <div class="table-scroll">
+              <table>
+                <tr><th>الاسم</th><th>الإيميل</th><th>الحالة</th><th>الصلاحية</th><th>تحكم</th></tr>
+                ${entries.map(([uid, u]) => {
+                  const isSelf = uid === ADMIN_UID;
+                  const status = u.blocked ? "محظور ⛔" : (u.status === "approved" ? "موافق ✅" : "في الانتظار ⏳");
+                  const statusClass = u.blocked ? "bad" : (u.status === "approved" ? "ok" : "pending");
+                  const role = u.role === "admin" ? "أدمين" : "مشاهد";
+                  return `
+                    <tr>
+                      <td>${u.name || "-"}</td>
+                      <td>${u.email || "-"}</td>
+                      <td class="${statusClass}">${status}</td>
+                      <td>${role}</td>
+                      <td>
+                        ${isSelf ? `<span style="color:var(--muted);font-size:12px">(أنت)</span>` : `
+                          ${u.status !== "approved" ? `<button class="success" onclick="approveUser('${uid}')">موافقة</button>` : ""}
+                          ${u.status === "approved" ? `<button class="warn" onclick="blockUser('${uid}', ${!u.blocked})">${u.blocked ? "إلغاء الحظر" : "حظر"}</button>` : ""}
+                          <button class="danger" onclick="deleteUser('${uid}')">حذف</button>
+                        `}
+                      </td>
+                    </tr>
+                  `;
+                }).join("") || `<tr><td colspan="5">لا يوجد مستخدمين</td></tr>`}
+              </table>
+            </div>
+          </section>
+        `;
+      } catch (e) {
+        console.error(e);
+        document.getElementById("app").innerHTML = `<div class="head"><h1>المستخدمين</h1><button class="light" onclick="home()">رجوع</button></div><section class="panel"><p class="bad">فشل تحميل المستخدمين</p></section>`;
+      }
+    }
+
+    async function approveUser(uid) {
+      if (!isAdmin) return;
+      try {
+        await fbDB.ref(`${USERS_PATH}/${uid}`).update({ status: "approved", blocked: false });
+        renderUsersPage();
+      } catch (e) { alert("فشل: " + e.message); }
+    }
+
+    async function blockUser(uid, block) {
+      if (!isAdmin) return;
+      try {
+        await fbDB.ref(`${USERS_PATH}/${uid}`).update({ blocked: block });
+        renderUsersPage();
+      } catch (e) { alert("فشل: " + e.message); }
+    }
+
+    async function deleteUser(uid) {
+      if (!isAdmin) return;
+      if (!confirm("حذف المستخدم ده؟\n\nملاحظة: الحساب في Firebase Authentication مش هيتحذف — لازم تحذفه يدويًا من Firebase Console.")) return;
+      try {
+        await fbDB.ref(`${USERS_PATH}/${uid}`).remove();
+        renderUsersPage();
+      } catch (e) { alert("فشل: " + e.message); }
+    }
+
+    /* =========================================================
+       المزامنة اليدوية
+       ========================================================= */
+    function manualSync() {
+      if (!isAdmin) { alert("المزامنة اليدوية للأدمين بس"); return; }
+      if (isSyncing) return;
+      const choice = confirm(
+        "ماذا تريد أن تفعل؟\n\n" +
+        "OK = رفع البيانات المحلية إلى Firebase (سيتم استبدال النسخة السحابية)\n" +
+        "Cancel = تنزيل البيانات من Firebase (سيتم استبدال البيانات المحلية)"
+      );
+
+      if (choice) {
+        saveRemote().then(() => alert("تم رفع البيانات ✅"));
+      } else {
+        fbDB.ref(FB_PATH).once("value").then(snap => {
+          const remote = snap.val();
+          if (remote) {
+            delete remote._lastUpdate;
+            data = remote;
+            stores.forEach(s => { data.stores[s[0]] ||= blank(); });
+            saveLocal();
+            syncCustomStores();
+            if (store) draw(); else home();
+            alert("تم تنزيل البيانات ✅");
+          } else {
+            alert("لا توجد بيانات في Firebase");
+          }
+        });
+      }
+    }
+
+    /* =========================================================
        النسخ الاحتياطي
        ========================================================= */
-
     async function backup() {
-      save();
+      if (!isAdmin) return;
+      saveLocal();
       const file = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
       const fileName = "MANAGEMENT backup.json";
 
@@ -2038,6 +2141,7 @@
     }
 
     function restore(event) {
+      if (!isAdmin) return;
       const file = event.target.files[0];
       if (!file) return;
       const reader = new FileReader();
@@ -2057,9 +2161,11 @@
         }
       };
       reader.readAsText(file);
+      event.target.value = "";
     }
 
     function clearAllData() {
+      if (!isAdmin) return;
       if (!confirm("متأكد إنك عايز تحذف كل بيانات البرنامج؟")) return;
       if (!confirm("آخر تأكيد: الحذف نهائي إلا لو عندك نسخة احتياطية.")) return;
       data = {
@@ -2077,12 +2183,10 @@
     /* =========================================================
        PDF
        ========================================================= */
-
     function printPdf(title, subtitle, content, orientation = "portrait") {
-      const printWindow = window.open("", "_blank");
-      if (!printWindow) return alert("اسمح بفتح نافذة الطباعة لتصدير PDF");
-
-      printWindow.document.write(`
+      const w = window.open("", "_blank");
+      if (!w) return alert("اسمح بفتح نافذة الطباعة لتصدير PDF");
+      w.document.write(`
         <!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>${title}</title>
         <style>
           @page{size:A4 ${orientation};margin:14mm 12mm 16mm}
@@ -2097,9 +2201,31 @@
           <header class="report-head"><div><div class="brand">MANAGEMENT</div><h1>${title}</h1><p class="meta">${subtitle}</p></div><div class="stamp">تاريخ الإصدار: ${today()}</div></header>
           ${content}<footer class="footer"><span>التقرير المالي</span><span></span></footer>
         </body></html>`);
-      printWindow.document.close();
-      printWindow.focus();
-      setTimeout(() => printWindow.print(), 350);
+      w.document.close();
+      w.focus();
+      setTimeout(() => w.print(), 350);
+    }
+
+    function exportCollectionsPdf() {
+      const selectedIds = selectedCollectionStoreIds();
+      const rows = stores.filter(s => selectedIds.has(s[0])).map(s => ({ id: s[0], name: s[1], totals: storeCollectionTotals(s[0]) }));
+      const total = rows.reduce((all, row) => {
+        Object.keys(all).forEach(key => all[key] += row.totals[key]);
+        return all;
+      }, { euroSales: 0, dollarSales: 0, gbpSales: 0, euroChanged: 0, dollarChanged: 0, gbpChanged: 0, euro: 0, dollar: 0, gbp: 0, egp: 0, visa: 0 });
+      const cells = row => `<tr><td>${row.name}</td><td>${m(row.totals.euroSales)}</td><td>${m(row.totals.euroChanged)}</td><td>${m(row.totals.euro)}</td><td>${m(row.totals.dollarSales)}</td><td>${m(row.totals.dollarChanged)}</td><td>${m(row.totals.dollar)}</td><td>${m(row.totals.gbpSales)}</td><td>${m(row.totals.gbpChanged)}</td><td>${m(row.totals.gbp)}</td><td>${m(row.totals.egp)}</td><td>${m(row.totals.visa)}</td></tr>`;
+      const headers = `<tr><th>المحل</th><th>يورو محصل</th><th>تم تغييره</th><th>صافي يورو</th><th>دولار محصل</th><th>تم تغييره</th><th>صافي دولار</th><th>إنجليزي محصل</th><th>تم تغييره</th><th>صافي إنجليزي</th><th>جنيه</th><th>فيزا</th></tr>`;
+      const content = `
+        <div class="summary-grid">
+          <div class="metric">صافي اليورو<b>${m(total.euro)}</b></div>
+          <div class="metric">صافي الدولار<b>${m(total.dollar)}</b></div>
+          <div class="metric">صافي الإنجليزي<b>${m(total.gbp)}</b></div>
+          <div class="metric">إجمالي الجنيه<b>${m(total.egp)}</b></div>
+          <div class="metric">إجمالي الفيزا<b>${m(total.visa)}</b></div>
+        </div>
+        <h2>تفاصيل تحصيل المحلات</h2>
+        <table><thead>${headers}</thead><tbody>${rows.map(cells).join("")}</tbody></table>`;
+      printPdf("تقرير تحصيل المحلات", `الفترة: من ${period.from} إلى ${period.to}`, content, "landscape");
     }
 
     function exportExpensesPdf() {
@@ -2114,11 +2240,11 @@
           <div class="metric">عدد البنود<b>${rows.length}</b></div>
           <div class="metric">المصروفات الكاش<b>${m(normal)}</b></div>
           <div class="metric">دفعات التجار<b>${m(traders)}</b></div>
-          <div class="metric"> مسحوبات البائعين<b>${m(sellers)}</b></div>
+          <div class="metric">مسحوبات البائعين<b>${m(sellers)}</b></div>
         </div>
         <h2>تفاصيل المصروفات</h2>
         <table><thead><tr><th>#</th><th>التاريخ</th><th>البند</th><th>النوع</th><th>القيمة</th><th>المصدر</th></tr></thead><tbody>
-          ${rows.map((x, i) => `<tr><td>${i + 1}</td><td>${x.date}</td><td>${x.item}</td><td><span class="tag">${x.type}</span></td><td>${m(x.amount)}</td><td>${x.source === "expenses" ? "مصروفات المحل" : x.source === "traderTx" ? "دفعات التجار" : "مسحوبات البائعين"}</td></tr>`).join("") || `<tr><td colspan="6">لا توجد عمليات خلال الفترة المختارة</td></tr>`}
+          ${rows.map((x, i) => `<tr><td>${i + 1}</td><td>${x.date}</td><td>${x.item}</td><td><span class="tag">${x.type}</span></td><td>${m(x.amount)}</td><td>${x.source === "expenses" ? "مصروفات" : x.source === "traderTx" ? "دفعات التجار" : "مسحوبات"}</td></tr>`).join("") || `<tr><td colspan="6">لا توجد عمليات</td></tr>`}
         </tbody></table>`;
       printPdf(`كشف مصروفات - ${meta()[1]}`, `الفترة: من ${period.from} إلى ${period.to}`, content);
     }
@@ -2146,20 +2272,18 @@
         ["إجمالي المصروفات", m(totalExpensesIncludingSalaries)],
         ["صافي ربح الشركاء", m(netProfit)]
       ];
-
       const sellersRows = st().sellers.map(s => `<tr><td>${s.name}</td><td>${m(eachSalary)}</td><td>${m(withdrawals[s.name] || 0)}</td><td>${m(eachSalary - (withdrawals[s.name] || 0))}</td></tr>`).join("") || `<tr><td colspan="4">لا يوجد بائعين</td></tr>`;
       const partnersRows = st().partners.map(x => `<tr><td>${x.name}</td><td>${m(x.percent)}%</td><td>${m(netProfit * n(x.percent) / 100)}</td></tr>`).join("") || `<tr><td colspan="3">لا يوجد شركاء</td></tr>`;
 
-      const printWindow = window.open("", "_blank");
-      printWindow.document.write(`
+      const w = window.open("", "_blank");
+      w.document.write(`
         <!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>تقرير أرباح ${shopName}</title>
         <style>
           @page{size:A4;margin:14mm 12mm 16mm}
           *{box-sizing:border-box} body{font-family:Tahoma,Arial,sans-serif;margin:0;color:#142033;line-height:1.55;font-size:12px}
           .report-head{border-bottom:3px solid #17808b;padding:0 0 12px;margin-bottom:18px}.brand{font-weight:900;color:#17808b;letter-spacing:.6px}
           h1{margin:2px 0 6px;font-size:24px;color:#0b1220} h2{margin:22px 0 8px;font-size:16px;color:#123b52;border-right:4px solid #22a6b3;padding-right:8px}
-          .meta{margin:0 0 18px;color:#52677d}.summary{margin-top:8px}
-          table{width:100%;border-collapse:collapse;margin-top:8px}th,td{border:1px solid #cddae2;padding:7px 8px;text-align:right}th{background:#123b52;color:#fff;font-size:11px}tbody tr:nth-child(even) td{background:#f5f8fa}
+          .meta{margin:0 0 18px;color:#52677d}table{width:100%;border-collapse:collapse;margin-top:8px}th,td{border:1px solid #cddae2;padding:7px 8px;text-align:right}th{background:#123b52;color:#fff;font-size:11px}tbody tr:nth-child(even) td{background:#f5f8fa}
           .summary td:first-child{font-weight:700;background:#f5f9fb}.total td{font-weight:900;background:#dff3f4!important}
         </style></head><body>
           <header class="report-head"><div class="brand">MANAGEMENT</div><h1>تقرير أرباح ${shopName}</h1></header>
@@ -2173,16 +2297,16 @@
           <h2>أرباح الشركاء</h2>
           <table><tr><th>الشريك</th><th>النسبة</th><th>الربح</th></tr>${partnersRows}</table>
         </body></html>`);
-      printWindow.document.close();
-      printWindow.focus();
-      setTimeout(() => printWindow.print(), 300);
+      w.document.close();
+      w.focus();
+      setTimeout(() => w.print(), 300);
     }
 
     /* =========================================================
        Enter للحفظ
        ========================================================= */
     document.addEventListener("keydown", e => {
-      if (e.key !== "Enter" || e.shiftKey || !store) return;
+      if (e.key !== "Enter" || e.shiftKey || !store || !isAdmin) return;
       if (["TEXTAREA", "BUTTON"].includes(e.target.tagName)) return;
       e.preventDefault();
 
@@ -2191,8 +2315,8 @@
       else if (tab === "traders") saveTrader();
       else if (tab === "items") saveItem();
       else if (tab === "expenses") {
-        const withdrawalFields = ["wdY", "wdM", "wdD", "ws", "wa"];
-        if (document.activeElement && withdrawalFields.includes(document.activeElement.id)) saveWithdrawal();
+        const wdFields = ["wdY", "wdM", "wdD", "ws", "wa"];
+        if (document.activeElement && wdFields.includes(document.activeElement.id)) saveWithdrawal();
         else saveExpense();
       } else if (tab === "sellers") {
         if (document.activeElement && ["fsn", "fss"].includes(document.activeElement.id)) addFixedSeller();
@@ -2204,65 +2328,14 @@
     });
 
     /* =========================================================
-       تشغيل البرنامج
+       بدء التشغيل
        ========================================================= */
     clientId = getClientId();
     data = loadLocal();
+    period = loadSavedPeriod();
     syncCustomStores();
     applyViewMode();
-    home();
-
-    // تشغيل Firebase
-    initFirebase();
-
-    /* =========================================================
-       ربط الدوال بالـ window عشان onclick يشتغل
-       ========================================================= */
-    window.home = home;
-    window.addStore = addStore;
-    window.deleteStore = deleteStore;
-    window.openStore = openStore;
-    window.collections = collections;
-    window.traderTotals = traderTotals;
-    window.selectAllCollectionStores = selectAllCollectionStores;
-    window.toggleCollectionStore = toggleCollectionStore;
-    window.exportCollectionsPdf = exportCollectionsPdf;
-    window.setPeriod = setPeriod;
-    window.thisMonth = thisMonth;
-    window.dateValue = dateValue;
-    window.render = render;
-    window.switchTab = switchTab;
-    window.draw = draw;
-    window.edt = edt;
-    window.del = del;
-    window.box = box;
-    window.saveSale = saveSale;
-    window.saveEx = saveEx;
-    window.saveTrader = saveTrader;
-    window.saveItem = saveItem;
-    window.saveExpense = saveExpense;
-    window.saveWithdrawal = saveWithdrawal;
-    window.addSeller = addSeller;
-    window.deleteSeller = deleteSeller;
-    window.addFixedSeller = addFixedSeller;
-    window.deleteFixedSeller = deleteFixedSeller;
-    window.addPartner = addPartner;
-    window.updateCommission = updateCommission;
-    window.cancelEdit = cancelEdit;
-    window.showTraderLiveBalance = showTraderLiveBalance;
-    window.filterTraderTransactions = filterTraderTransactions;
-    window.exportSalesPdf = exportSalesPdf;
-    window.exportTraderTransactionsPdf = exportTraderTransactionsPdf;
-    window.exportExpensesPdf = exportExpensesPdf;
-    window.exportProfitPdf = exportProfitPdf;
-    window.setItemCompare = setItemCompare;
-    window.manualSync = manualSync;
-    window.toggleViewMode = toggleViewMode;
-    window.backup = backup;
-    window.restore = restore;
-    window.clearAllData = clearAllData;
-    window.toggleTraderBalanceStore = toggleTraderBalanceStore;
-    window.selectAllTraderBalanceStores = selectAllTraderBalanceStores;
+    setupAuthListener();
   </script>
 </body>
 </html>
