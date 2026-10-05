@@ -539,7 +539,7 @@
       document.body.classList.remove("mode-mobile", "mode-desktop");
       document.body.classList.add(mode === "mobile" ? "mode-mobile" : "mode-desktop");
       const btn = document.getElementById("modeToggleBtn");
-      if (btn) btn.textContent = mode === "mobile" ? "📱 موبايل" : "💻 كمبيوتر";
+      if (btn) btn.textContent = mode === "mobile" ? " فون" : " كمبيوتر";
     }
 
     function toggleViewMode() {
@@ -699,7 +699,7 @@
               ? "تم حظر حسابك. ."
               : "تم إنشاء حساب بنجاح ✅<br>انت في انتظار الموافقة من النظام."
             }</p>
-            <button class="light" onclick="logout()" style="width:100%;min-height:46px">🚪  خروج</button>
+            <button class="light" onclick="logout()" style="width:100%;min-height:46px">  خروج</button>
           </div>
         </div>
       `;
@@ -719,15 +719,15 @@
                 <button class="gray" onclick="backup()">نسخ احتياطي</button>
                 <button onclick="document.getElementById('restoreFile').click()">استرجاع</button>
                 <input class="file" id="restoreFile" type="file" accept="application/json" onchange="restore(event)">
-                <button class="warn" onclick="renderUsersPage()">👥 المستخدمين</button>
+                <button class="warn" onclick="renderUsersPage()"> الأعضاء</button>
               ` : ""}
-              <button class="mode-toggle" id="modeToggleBtn" onclick="toggleViewMode()">📱 موبايل</button>
+              <button class="mode-toggle" id="modeToggleBtn" onclick="toggleViewMode()"> فون</button>
               <span class="sync-status" id="syncStatus" onclick="manualSync()" title="اضغط للمزامنة اليدوية">
                 <span class="sync-dot"></span>
                 <span id="syncText">جاري الاتصال...</span>
               </span>
               <span class="user-badge ${isAdmin ? 'admin' : ''}">${roleLabel} - ${userName}</span>
-              <button class="light" onclick="logout()">🚪 خروج</button>
+              <button class="light" onclick="logout()"> خروج</button>
             </div>
           </div>
           ${isAdmin ? `<button class="danger" onclick="clearAllData()">حذف كل البيانات</button>` : ""}
@@ -1025,7 +1025,7 @@
           <h2>تفاصيل تحصيل المحلات</h2>
           <div class="table-scroll">
             <table>
-              <tr><th>المحل</th><th>يورو محصل</th><th>يورو تم تغييره</th><th>صافي يورو</th><th>دولار محصل</th><th>دولار تم تغييره</th><th>صافي دولار</th><th>إنجليزي محصل</th><th>إنجليزي تم تغييره</th><th>صافي إنجليزي</th><th>جنيه</th><th>فيزا</th></tr>
+              <tr><th>المحل</th><th> € </th><th> EX </th><th> R </th><th> $ </th><th> EX </th><th> R </th><th> £ </th><th> EX </th><th> R </th><th>L.E</th><th>VISA</th></tr>
               ${rows.map(row => `<tr><td>${row.name}</td><td>${m(row.totals.euroSales)}</td><td>${m(row.totals.euroChanged)}</td><td>${m(row.totals.euro)}</td><td>${m(row.totals.dollarSales)}</td><td>${m(row.totals.dollarChanged)}</td><td>${m(row.totals.dollar)}</td><td>${m(row.totals.gbpSales)}</td><td>${m(row.totals.gbpChanged)}</td><td>${m(row.totals.gbp)}</td><td>${m(row.totals.egp)}</td><td>${m(row.totals.visa)}</td></tr>`).join("") || `<tr><td colspan="12">اختر محلًا واحدًا على الأقل لعرض التحصيل</td></tr>`}
               <tr class="total"><td>الإجمالي</td><td>${m(total.euroSales)}</td><td>${m(total.euroChanged)}</td><td>${m(total.euro)}</td><td>${m(total.dollarSales)}</td><td>${m(total.dollarChanged)}</td><td>${m(total.dollar)}</td><td>${m(total.gbpSales)}</td><td>${m(total.gbpChanged)}</td><td>${m(total.gbp)}</td><td>${m(total.egp)}</td><td>${m(total.visa)}</td></tr>
             </table>
