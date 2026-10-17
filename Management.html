@@ -479,8 +479,6 @@
       ].sort((a, b) => String(b.date).localeCompare(String(a.date)));
     }
 
-    function unifiedOutflowTotal() { return unifiedOutflows().reduce((s, x) => s + n(x.amount), 0); }
-
     function syncCustomStores() {
       data.customStores ||= [];
       data.deletedStoreIds ||= [];
@@ -953,16 +951,25 @@
       const sales = shop.sales.filter(x => inP(x.date));
       const exchanged = shop.exchange.filter(x => inP(x.date));
       const sum = (list, field) => list.reduce((total, item) => total + n(item[field]), 0);
+      
       const euroSales = sum(sales, "euro");
       const dollarSales = sum(sales, "dollar");
       const gbpSales = sum(sales, "gbp");
+      
       const euroChanged = sum(exchanged, "ea");
       const dollarChanged = sum(exchanged, "da");
       const gbpChanged = sum(exchanged, "ba");
+
+      // حساب المبلغ المحول للجنيه المصري
+      let totalConvertedEgp = 0;
+      exchanged.forEach(x => {
+        totalConvertedEgp += (n(x.ea) * n(x.er)) + (n(x.da) * n(x.dr)) + (n(x.ba) * n(x.br));
+      });
+
       return {
         euroSales, dollarSales, gbpSales, euroChanged, dollarChanged, gbpChanged,
         euro: euroSales - euroChanged, dollar: dollarSales - dollarChanged, gbp: gbpSales - gbpChanged,
-        egp: sum(sales, "egp"), visa: sum(sales, "visa")
+        egp: sum(sales, "egp"), visa: sum(sales, "visa"), totalConvertedEgp
       };
     }
 
@@ -993,10 +1000,11 @@
       history.replaceState(null, "", "#MANAGEMENT-COLLECTIONS");
       const selectedIds = selectedCollectionStoreIds();
       const rows = stores.filter(s => selectedIds.has(s[0])).map(s => ({ id: s[0], name: s[1], totals: storeCollectionTotals(s[0]) }));
+      
       const total = rows.reduce((all, row) => {
         Object.keys(all).forEach(key => all[key] += row.totals[key]);
         return all;
-      }, { euroSales: 0, dollarSales: 0, gbpSales: 0, euroChanged: 0, dollarChanged: 0, gbpChanged: 0, euro: 0, dollar: 0, gbp: 0, egp: 0, visa: 0 });
+      }, { euroSales: 0, dollarSales: 0, gbpSales: 0, euroChanged: 0, dollarChanged: 0, gbpChanged: 0, euro: 0, dollar: 0, gbp: 0, egp: 0, visa: 0, totalConvertedEgp: 0 });
 
       document.getElementById("app").innerHTML = `
         <div class="head"><h1>تحصيل المحلات</h1><button class="light" onclick="home()">رجوع</button></div>
@@ -1012,19 +1020,22 @@
             ${stores.map(s => `<label class="shop-choice"><input type="checkbox" ${selectedIds.has(s[0]) ? "checked" : ""} onchange="toggleCollectionStore('${s[0]}', this.checked)">${s[1]}</label>`).join("")}
           </div>
           <div class="row"><button onclick="exportCollectionsPdf()">تصدير تحصيل المحلات PDF</button></div>
+          
           <div class="cards">
+            <div class="card" style="border: 2px solid var(--green);">إجمالي المحول (L.E) <strong>${m(total.totalConvertedEgp)}</strong></div>
             <div class="card">صافي اليورو <strong>${m(total.euro)}</strong></div>
             <div class="card">صافي الدولار <strong>${m(total.dollar)}</strong></div>
-            <div class="card">صافي الجنيه الإنجليزي <strong>${m(total.gbp)}</strong></div>
+            <div class="card">صافي الإسترليني <strong>${m(total.gbp)}</strong></div>
             <div class="card">إجمالي الجنيه <strong>${m(total.egp)}</strong></div>
             <div class="card">إجمالي الفيزا <strong>${m(total.visa)}</strong></div>
           </div>
+
           <h2>تفاصيل تحصيل المحلات</h2>
           <div class="table-scroll">
             <table>
-              <tr><th>المحل</th><th> € </th><th> EX </th><th> R </th><th> $ </th><th> EX </th><th> R </th><th> £ </th><th> EX </th><th> R </th><th>L.E</th><th>VISA</th></tr>
-              ${rows.map(row => `<tr><td>${row.name}</td><td>${m(row.totals.euroSales)}</td><td>${m(row.totals.euroChanged)}</td><td>${m(row.totals.euro)}</td><td>${m(row.totals.dollarSales)}</td><td>${m(row.totals.dollarChanged)}</td><td>${m(row.totals.dollar)}</td><td>${m(row.totals.gbpSales)}</td><td>${m(row.totals.gbpChanged)}</td><td>${m(row.totals.gbp)}</td><td>${m(row.totals.egp)}</td><td>${m(row.totals.visa)}</td></tr>`).join("") || `<tr><td colspan="12">اختر محلًا واحدًا على الأقل لعرض التحصيل</td></tr>`}
-              <tr class="total"><td>الإجمالي</td><td>${m(total.euroSales)}</td><td>${m(total.euroChanged)}</td><td>${m(total.euro)}</td><td>${m(total.dollarSales)}</td><td>${m(total.dollarChanged)}</td><td>${m(total.dollar)}</td><td>${m(total.gbpSales)}</td><td>${m(total.gbpChanged)}</td><td>${m(total.gbp)}</td><td>${m(total.egp)}</td><td>${m(total.visa)}</td></tr>
+              <tr><th>المحل</th><th> € </th><th> EX </th><th> R </th><th> $ </th><th> EX </th><th> R </th><th> £ </th><th> EX </th><th> R </th><th>L.E</th><th>VISA</th><th>إجمالي المحول (L.E)</th></tr>
+              ${rows.map(row => `<tr><td>${row.name}</td><td>${m(row.totals.euroSales)}</td><td>${m(row.totals.euroChanged)}</td><td>${m(row.totals.euro)}</td><td>${m(row.totals.dollarSales)}</td><td>${m(row.totals.dollarChanged)}</td><td>${m(row.totals.dollar)}</td><td>${m(row.totals.gbpSales)}</td><td>${m(row.totals.gbpChanged)}</td><td>${m(row.totals.gbp)}</td><td>${m(row.totals.egp)}</td><td>${m(row.totals.visa)}</td><td><b style="color:var(--green)">${m(row.totals.totalConvertedEgp)}</b></td></tr>`).join("") || `<tr><td colspan="13">اختر محلًا واحدًا على الأقل لعرض التحصيل</td></tr>`}
+              <tr class="total"><td>الإجمالي</td><td>${m(total.euroSales)}</td><td>${m(total.euroChanged)}</td><td>${m(total.euro)}</td><td>${m(total.dollarSales)}</td><td>${m(total.dollarChanged)}</td><td>${m(total.dollar)}</td><td>${m(total.gbpSales)}</td><td>${m(total.gbpChanged)}</td><td>${m(total.gbp)}</td><td>${m(total.egp)}</td><td>${m(total.visa)}</td><td><b style="color:var(--green)">${m(total.totalConvertedEgp)}</b></td></tr>
             </table>
           </div>
         </section>
@@ -1136,6 +1147,7 @@
       const r = edit?.type === "sales" ? st().sales.find(x => x.id === edit.id) : {};
       const hasPieces = meta()[2];
       const t = totals();
+      const visaAfterDisc = t.visa * 0.97; // حساب الفيزا بعد خصم 3%
       const list = fl(st().sales);
 
       return `
@@ -1169,7 +1181,10 @@
           <div class="card">الدولار <strong>${m(t.dollar)}</strong></div>
           <div class="card">الجنيه الإنجليزي <strong>${m(t.gbp)}</strong></div>
           <div class="card">الجنيه <strong>${m(t.egp)}</strong></div>
-          <div class="card">الفيزا <strong>${m(t.visa)}</strong></div>
+          <div class="card" style="border: 1px solid var(--orange);">
+            إجمالي الفيزا <strong>${m(t.visa)}</strong>
+            <div style="font-size:12px; margin-top:5px; color:var(--orange);">بعد خصم 3%: <b>${m(visaAfterDisc)}</b></div>
+          </div>
           ${hasPieces ? `<div class="card">سعر القطع <strong>${m(t.pieces)}</strong></div>` : ""}
         </div>
 
@@ -1204,7 +1219,8 @@
       const bodyRows = rows.map((x, i) => [i + 1, x.date, m(x.euro), m(x.dollar), m(x.gbp), m(x.egp), m(x.visa)].concat(hasPieces ? [m(x.pieces)] : []));
       const summary = [
         ["عدد الأيام", rows.length], ["إجمالي اليورو", m(t.euro)], ["إجمالي الدولار", m(t.dollar)],
-        ["إجمالي الجنيه الإنجليزي", m(t.gbp)], ["إجمالي الجنيه المصري", m(t.egp)], ["إجمالي الفيزا", m(t.visa)]
+        ["إجمالي الجنيه الإنجليزي", m(t.gbp)], ["إجمالي الجنيه المصري", m(t.egp)], ["إجمالي الفيزا", m(t.visa)],
+        ["الفيزا بعد خصم 3%", m(t.visa * 0.97)]
       ].concat(hasPieces ? [["إجمالي سعر القطع", m(t.pieces)]] : []);
       const content = `
         <div class="summary-grid">${summary.map(x => `<div class="metric">${x[0]}<b>${x[1]}</b></div>`).join("")}</div>
@@ -1709,7 +1725,12 @@
       const expenseList = fl(shop.expenses || []);
       const withdrawalList = fl(shop.withdrawals || []);
       const traderPaymentList = fl(shop.traderTx || []).filter(x => x.kind === "payment");
-      const unifiedList = unifiedOutflows();
+      
+      // إجمالي الفلوس الخارجة من الخزنة (كاش فعلي)
+      const cashOut = expenseList.reduce((s, x) => s + n(x.amount), 0) + 
+                      traderPaymentList.reduce((s, x) => s + n(x.amount), 0) + 
+                      withdrawalList.reduce((s, x) => s + n(x.amount), 0);
+
       const allSellers = [
         ...(shop.sellers || []).map(s => ({ name: s.name, type: "عمولة" })),
         ...(shop.fixedSellers || []).map(s => ({ name: s.name, type: "راتب ثابت" }))
@@ -1717,7 +1738,8 @@
 
       return `
         <h2>المصروفات والمسحوبات</h2>
-        <div class="card">إجمالي المصروفات <strong>${m(unifiedOutflowTotal())}</strong></div>
+        <div class="card" style="border: 2px solid var(--orange);">إجمالي المصروفات الكاش <strong>${m(cashOut)}</strong></div>
+        <small style="color:var(--muted); display:block; margin-top:5px;"></small>
 
         <h3>مصروفات المحل</h3>
         ${isAdmin ? `
@@ -1741,31 +1763,7 @@
         </div>
 
         <hr>
-        <h3>كشف المصروفات</h3>
-        <p>التفاصيل الكاملة للمصروفات</p>
-        <div class="row">
-          <button class="gray" onclick="box('unifiedlist')">التفاصيل</button>
-          <button onclick="exportExpensesPdf()">PDF</button>
-          <div class="card">مصروفات كاش <strong>${m(expenseList.reduce((s, x) => s + n(x.amount), 0))}</strong></div>
-          <div class="card">دفعات التجار <strong>${m(traderPaymentList.reduce((s, x) => s + n(x.amount), 0))}</strong></div>
-          <div class="card">مسحوبات البائعين <strong>${m(withdrawalList.reduce((s, x) => s + n(x.amount), 0))}</strong></div>
-        </div>
-        <div id="unifiedlist" style="display:none">
-          <div class="table-scroll">
-            <table>
-              <tr><th>التاريخ</th><th>البند</th><th>النوع</th><th>القيمة</th><th>المصدر</th>${isAdmin ? "<th>تعديل</th>" : ""}</tr>
-              ${unifiedList.map(x => `
-                <tr>
-                  <td>${x.date}</td><td>${x.item}</td><td>${x.type}</td><td>${m(x.amount)}</td>
-                  <td>${x.source === "expenses" ? "المصروفات" : x.source === "traderTx" ? "التجار" : "مسحوبات البائعين"}</td>
-                  ${isAdmin ? `<td><button class="light" onclick="edt('${x.source}','${x.id}')">تعديل</button><button class="danger" onclick="del('${x.source}','${x.id}')">حذف</button></td>` : ""}
-                </tr>
-              `).join("") || `<tr><td colspan="${isAdmin ? 6 : 5}">لا توجد عمليات خلال الفترة</td></tr>`}
-            </table>
-          </div>
-        </div>
-
-        <hr>
+        
         <h3>مسحوبات البائعين</h3>
         ${isAdmin ? `
           <div class="grid">
@@ -1824,12 +1822,28 @@
       const visaDisc = s.visa * .03;
       const grossSalesEgp = s.egp + s.visa + (s.euro * e.eavg) + (s.dollar * e.davg) + (s.gbp * e.bavg);
       const salesEgp = grossSalesEgp - visaDisc;
+      
+      const shop = st();
+      const commission = n(sessionStorage["comm" + store]);
+      const salaryBase = Math.max(0, salesEgp - (meta()[2] ? s.pieces : 0));
+      const salariesTotal = salaryBase * commission / 100;
+      const fixedSalariesTotal = (shop.fixedSellers || []).reduce((sum, x) => sum + n(x.salary), 0);
+
+      // المصروفات التشغيلية (كاش + تجار) - بدون مسحوبات
+      const normalExpenses = fl(shop.expenses || []).reduce((a, x) => a + n(x.amount), 0);
+      const traderPayments = fl(shop.traderTx || []).filter(x => x.kind === "payment").reduce((a, x) => a + n(x.amount), 0);
+      
+      // التكلفة الشاملة (اللي بتظهر في الكارت الكبير)
+      const totalOperatingCosts = normalExpenses + traderPayments + salariesTotal + fixedSalariesTotal;
+      
+      // صافي الربح = المبيعات - التكلفة الشاملة
+      const netProfit = salesEgp - totalOperatingCosts;
+
       return {
         grossSalesEgp, salesEgp, visaDisc,
-        normalExpenses: fl(st().expenses || []).reduce((a, x) => a + n(x.amount), 0),
-        traderPayments: fl(st().traderTx || []).filter(x => x.kind === "payment").reduce((a, x) => a + n(x.amount), 0),
-        sellerWithdrawals: fl(st().withdrawals || []).reduce((a, x) => a + n(x.amount), 0),
-        expenses: unifiedOutflowTotal(),
+        normalExpenses, traderPayments,
+        expenses: totalOperatingCosts, // دي اللي هتظهر كإجمالي مصروفات
+        salariesTotal, fixedSalariesTotal, netProfit,
         pieces: meta()[2] ? s.pieces : 0
       };
     }
@@ -1851,17 +1865,10 @@
     function profits() {
       const shop = st();
       const p = profitCalc();
-      const commission = n(sessionStorage["comm" + store]);
-      const salaryBase = Math.max(0, p.salesEgp - p.pieces);
-      const salariesTotal = salaryBase * commission / 100;
-      const fixedSalariesTotal = (shop.fixedSellers || []).reduce((sum, x) => sum + n(x.salary), 0);
-      const eachSalary = (shop.sellers || []).length ? salariesTotal / shop.sellers.length : 0;
       const advanceSummary = sellerAdvanceSummary();
-      const salariesAfterAdvances = Math.max(0, salariesTotal - advanceSummary.commissionAdvances);
-      const fixedSalariesAfterAdvances = Math.max(0, fixedSalariesTotal - advanceSummary.fixedAdvances);
-      const netProfit = p.salesEgp - (salariesAfterAdvances + fixedSalariesAfterAdvances + p.expenses);
-      const partnersPercent = (shop.partners || []).reduce((s, x) => s + n(x.percent), 0);
       const withdrawals = advanceSummary.withdrawals;
+      const partnersPercent = (shop.partners || []).reduce((s, x) => s + n(x.percent), 0);
+      const eachSalary = (shop.sellers || []).length ? p.salariesTotal / shop.sellers.length : 0;
 
       return `
         <h2>توزيع الأرباح وإضافة شركاء</h2>
@@ -1887,7 +1894,7 @@
 
         <hr>
         <div class="grid grid3">
-          <label>نسبة عمولة البائعين % <input id="cm" type="number" step="0.01" value="${commission || ""}" ${isAdmin ? "" : "disabled"}></label>
+          <label>نسبة عمولة البائعين % <input id="cm" type="number" step="0.01" value="${n(sessionStorage["comm" + store])}" ${isAdmin ? "" : "disabled"}></label>
           ${isAdmin ? `<button onclick="updateCommission()">تحديث التقرير</button>` : ""}
           <button class="gray" onclick="exportProfitPdf()">تصدير PDF</button>
         </div>
@@ -1895,21 +1902,23 @@
         <div class="cards">
           <div class="card">اجمالي المبيعات الكلي <strong>${m(p.grossSalesEgp)}</strong></div>
           <div class="card">خصم الفيزا 3% <strong>${m(p.visaDisc)}</strong></div>
-          <div class="card">صافي المبيعات بعد خصم ال3% <strong>${m(p.salesEgp)}</strong></div>
-          <div class="card">إجمالي المصروفات <strong>${m(p.expenses)}</strong></div>
+          <div class="card">صافي المبيعات <strong>${m(p.salesEgp)}</strong></div>
+          
+          <div class="card" style="border: 2px solid var(--orange);">إجمالي المصروفات <strong>${m(p.expenses)}</strong></div>
+          
           <div class="card">مصروفات كاش <strong>${m(p.normalExpenses)}</strong></div>
           <div class="card">دفعات التجار <strong>${m(p.traderPayments)}</strong></div>
-          <div class="card">مسحوبات البائعين <strong>${m(p.sellerWithdrawals)}</strong></div>
-          <div class="card">إجمالي مرتبات البائعين <strong>${m(salariesTotal)}</strong></div>
-          <div class="card">إجمالي الرواتب الثابتة <strong>${m(fixedSalariesTotal)}</strong></div>
+          <div class="card">إجمالي مرتبات البائعين <strong>${m(p.salariesTotal)}</strong></div>
+          <div class="card">إجمالي الرواتب الثابتة <strong>${m(p.fixedSalariesTotal)}</strong></div>
           ${meta()[2] ? `<div class="card">سعر القطع المستبعد <strong>${m(p.pieces)}</strong></div>` : ""}
-          <div class="card">صافي ربح الشركاء <strong>${m(netProfit)}</strong></div>
+          
+          <div class="card" style="border: 2px solid var(--green);">صافي ربح الشركاء <strong>${m(p.netProfit)}</strong></div>
         </div>
 
         <h3>مرتبات البائعين</h3>
         <div class="table-scroll">
           <table>
-            <tr><th>البائع</th><th>المستحق</th><th>المسحوبات</th><th>الفعلي</th></tr>
+            <tr><th>البائع</th><th>المستحق </th><th>المسحوبات </th><th>المتبقي  </th></tr>
             ${(shop.sellers || []).map(s => `<tr><td>${s.name}</td><td>${m(eachSalary)}</td><td>${m(withdrawals[s.name] || 0)}</td><td>${m(eachSalary - (withdrawals[s.name] || 0))}</td></tr>`).join("") || `<tr><td colspan="4">لا يوجد بائعين</td></tr>`}
           </table>
         </div>
@@ -1917,7 +1926,7 @@
         <h3>رواتب ثابتة</h3>
         <div class="table-scroll">
           <table>
-            <tr><th>الأسم</th><th>الراتب الثابت</th><th>المسحوبات</th><th>الصافي</th></tr>
+            <tr><th>الأسم</th><th>الراتب </th><th>المسحوبات </th><th>المتبقي </th></tr>
             ${(shop.fixedSellers || []).map(s => `<tr><td>${s.name}</td><td>${m(s.salary)}</td><td>${m(withdrawals[s.name] || 0)}</td><td>${m(n(s.salary) - (withdrawals[s.name] || 0))}</td></tr>`).join("") || `<tr><td colspan="4">لا يوجد بائعين براتب ثابت</td></tr>`}
           </table>
         </div>
@@ -1926,7 +1935,7 @@
         <div class="table-scroll">
           <table>
             <tr><th>الشريك</th><th>النسبة</th><th>الربح</th></tr>
-            ${(shop.partners || []).map(x => `<tr><td>${x.name}</td><td>${m(x.percent)}%</td><td>${m(netProfit * n(x.percent) / 100)}</td></tr>`).join("") || `<tr><td colspan="3">لا يوجد شركاء</td></tr>`}
+            ${(shop.partners || []).map(x => `<tr><td>${x.name}</td><td>${m(x.percent)}%</td><td>${m(p.netProfit * n(x.percent) / 100)}</td></tr>`).join("") || `<tr><td colspan="3">لا يوجد شركاء</td></tr>`}
           </table>
         </div>
       `;
@@ -2012,7 +2021,6 @@
         });
       });
 
-      // ⚠️ تصفية: عرض التجار اللي رصيدهم مش صفر فقط
       const visibleEntries = Object.entries(rows).filter(([name, value]) => Math.abs(value.total) > 0.01);
 
       document.getElementById("app").innerHTML = `
@@ -2047,7 +2055,6 @@
       `;
     }
 
-    // ⚠️ دالة جديدة: حذف التاجر نهائياً من كل المحلات (للأدمين فقط)
     function deleteTraderPermanently(traderName) {
       if (!isAdmin) return;
       
@@ -2055,12 +2062,10 @@
       
       if (!confirm(`تأكيد أخير: سيتم حذف كل معاملات "${traderName}" نهائياً ولا يمكن التراجع!`)) return;
 
-      // 1. حذف من القائمة الأساسية
       if (data.traders) {
         data.traders = data.traders.filter(n => n !== traderName);
       }
 
-      // 2. حذف كل المعاملات من كل المحلات
       Object.keys(data.stores || {}).forEach(storeId => {
         const shop = data.stores[storeId];
         if (shop && shop.traderTx) {
@@ -2068,12 +2073,8 @@
         }
       });
 
-      // 3. الحفظ والمزامنة
       save();
-
-      // 4. إعادة رسم الصفحة
       traderTotals();
-      
       alert(`تم حذف التاجر "${traderName}" وكل معاملاته بنجاح ✅`);
     }
 
@@ -2285,11 +2286,14 @@
       const total = rows.reduce((all, row) => {
         Object.keys(all).forEach(key => all[key] += row.totals[key]);
         return all;
-      }, { euroSales: 0, dollarSales: 0, gbpSales: 0, euroChanged: 0, dollarChanged: 0, gbpChanged: 0, euro: 0, dollar: 0, gbp: 0, egp: 0, visa: 0 });
-      const cells = row => `<tr><td>${row.name}</td><td>${m(row.totals.euroSales)}</td><td>${m(row.totals.euroChanged)}</td><td>${m(row.totals.euro)}</td><td>${m(row.totals.dollarSales)}</td><td>${m(row.totals.dollarChanged)}</td><td>${m(row.totals.dollar)}</td><td>${m(row.totals.gbpSales)}</td><td>${m(row.totals.gbpChanged)}</td><td>${m(row.totals.gbp)}</td><td>${m(row.totals.egp)}</td><td>${m(row.totals.visa)}</td></tr>`;
-      const headers = `<tr><th>المحل</th><th>يورو محصل</th><th>تم تغييره</th><th>صافي يورو</th><th>دولار محصل</th><th>تم تغييره</th><th>صافي دولار</th><th>إنجليزي محصل</th><th>تم تغييره</th><th>صافي إنجليزي</th><th>جنيه</th><th>فيزا</th></tr>`;
+      }, { euroSales: 0, dollarSales: 0, gbpSales: 0, euroChanged: 0, dollarChanged: 0, gbpChanged: 0, euro: 0, dollar: 0, gbp: 0, egp: 0, visa: 0, totalConvertedEgp: 0 });
+      
+      const cells = row => `<tr><td>${row.name}</td><td>${m(row.totals.euroSales)}</td><td>${m(row.totals.euroChanged)}</td><td>${m(row.totals.euro)}</td><td>${m(row.totals.dollarSales)}</td><td>${m(row.totals.dollarChanged)}</td><td>${m(row.totals.dollar)}</td><td>${m(row.totals.gbpSales)}</td><td>${m(row.totals.gbpChanged)}</td><td>${m(row.totals.gbp)}</td><td>${m(row.totals.egp)}</td><td>${m(row.totals.visa)}</td><td>${m(row.totals.totalConvertedEgp)}</td></tr>`;
+      const headers = `<tr><th>المحل</th><th>يورو محصل</th><th>تم تغييره</th><th>صافي يورو</th><th>دولار محصل</th><th>تم تغييره</th><th>صافي دولار</th><th>إنجليزي محصل</th><th>تم تغييره</th><th>صافي إنجليزي</th><th>جنيه</th><th>فيزا</th><th>إجمالي المحول (L.E)</th></tr>`;
+      
       const content = `
         <div class="summary-grid">
+          <div class="metric">إجمالي المحول للجنيه<b>${m(total.totalConvertedEgp)}</b></div>
           <div class="metric">صافي اليورو<b>${m(total.euro)}</b></div>
           <div class="metric">صافي الدولار<b>${m(total.dollar)}</b></div>
           <div class="metric">صافي الإنجليزي<b>${m(total.gbp)}</b></div>
@@ -2303,23 +2307,25 @@
 
     function exportExpensesPdf() {
       if (tab !== "expenses") return;
+      const shop = st();
       const rows = unifiedOutflows();
-      const normal = rows.filter(x => x.source === "expenses").reduce((s, x) => s + n(x.amount), 0);
-      const traders = rows.filter(x => x.source === "traderTx").reduce((s, x) => s + n(x.amount), 0);
-      const sellers = rows.filter(x => x.source === "withdrawals").reduce((s, x) => s + n(x.amount), 0);
+      const normal = fl(shop.expenses || []).reduce((s, x) => s + n(x.amount), 0);
+      const traders = fl(shop.traderTx || []).filter(x => x.kind === "payment").reduce((s, x) => s + n(x.amount), 0);
+      const sellers = fl(shop.withdrawals || []).reduce((s, x) => s + n(x.amount), 0);
+      
       const content = `
         <div class="summary-grid">
-          <div class="metric">إجمالي المصروفات<b>${m(normal + traders + sellers)}</b></div>
+          <div class="metric">إجمالي الخزنة الخارجة<b>${m(normal + traders + sellers)}</b></div>
           <div class="metric">عدد البنود<b>${rows.length}</b></div>
           <div class="metric">المصروفات الكاش<b>${m(normal)}</b></div>
           <div class="metric">دفعات التجار<b>${m(traders)}</b></div>
           <div class="metric">مسحوبات البائعين<b>${m(sellers)}</b></div>
         </div>
-        <h2>تفاصيل المصروفات</h2>
+        <h2>تفاصيل المصروفات والمسحوبات</h2>
         <table><thead><tr><th>#</th><th>التاريخ</th><th>البند</th><th>النوع</th><th>القيمة</th><th>المصدر</th></tr></thead><tbody>
           ${rows.map((x, i) => `<tr><td>${i + 1}</td><td>${x.date}</td><td>${x.item}</td><td><span class="tag">${x.type}</span></td><td>${m(x.amount)}</td><td>${x.source === "expenses" ? "مصروفات" : x.source === "traderTx" ? "دفعات التجار" : "مسحوبات"}</td></tr>`).join("") || `<tr><td colspan="6">لا توجد عمليات</td></tr>`}
         </tbody></table>`;
-      printPdf(`كشف مصروفات - ${meta()[1]}`, `الفترة: من ${period.from} إلى ${period.to}`, content);
+      printPdf(`كشف مصروفات ومسحوبات - ${meta()[1]}`, `الفترة: من ${period.from} إلى ${period.to}`, content);
     }
 
     function exportProfitPdf() {
@@ -2327,27 +2333,19 @@
       const shop = st();
       const shopName = meta()[1];
       const p = profitCalc();
-      const commission = n(sessionStorage["comm" + store]);
-      const salaryBase = Math.max(0, p.salesEgp - p.pieces);
-      const salariesTotal = salaryBase * commission / 100;
-      const fixedSalariesTotal = (shop.fixedSellers || []).reduce((sum, x) => sum + n(x.salary), 0);
-      const eachSalary = (shop.sellers || []).length ? salariesTotal / shop.sellers.length : 0;
       const advanceSummary = sellerAdvanceSummary();
-      const salariesAfterAdvances = Math.max(0, salariesTotal - advanceSummary.commissionAdvances);
-      const fixedSalariesAfterAdvances = Math.max(0, fixedSalariesTotal - advanceSummary.fixedAdvances);
-      const netProfit = p.salesEgp - (salariesAfterAdvances + fixedSalariesAfterAdvances + p.expenses);
       const withdrawals = advanceSummary.withdrawals;
-      const totalExpensesIncludingSalaries = p.expenses + salariesAfterAdvances + fixedSalariesAfterAdvances;
+      const eachSalary = (shop.sellers || []).length ? p.salariesTotal / shop.sellers.length : 0;
 
       const summaryRows = [
         ["المبيعات قبل خصم الفيزا", m(p.grossSalesEgp)],
         ["خصم الفيزا 3%", m(p.visaDisc)],
         ["المبيعات بعد خصم الفيزا", m(p.salesEgp)],
-        ["إجمالي المصروفات", m(totalExpensesIncludingSalaries)],
-        ["صافي ربح الشركاء", m(netProfit)]
+        ["إجمالي المصروفات", m(p.expenses)],
+        ["صافي ربح الشركاء", m(p.netProfit)]
       ];
       const sellersRows = (shop.sellers || []).map(s => `<tr><td>${s.name}</td><td>${m(eachSalary)}</td><td>${m(withdrawals[s.name] || 0)}</td><td>${m(eachSalary - (withdrawals[s.name] || 0))}</td></tr>`).join("") || `<tr><td colspan="4">لا يوجد بائعين</td></tr>`;
-      const partnersRows = (shop.partners || []).map(x => `<tr><td>${x.name}</td><td>${m(x.percent)}%</td><td>${m(netProfit * n(x.percent) / 100)}</td></tr>`).join("") || `<tr><td colspan="3">لا يوجد شركاء</td></tr>`;
+      const partnersRows = (shop.partners || []).map(x => `<tr><td>${x.name}</td><td>${m(x.percent)}%</td><td>${m(p.netProfit * n(x.percent) / 100)}</td></tr>`).join("") || `<tr><td colspan="3">لا يوجد شركاء</td></tr>`;
 
       const w = window.open("", "_blank");
       w.document.write(`
@@ -2367,7 +2365,7 @@
             ${summaryRows.map(row => `<tr class="${row[0] === "صافي ربح الشركاء" ? "total" : ""}"><td>${row[0]}</td><td>${row[1]}</td></tr>`).join("")}
           </table>
           <h2>مرتبات البائعين</h2>
-          <table><tr><th>البائع</th><th>المستحق</th><th>المسحوبات</th><th>الفعلي</th></tr>${sellersRows}</table>
+          <table><tr><th>البائع</th><th>المستحق</th><th>المسحوبات</th><th>المتبقي</th></tr>${sellersRows}</table>
           <h2>أرباح الشركاء</h2>
           <table><tr><th>الشريك</th><th>النسبة</th><th>الربح</th></tr>${partnersRows}</table>
         </body></html>`);
