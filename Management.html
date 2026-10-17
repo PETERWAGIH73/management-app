@@ -1932,7 +1932,7 @@
           <div class="card">خصم الفيزا 3% <strong>${m(p.visaDisc)}</strong></div>
           <div class="card">صافي المبيعات <strong>${m(p.salesEgp)}</strong></div>
           
-          <div class="card" style="border: 2px solid var(--orange);">إجمالي التكاليف الشاملة <strong>${m(p.expenses)}</strong></div>
+          <div class="card" style="border: 2px solid var(--orange);">إجمالي المصروفات <strong>${m(p.expenses)}</strong></div>
           
           <div class="card">مصروفات كاش <strong>${m(p.normalExpenses)}</strong></div>
           <div class="card">دفعات التجار <strong>${m(p.traderPayments)}</strong></div>
@@ -1946,7 +1946,7 @@
         <h3>مرتبات البائعين</h3>
         <div class="table-scroll">
           <table>
-            <tr><th>البائع</th><th>المستحق (كامل)</th><th>المسحوبات (سلفة)</th><th>المتبقي في إيده</th></tr>
+            <tr><th>البائع</th><th>المستحق </th><th>المسحوبات </th><th>المتبقي</th></tr>
             ${(shop.sellers || []).map(s => `<tr><td>${s.name}</td><td>${m(eachSalary)}</td><td>${m(withdrawals[s.name] || 0)}</td><td>${m(eachSalary - (withdrawals[s.name] || 0))}</td></tr>`).join("") || `<tr><td colspan="4">لا يوجد بائعين</td></tr>`}
           </table>
         </div>
@@ -1954,7 +1954,7 @@
         <h3>رواتب ثابتة</h3>
         <div class="table-scroll">
           <table>
-            <tr><th>الأسم</th><th>الراتب الثابت</th><th>المسحوبات (سلفة)</th><th>المتبقي في إيده</th></tr>
+            <tr><th>الأسم</th><th>الراتب </th><th>المسحوبات </th><th>المتبقي </th></tr>
             ${(shop.fixedSellers || []).map(s => `<tr><td>${s.name}</td><td>${m(s.salary)}</td><td>${m(withdrawals[s.name] || 0)}</td><td>${m(n(s.salary) - (withdrawals[s.name] || 0))}</td></tr>`).join("") || `<tr><td colspan="4">لا يوجد بائعين براتب ثابت</td></tr>`}
           </table>
         </div>
@@ -2370,7 +2370,7 @@
         ["المبيعات قبل خصم الفيزا", m(p.grossSalesEgp)],
         ["خصم الفيزا 3%", m(p.visaDisc)],
         ["المبيعات بعد خصم الفيزا", m(p.salesEgp)],
-        ["إجمالي التكاليف الشاملة", m(p.expenses)],
+        ["إجمالي المصروفات", m(p.expenses)],
         ["صافي ربح الشركاء", m(p.netProfit)]
       ];
       const sellersRows = (shop.sellers || []).map(s => `<tr><td>${s.name}</td><td>${m(eachSalary)}</td><td>${m(withdrawals[s.name] || 0)}</td><td>${m(eachSalary - (withdrawals[s.name] || 0))}</td></tr>`).join("") || `<tr><td colspan="4">لا يوجد بائعين</td></tr>`;
