@@ -343,7 +343,6 @@
       return id;
     }
 
-    // ⚠️ دالة مركزية: تتأكد إن كل الحقول موجودة في البيانات
     function ensureAllFields(obj) {
       if (!obj || typeof obj !== "object") obj = {};
       obj.traders ||= [];
@@ -558,7 +557,6 @@
       else { el.classList.add("offline"); txt.textContent = "غير متصل"; }
     }
   </script>
-
   <script>
     /* =========================================================
        شاشة تسجيل الدخول
@@ -887,7 +885,6 @@
       });
     }
   </script>
-
   <script>
     /* =========================================================
        التنقل والصفحات
@@ -1073,7 +1070,6 @@
       store = storeId;
       tab = "sales";
       edit = null;
-      // تأكد إن المحل عنده كل الحقول
       if (!data.stores[storeId]) data.stores[storeId] = blank();
       const ss = data.stores[storeId];
       ss.sales ||= [];
@@ -2016,6 +2012,9 @@
         });
       });
 
+      // ⚠️ تصفية: عرض التجار اللي رصيدهم مش صفر فقط
+      const visibleEntries = Object.entries(rows).filter(([name, value]) => Math.abs(value.total) > 0.01);
+
       document.getElementById("app").innerHTML = `
         <h1 class="title">MANAGEMENT</h1>
         <section class="panel">
@@ -2025,20 +2024,57 @@
             ${stores.map(s => `<label class="shop-choice"><input type="checkbox" ${selectedIds.has(s[0]) ? "checked" : ""} onchange="toggleTraderBalanceStore('${s[0]}', this.checked)">${s[1]}</label>`).join("")}
           </div>
           <div class="card">الإجمالي اللي عليك كله <strong>${m(grand)}</strong></div>
+          
           <div class="table-scroll">
             <table>
-              <tr><th>التاجر</th><th>تفصيل المحلات</th><th>الإجمالي</th></tr>
-              ${Object.entries(rows).map(([name, value]) => `
+              <tr>
+                <th>التاجر</th>
+                <th>تفصيل المحلات</th>
+                <th>الإجمالي</th>
+                ${isAdmin ? "<th>تحكم</th>" : ""}
+              </tr>
+              ${visibleEntries.map(([name, value]) => `
                 <tr>
                   <td>${name}</td>
                   <td>${Object.entries(value.parts).map(([shop, total]) => `${shop}: ${m(total)}`).join(" | ")}</td>
                   <td>${m(value.total)}</td>
+                  ${isAdmin ? `<td><button class="danger" onclick="deleteTraderPermanently('${name.replace(/'/g, "\\'")}')">حذف نهائي</button></td>` : ""}
                 </tr>
-              `).join("") || `<tr><td colspan="3">لا توجد أرصدة</td></tr>`}
+              `).join("") || `<tr><td colspan="${isAdmin ? 4 : 3}">لا توجد أرصدة مستحقة (كل التجار رصيدهم 0)</td></tr>`}
             </table>
           </div>
         </section>
       `;
+    }
+
+    // ⚠️ دالة جديدة: حذف التاجر نهائياً من كل المحلات (للأدمين فقط)
+    function deleteTraderPermanently(traderName) {
+      if (!isAdmin) return;
+      
+      if (!confirm(`هل أنت متأكد من حذف التاجر "${traderName}" نهائياً؟\n\nهيتم حذفه من القائمة الأساسية، ومن كل المعاملات في جميع المحلات.`)) return;
+      
+      if (!confirm(`تأكيد أخير: سيتم حذف كل معاملات "${traderName}" نهائياً ولا يمكن التراجع!`)) return;
+
+      // 1. حذف من القائمة الأساسية
+      if (data.traders) {
+        data.traders = data.traders.filter(n => n !== traderName);
+      }
+
+      // 2. حذف كل المعاملات من كل المحلات
+      Object.keys(data.stores || {}).forEach(storeId => {
+        const shop = data.stores[storeId];
+        if (shop && shop.traderTx) {
+          shop.traderTx = shop.traderTx.filter(tx => tx.name !== traderName);
+        }
+      });
+
+      // 3. الحفظ والمزامنة
+      save();
+
+      // 4. إعادة رسم الصفحة
+      traderTotals();
+      
+      alert(`تم حذف التاجر "${traderName}" وكل معاملاته بنجاح ✅`);
     }
 
     /* =========================================================
