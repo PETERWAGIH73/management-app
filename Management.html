@@ -20,6 +20,7 @@
       background: radial-gradient(circle at top right, #173553 0, var(--dark-bg) 42%, #050b14 100%);
       color: var(--ink); font-size: 15px; line-height: 1.55;
     }
+	body { overflow-x: hidden; }
     button, input, select, textarea { font: inherit; }
     button {
       border: 0; border-radius: 10px; padding: 11px 16px;
@@ -1117,8 +1118,31 @@
       }
     }
 
-    function up(list, item) {
+        function up(list, item) {
       if (!isAdmin) return alert("ليس لديك صلاحية للتعديل");
+      
+      // 1. التأكد من عدم وجود قيم فاضية (زي الاسم، القيمة، أو التاريخ)
+      for (const key in item) {
+        if (key === "id" || key === "pieces") continue; // الـ ID والقطع مش بنتحقق منهم
+        
+        const val = item[key];
+        if (val === "" || val === null || val === undefined) {
+          return alert("لا يمكن الحفظ. يوجد خانات فارغة يجب ملؤها.");
+        }
+        
+        // لو الخانة أرقام وكانت القيمة صفر (مثلاً مبيعات بـ 0) بننبه
+        if (["amount", "euro", "dollar", "gbp", "egp", "visa", "ea", "da", "ba", "er", "dr", "br", "qty", "value"].includes(key)) {
+           if (n(val) === 0) {
+             return alert("لم يتم ادخال قيمة");
+           }
+        }
+      }
+
+      // 2. التأكد من إن "المبلغ" أو "القيمة" مش بالسالب
+      if (item.amount !== undefined && n(item.amount) < 0) return alert("المبلغ لا يمكن أن يكون بالسالب.");
+      if (item.value !== undefined && n(item.value) < 0) return alert("سعر القطع لا يمكن أن يكون بالسالب.");
+
+      // 3. الحفظ
       const index = list.findIndex(x => x.id === item.id);
       if (index > -1) list[index] = item; else list.push(item);
       save(); edit = null; draw();
@@ -1428,16 +1452,99 @@
       `;
     }
 
+            let pendingTraderData = null; // متغير لحفظ البيانات مؤقتاً لحد ما تختار
+
     function saveTrader() {
       if (!isAdmin) return;
-      const name = trn.value.trim();
+      let name = trn.value.trim();
       if (!name) return alert("اكتب اسم التاجر");
+
       data.traders ||= [];
-      if (!data.traders.includes(name)) data.traders.push(name);
+
+      // البحث عن أسماء مشابهة
+      if (!data.traders.includes(name)) {
+        const similar = data.traders.find(t => {
+          const tLower = t.toLowerCase();
+          const nLower = name.toLowerCase();
+          return tLower.includes(nLower) || nLower.includes(tLower);
+        });
+
+        if (similar) {
+          // نجيب بيانات المعاملة اللي هيتم حفظها
+          pendingTraderData = {
+            id: edit?.type === "traderTx" ? edit.id : id(),
+            name: name, 
+            date: dateValue("trd"), 
+            kind: trk.value, 
+            amount: n(tra.value),
+            oldName: similar // بنحفظ الاسم القديم عشان لو داس Yes
+          };
+          
+          // نظهر النافذة المنبثقة
+          showTraderPopup(similar);
+          return; // نوقف الحفظ لحد ما يدوس Yes أو No
+        }
+      }
+
+      // لو مفيش تشابه، نحفظ علطول
+      executeTraderSave(name);
+    }
+
+    function showTraderPopup(similarName) {
+      // إنشاء النافذة لو مش موجودة
+      let modal = document.getElementById("traderModal");
+      if (!modal) {
+        modal = document.createElement("div");
+        modal.id = "traderModal";
+        modal.style.cssText = "position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); display:flex; align-items:center; justify-content:center; z-index:9999; backdrop-filter:blur(4px);";
+        modal.innerHTML = `
+          <div style="background:#111d2e; border:1px solid #283a52; border-radius:14px; padding:24px; width:min(400px, 90%); text-align:center; box-shadow:0 18px 45px rgba(0,0,0,0.5);">
+            <h3 style="margin:0 0 16px; color:#fff; font-size:20px;">تنبيه</h3>
+            <p style="color:#9caec4; margin-bottom:24px; font-size:15px; line-height:1.6;">
+              هل تقصد <strong style="color:#22a6b3;">(${similarName})</strong>؟
+            </p>
+            <div style="display:flex; gap:10px; justify-content:center;">
+              <button onclick="confirmTraderYes()" style="background:#2a8f5f; flex:1; padding:12px; border-radius:10px; border:none; color:white; font-weight:bold; font-size:16px; cursor:pointer;">Yes</button>
+              <button onclick="confirmTraderNo()" style="background:#b93f51; flex:1; padding:12px; border-radius:10px; border:none; color:white; font-weight:bold; font-size:16px; cursor:pointer;">No</button>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(modal);
+      }
+    }
+
+    function confirmTraderYes() {
+      document.getElementById("traderModal").remove();
+      if (pendingTraderData) {
+        // تحديث الخانة قدام المستخدم بالاسم القديم
+        trn.value = pendingTraderData.oldName;
+        // حفظ المعاملة بالاسم القديم
+        executeTraderSave(pendingTraderData.oldName);
+        pendingTraderData = null;
+      }
+    }
+
+    function confirmTraderNo() {
+      document.getElementById("traderModal").remove();
+      if (pendingTraderData) {
+        // حفظ المعاملة كتاجر جديد
+        executeTraderSave(pendingTraderData.name);
+        pendingTraderData = null;
+      }
+    }
+
+    function executeTraderSave(finalName) {
+      if (!data.traders.includes(finalName)) {
+        data.traders.push(finalName);
+      }
       data.traders.sort();
+
       up(st().traderTx, {
         id: edit?.type === "traderTx" ? edit.id : id(),
-        name, date: dateValue("trd"), kind: trk.value, amount: n(tra.value)
+        name: finalName, 
+        date: dateValue("trd"), 
+        kind: trk.value, 
+        amount: n(tra.value)
       });
     }
 
@@ -2407,9 +2514,13 @@
        Enter للحفظ
        ========================================================= */
     document.addEventListener("keydown", e => {
+      // 🛑 منع الحفظ لو النافذة المنبثقة بتاعة التاجر مفتوحة
+      if (document.getElementById("traderModal")) {
+         if (e.key === "Enter") e.preventDefault();
+         return;
+      }
+      
       if (e.key !== "Enter" || e.shiftKey || !store || !isAdmin) return;
-      if (["TEXTAREA", "BUTTON"].includes(e.target.tagName)) return;
-      e.preventDefault();
 
       if (tab === "sales") saveSale();
       else if (tab === "exchange") saveEx();
