@@ -469,8 +469,11 @@
     function setPeriod(p) { period = p; localStorage.managementPeriod = JSON.stringify(period); }
     function rememberedDate(prefix) { return localStorage[`managementDate:${store}:${prefix}`] || today(); }
     function inP(d) { return d && (!period.from || d >= period.from) && (!period.to || d <= period.to); }
-    function fl(list) { return Array.isArray(list) ? list.filter(x => inP(x.date)) : []; }
-
+    function fl(list) {
+      if (!Array.isArray(list)) return [];
+      // بترجع البيانات اللي في الفترة وترتبها من الأقدم للأحدث
+      return list.filter(x => inP(x.date)).sort((a, b) => String(a.date).localeCompare(String(b.date)));
+    }
     function unifiedOutflows() {
       const shop = st();
       return [
@@ -2166,7 +2169,10 @@
       traderTotals();
     }
 
+        let traderBalanceSearch = ""; // متغير لحفظ نص البحث
+
     function traderTotals() {
+      // 1. تجهيز البيانات
       const rows = {};
       let grand = 0;
       const selectedIds = selectedTraderBalanceStoreIds();
@@ -2183,38 +2189,80 @@
         });
       });
 
-      const visibleEntries = Object.entries(rows).filter(([name, value]) => Math.abs(value.total) > 0.01);
+      // 2. الفلترة
+      let visibleEntries = Object.entries(rows).filter(([name, value]) => Math.abs(value.total) > 0.01);
+      const searchLower = traderBalanceSearch.trim().toLowerCase();
+      if (searchLower) {
+        visibleEntries = visibleEntries.filter(([name]) => name.toLowerCase().includes(searchLower));
+      }
 
+      // 3. بناء واجهة الصفحة (الجزء الثابت)
       document.getElementById("app").innerHTML = `
         <h1 class="title">MANAGEMENT</h1>
         <section class="panel">
           <h2>إجمالي الأرصدة للتجار</h2>
+          
+          <div class="row" style="margin-bottom: 15px;">
+            <label style="flex: 1; min-width: 250px;">
+              بحث عن تاجر
+              <input id="traderBalanceSearchInput" placeholder="اكتب اسم التاجر..." value="${traderBalanceSearch}">
+            </label>
+          </div>
+
           <div class="row">
             <button class="gray" onclick="selectAllTraderBalanceStores()">اختيار كل المحلات</button>
             ${stores.map(s => `<label class="shop-choice"><input type="checkbox" ${selectedIds.has(s[0]) ? "checked" : ""} onchange="toggleTraderBalanceStore('${s[0]}', this.checked)">${s[1]}</label>`).join("")}
           </div>
           <div class="card">الإجمالي اللي عليك كله <strong>${m(grand)}</strong></div>
           
-          <div class="table-scroll">
-            <table>
-              <tr>
-                <th>التاجر</th>
-                <th>تفصيل المحلات</th>
-                <th>الإجمالي</th>
-                ${isAdmin ? "<th>تحكم</th>" : ""}
-              </tr>
-              ${visibleEntries.map(([name, value]) => `
-                <tr>
-                  <td>${name}</td>
-                  <td>${Object.entries(value.parts).map(([shop, total]) => `${shop}: ${m(total)}`).join(" | ")}</td>
-                  <td>${m(value.total)}</td>
-                  ${isAdmin ? `<td><button class="danger" onclick="deleteTraderPermanently('${name.replace(/'/g, "\\'")}')">حذف نهائي</button></td>` : ""}
-                </tr>
-              `).join("") || `<tr><td colspan="${isAdmin ? 4 : 3}">لا توجد أرصدة مستحقة (كل التجار رصيدهم 0)</td></tr>`}
-            </table>
-          </div>
+          <!-- الحاوية دي هي اللي هتتحدث بس -->
+          <div id="traderTotalsTableContainer" class="table-scroll"></div>
         </section>
       `;
+
+      // 4. دالة داخلية بترسم الجدول وتحدثه بس
+      const updateTable = () => {
+        const tableContainer = document.getElementById("traderTotalsTableContainer");
+        if (!tableContainer) return;
+        
+        // إعادة الفلترة بناءً على القيمة الحالية للبحث
+        const currentSearch = traderBalanceSearch.trim().toLowerCase();
+        let filtered = Object.entries(rows).filter(([name, value]) => Math.abs(value.total) > 0.01);
+        if (currentSearch) {
+          filtered = filtered.filter(([name]) => name.toLowerCase().includes(currentSearch));
+        }
+
+        tableContainer.innerHTML = `
+          <table>
+            <tr>
+              <th>التاجر</th>
+              <th>تفصيل المحلات</th>
+              <th>الإجمالي</th>
+              ${isAdmin ? "<th>تحكم</th>" : ""}
+            </tr>
+            ${filtered.map(([name, value]) => `
+              <tr>
+                <td>${name}</td>
+                <td>${Object.entries(value.parts).map(([shop, total]) => `${shop}: ${m(total)}`).join(" | ")}</td>
+                <td>${m(value.total)}</td>
+                ${isAdmin ? `<td><button class="danger" onclick="deleteTraderPermanently('${name.replace(/'/g, "\\'")}')">حذف نهائي</button></td>` : ""}
+              </tr>
+            `).join("") || `<tr><td colspan="${isAdmin ? 4 : 3}">لا توجد أرصدة تطابق بحثك.</td></tr>`}
+          </table>
+        `;
+      };
+
+      // 5. ربط خانة البحث بحدث الـ input عشان يحدث الجدول من غير ما يلمس الخانة
+      const searchInput = document.getElementById("traderBalanceSearchInput");
+      if (searchInput) {
+        searchInput.addEventListener("input", (e) => {
+          traderBalanceSearch = e.target.value;
+          updateTable();
+        });
+      }
+
+      // 6. رسم الجدول أول مرة
+      updateTable();
     }
 
     function deleteTraderPermanently(traderName) {
