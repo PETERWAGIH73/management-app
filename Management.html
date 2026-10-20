@@ -476,11 +476,15 @@
       if (!Array.isArray(list)) return [];
       return list.filter(x => inP(x.date)).sort((a, b) => String(a.date).localeCompare(String(b.date)));
     }
-
     function unifiedOutflows() {
       const shop = st();
       return [
-        ...fl(shop.expenses).map(x => ({ ...x, source: "expenses", type: "مصروفات كاش", item: x.item })),
+        ...fl(shop.expenses).map(x => ({ 
+          ...x, 
+          source: "expenses", 
+          type: x.type || "مصروفات كاش", // ✨ هنا السر: بناخد النوع اللي اتسجل
+          item: x.item 
+        })),
         ...fl(shop.traderTx).filter(x => x.kind === "payment").map(x => ({ ...x, source: "traderTx", type: "دفعة تاجر", item: `دفعة تاجر - ${x.name}` })),
         ...fl(shop.withdrawals).map(x => ({ ...x, source: "withdrawals", type: "مسحوبات", item: `مسحوبات - ${x.seller}` }))
       ].sort((a, b) => String(b.date).localeCompare(String(a.date)));
@@ -1887,7 +1891,7 @@
 
         <div id="explist" style="display:none">
           <div class="table-scroll">
-            ${table(expenseList, "expenses", ["التاريخ", "البند", "القيمة"], x => [x.date, x.item, m(x.amount)])}
+            ${table(expenseList, "expenses", ["التاريخ", "البند", "النوع", "القيمة"], x => [x.date, x.item, x.type || "مصروفات كاش", m(x.amount)])}
           </div>
         </div>
 
@@ -1910,8 +1914,7 @@
               ${unifiedList.map(x => `
                 <tr>
                   <td>${x.date}</td><td>${x.item}</td><td>${x.type}</td><td>${m(x.amount)}</td>
-                  <td>${x.source === "expenses" ? "المصروفات" : x.source === "traderTx" ? "دفعات التجار" : "مسحوبات البائعين"}</td>
-                  ${isAdmin ? `<td><button class="light" onclick="edt('${x.source}','${x.id}')">تعديل</button><button class="danger" onclick="del('${x.source}','${x.id}')">حذف</button></td>` : ""}
+<td>${x.source === "expenses" ? (x.type || "مصروفات كاش") : x.source === "traderTx" ? "دفعات التجار" : "مسحوبات البائعين"}</td>                  ${isAdmin ? `<td><button class="light" onclick="edt('${x.source}','${x.id}')">تعديل</button><button class="danger" onclick="del('${x.source}','${x.id}')">حذف</button></td>` : ""}
                 </tr>
               `).join("") || `<tr><td colspan="${isAdmin ? 6 : 5}">لا توجد عمليات خلال الفترة</td></tr>`}
             </table>
@@ -1950,12 +1953,46 @@
     function saveExpense() {
       if (!isAdmin) return;
       if (!xi.value.trim()) return alert("اكتب البند");
-      up(st().expenses, {
+      
+      let itemName = xi.value.trim();
+      let typeName = "مصروفات كاش";
+      const currentDate = dateValue("xd");
+
+      // ✨ الخانة الذكية للإيجار (4 دفعات)
+      if (itemName === "ايجار" || itemName === "إيجار") {
+        const currentMonth = currentDate.substring(0, 7); 
+        const rentThisMonth = (st().expenses || []).filter(e => 
+          (e.item === "ايجار" || e.item === "إيجار" || e.item.startsWith("ايجار")) && 
+          e.date.startsWith(currentMonth)
+        );
+
+        const nextRentNumber = rentThisMonth.length + 1;
+        
+        if (nextRentNumber > 4) {
+          return alert("لقد سجلت الـ 4 دفعات إيجار لهذا الشهر بالفعل.");
+        }
+
+        const ordinals = ["الأولي", "الثانية", "الثالثة", "الرابعة"];
+        itemName = `ايجار ${nextRentNumber}`; 
+        typeName = `دفعة ${ordinals[nextRentNumber - 1]}`; 
+      }
+
+      // 🛑 التعديل المهم: بنحفظ حفظ مباشر هنا عشان نتخطى دالة up اللي بتلغبط
+      const record = {
         id: edit?.type === "expenses" ? edit.id : id(),
-        date: dateValue("xd"),
-        item: xi.value.trim(),
+        date: currentDate,
+        item: itemName,
+        type: typeName, 
         amount: n(xa.value)
-      });
+      };
+
+      const list = st().expenses;
+      const index = list.findIndex(x => x.id === record.id);
+      if (index > -1) list[index] = record; else list.push(record);
+      
+      save(); 
+      edit = null; 
+      draw();
     }
 
     function saveWithdrawal() {
