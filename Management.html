@@ -259,7 +259,6 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
-
   <script>
     /* =========================================================
        Firebase Init
@@ -329,7 +328,8 @@
 
     const blank = () => ({
       sales: [], exchange: [], traderTx: [], sellers: [], fixedSellers: [],
-      items: [], expenses: [], withdrawals: [], partners: []
+      items: [], expenses: [], withdrawals: [], partners: [],
+      salaryMode: "percent", commissionPercent: 0, salaryFixedTotal: 0
     });
 
     /* =========================================================
@@ -365,6 +365,9 @@
           ss.expenses ||= [];
           ss.withdrawals ||= [];
           ss.partners ||= [];
+          ss.salaryMode ||= "percent";
+          ss.commissionPercent ||= 0;
+          ss.salaryFixedTotal ||= 0;
         }
       });
       return obj;
@@ -471,9 +474,9 @@
     function inP(d) { return d && (!period.from || d >= period.from) && (!period.to || d <= period.to); }
     function fl(list) {
       if (!Array.isArray(list)) return [];
-      // بترجع البيانات اللي في الفترة وترتبها من الأقدم للأحدث
       return list.filter(x => inP(x.date)).sort((a, b) => String(a.date).localeCompare(String(b.date)));
     }
+
     function unifiedOutflows() {
       const shop = st();
       return [
@@ -517,6 +520,9 @@
           ss.expenses ||= [];
           ss.withdrawals ||= [];
           ss.partners ||= [];
+          ss.salaryMode ||= "percent";
+          ss.commissionPercent ||= 0;
+          ss.salaryFixedTotal ||= 0;
         }
       });
 
@@ -536,6 +542,9 @@
         ss.expenses ||= [];
         ss.withdrawals ||= [];
         ss.partners ||= [];
+        ss.salaryMode ||= "percent";
+        ss.commissionPercent ||= 0;
+        ss.salaryFixedTotal ||= 0;
       });
     }
 
@@ -562,8 +571,7 @@
       else if (isOnline) { el.classList.add("online"); txt.textContent = "متصل"; }
       else { el.classList.add("offline"); txt.textContent = "غير متصل"; }
     }
-  </script>
-  <script>
+
     /* =========================================================
        شاشة تسجيل الدخول
        ========================================================= */
@@ -1081,14 +1089,11 @@
     function switchTab(key) { 
       tab = key; 
       edit = null; 
-      
-      // تصفير التواريخ لما تغير الشيت عشان يبدأ بتاريخ اليوم من جديد
       Object.keys(localStorage).forEach(k => {
         if (k.startsWith(`managementDate:${store}:`)) {
           delete localStorage[k];
         }
       });
-      
       render(); 
     }
 
@@ -1106,8 +1111,6 @@
       store = storeId;
       tab = "sales";
       edit = null;
-      
-      // تصفير التواريخ المسجلة عشان يرجع لتاريخ اليوم لما تفتح المحل
       Object.keys(localStorage).forEach(key => {
         if (key.startsWith(`managementDate:${store}:`)) {
           delete localStorage[key];
@@ -1125,6 +1128,9 @@
       ss.expenses ||= [];
       ss.withdrawals ||= [];
       ss.partners ||= [];
+      ss.salaryMode ||= "percent";
+      ss.commissionPercent ||= 0;
+      ss.salaryFixedTotal ||= 0;
       render();
     }
 
@@ -1143,36 +1149,27 @@
      function up(list, item) {
       if (!isAdmin) return alert("ليس لديك صلاحية للتعديل");
       
-      // 1. التأكد من عدم وجود قيم فاضية (بس بنتخطى المبيعات عشان ممكن ميبعش بعملة معينة)
       for (const key in item) {
-        if (key === "id" || key === "pieces") continue; // الـ ID والقطع مش بنتحقق منهم
+        if (key === "id" || key === "pieces") continue;
         
         const val = item[key];
         
-        // لو الخانة فاضية
         if (val === "" || val === null || val === undefined) {
-          // لو إحنا في شيت المبيعات، مسموح نخلي الخانات فاضية
           if (item.hasOwnProperty("euro") || item.hasOwnProperty("visa")) continue; 
-          
           return alert("لا يمكن الحفظ. يوجد خانات فارغة يجب ملؤها.");
         }
         
-        // لو الخانة أرقام وكانت القيمة صفر (مثلاً مبيعات بـ 0) بننبه
         if (["amount", "euro", "dollar", "gbp", "egp", "visa", "ea", "da", "ba", "er", "dr", "br", "qty", "value"].includes(key)) {
            if (n(val) === 0) {
-             // برضه لو في المبيعات، ممكن تكون القيمة صفر (زي اليورو)
              if (item.hasOwnProperty("euro") || item.hasOwnProperty("visa")) continue;
-             
              return alert("لم يتم ادخال قيمة");
            }
         }
       }
 
-      // 2. التأكد من إن "المبلغ" أو "القيمة" مش بالسالب
       if (item.amount !== undefined && n(item.amount) < 0) return alert("المبلغ لا يمكن أن يكون بالسالب.");
       if (item.value !== undefined && n(item.value) < 0) return alert("سعر القطع لا يمكن أن يكون بالسالب.");
 
-      // 3. الحفظ
       const index = list.findIndex(x => x.id === item.id);
       if (index > -1) list[index] = item; else list.push(item);
       save(); edit = null; draw();
@@ -1482,7 +1479,7 @@
       `;
     }
 
-            let pendingTraderData = null; // متغير لحفظ البيانات مؤقتاً لحد ما تختار
+    let pendingTraderData = null;
 
     function saveTrader() {
       if (!isAdmin) return;
@@ -1491,7 +1488,6 @@
 
       data.traders ||= [];
 
-      // البحث عن أسماء مشابهة
       if (!data.traders.includes(name)) {
         const similar = data.traders.find(t => {
           const tLower = t.toLowerCase();
@@ -1500,28 +1496,22 @@
         });
 
         if (similar) {
-          // نجيب بيانات المعاملة اللي هيتم حفظها
           pendingTraderData = {
             id: edit?.type === "traderTx" ? edit.id : id(),
             name: name, 
             date: dateValue("trd"), 
             kind: trk.value, 
             amount: n(tra.value),
-            oldName: similar // بنحفظ الاسم القديم عشان لو داس Yes
+            oldName: similar
           };
-          
-          // نظهر النافذة المنبثقة
           showTraderPopup(similar);
-          return; // نوقف الحفظ لحد ما يدوس Yes أو No
+          return;
         }
       }
-
-      // لو مفيش تشابه، نحفظ علطول
       executeTraderSave(name);
     }
 
     function showTraderPopup(similarName) {
-      // إنشاء النافذة لو مش موجودة
       let modal = document.getElementById("traderModal");
       if (!modal) {
         modal = document.createElement("div");
@@ -1546,9 +1536,7 @@
     function confirmTraderYes() {
       document.getElementById("traderModal").remove();
       if (pendingTraderData) {
-        // تحديث الخانة قدام المستخدم بالاسم القديم
         trn.value = pendingTraderData.oldName;
-        // حفظ المعاملة بالاسم القديم
         executeTraderSave(pendingTraderData.oldName);
         pendingTraderData = null;
       }
@@ -1557,7 +1545,6 @@
     function confirmTraderNo() {
       document.getElementById("traderModal").remove();
       if (pendingTraderData) {
-        // حفظ المعاملة كتاجر جديد
         executeTraderSave(pendingTraderData.name);
         pendingTraderData = null;
       }
@@ -1993,9 +1980,20 @@
       const salesEgp = grossSalesEgp - visaDisc;
       
       const shop = st();
-      const commission = n(sessionStorage["comm" + store]);
+      
+      const salaryMode = shop.salaryMode || "percent";
+      const commission = n(shop.commissionPercent);
+      const fixedTotal = n(shop.salaryFixedTotal);
+
       const salaryBase = Math.max(0, salesEgp - (meta()[2] ? s.pieces : 0));
-      const salariesTotal = salaryBase * commission / 100;
+      
+      let salariesTotal = 0;
+      if (salaryMode === "fixed") {
+        salariesTotal = fixedTotal;
+      } else {
+        salariesTotal = salaryBase * commission / 100;
+      }
+
       const fixedSalariesTotal = (shop.fixedSellers || []).reduce((sum, x) => sum + n(x.salary), 0);
 
       const normalExpenses = fl(shop.expenses || []).reduce((a, x) => a + n(x.amount), 0);
@@ -2009,7 +2007,8 @@
         normalExpenses, traderPayments,
         expenses: totalOperatingCosts,
         salariesTotal, fixedSalariesTotal, netProfit,
-        pieces: meta()[2] ? s.pieces : 0
+        pieces: meta()[2] ? s.pieces : 0,
+        salaryMode, commission, fixedTotal
       };
     }
 
@@ -2058,10 +2057,24 @@
         </div>
 
         <hr>
-        <div class="grid grid3">
-          <label>نسبة عمولة البائعين % <input id="cm" type="number" step="0.01" value="${n(sessionStorage["comm" + store])}" ${isAdmin ? "" : "disabled"}></label>
-          ${isAdmin ? `<button onclick="updateCommission()">تحديث التقرير</button>` : ""}
-          <button class="gray" onclick="exportProfitPdf()">تصدير PDF</button>
+        <div class="grid grid3" style="align-items: start; margin-bottom: 15px;">
+          <label>مرتبات البائعين
+            <select id="sm" ${isAdmin ? "" : "disabled"} onchange="updateSalarySettings()">
+              <option value="percent" ${p.salaryMode === "percent" ? "selected" : ""}>نسبة</option>
+              <option value="fixed" ${p.salaryMode === "fixed" ? "selected" : ""}>مرتب </option>
+            </select>
+          </label>
+          
+          <label id="cmWrap" style="display:${p.salaryMode === 'percent' ? 'grid' : 'none'};">نسبة العمولة % 
+            <input id="cm" type="number" step="0.01" value="${p.commission}" ${isAdmin ? "" : "disabled"}>
+          </label>
+
+          <label id="ftWrap" style="display:${p.salaryMode === 'fixed' ? 'grid' : 'none'};">إجمالي المرتب 
+            <input id="ft" type="number" step="0.01" value="${p.fixedTotal}" ${isAdmin ? "" : "disabled"}>
+          </label>
+
+          ${isAdmin ? `<button onclick="updateSalarySettings()" style="margin-top: 24px;">تحديث التقرير</button>` : ""}
+          <button class="gray" onclick="exportProfitPdf()" style="margin-top: 24px;">تصدير PDF</button>
         </div>
 
         <div class="cards">
@@ -2106,9 +2119,18 @@
       `;
     }
 
-    function updateCommission() {
+    function updateSalarySettings() {
       if (!isAdmin) return;
-      sessionStorage["comm" + store] = cm.value;
+      
+      const sm = q("sm").value;
+      const cm = q("cm") ? n(q("cm").value) : 0;
+      const ft = q("ft") ? n(q("ft").value) : 0;
+
+      st().salaryMode = sm;
+      st().commissionPercent = cm;
+      st().salaryFixedTotal = ft;
+
+      save();
       draw();
     }
 
@@ -2169,10 +2191,9 @@
       traderTotals();
     }
 
-        let traderBalanceSearch = ""; // متغير لحفظ نص البحث
+    let traderBalanceSearch = "";
 
     function traderTotals() {
-      // 1. تجهيز البيانات
       const rows = {};
       let grand = 0;
       const selectedIds = selectedTraderBalanceStoreIds();
@@ -2189,14 +2210,12 @@
         });
       });
 
-      // 2. الفلترة
       let visibleEntries = Object.entries(rows).filter(([name, value]) => Math.abs(value.total) > 0.01);
       const searchLower = traderBalanceSearch.trim().toLowerCase();
       if (searchLower) {
         visibleEntries = visibleEntries.filter(([name]) => name.toLowerCase().includes(searchLower));
       }
 
-      // 3. بناء واجهة الصفحة (الجزء الثابت)
       document.getElementById("app").innerHTML = `
         <h1 class="title">MANAGEMENT</h1>
         <section class="panel">
@@ -2215,17 +2234,14 @@
           </div>
           <div class="card">الإجمالي اللي عليك كله <strong>${m(grand)}</strong></div>
           
-          <!-- الحاوية دي هي اللي هتتحدث بس -->
           <div id="traderTotalsTableContainer" class="table-scroll"></div>
         </section>
       `;
 
-      // 4. دالة داخلية بترسم الجدول وتحدثه بس
       const updateTable = () => {
         const tableContainer = document.getElementById("traderTotalsTableContainer");
         if (!tableContainer) return;
         
-        // إعادة الفلترة بناءً على القيمة الحالية للبحث
         const currentSearch = traderBalanceSearch.trim().toLowerCase();
         let filtered = Object.entries(rows).filter(([name, value]) => Math.abs(value.total) > 0.01);
         if (currentSearch) {
@@ -2252,7 +2268,6 @@
         `;
       };
 
-      // 5. ربط خانة البحث بحدث الـ input عشان يحدث الجدول من غير ما يلمس الخانة
       const searchInput = document.getElementById("traderBalanceSearchInput");
       if (searchInput) {
         searchInput.addEventListener("input", (e) => {
@@ -2261,7 +2276,6 @@
         });
       }
 
-      // 6. رسم الجدول أول مرة
       updateTable();
     }
 
@@ -2589,7 +2603,6 @@
        Enter للحفظ
        ========================================================= */
     document.addEventListener("keydown", e => {
-      // 🛑 منع الحفظ لو النافذة المنبثقة بتاعة التاجر مفتوحة
       if (document.getElementById("traderModal")) {
          if (e.key === "Enter") e.preventDefault();
          return;
@@ -2610,7 +2623,8 @@
         else addSeller();
       } else if (tab === "profits") {
         if (q("pn") && pn.value.trim()) addPartner();
-        else if (q("cm")) updateCommission();
+        else if (q("sm") && q("sm").value === "percent" && q("cm")) updateSalarySettings();
+        else if (q("sm") && q("sm").value === "fixed" && q("ft")) updateSalarySettings();
       }
     });
 
