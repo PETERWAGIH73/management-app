@@ -2224,8 +2224,10 @@
           <div class="row" style="margin-bottom: 15px;">
             <label style="flex: 1; min-width: 250px;">
               بحث عن تاجر
-              <input id="traderBalanceSearchInput" placeholder="اكتب اسم التاجر..." value="${traderBalanceSearch}">
-            </label>
+<input id="traderBalanceSearchInput" list="traderNamesList" placeholder="اكتب اسم التاجر..." value="${traderBalanceSearch}" autocomplete="off">
+<datalist id="traderNamesList">
+  ${Object.keys(rows).sort((a,b) => a.localeCompare(b, "ar")).map(n => `<option value="${n}">`).join("")}
+</datalist>            </label>
           </div>
 
           <div class="row">
