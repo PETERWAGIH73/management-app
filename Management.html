@@ -1150,22 +1150,27 @@
       }
     }
 
-     function up(list, item) {
+    function up(list, item) {
       if (!isAdmin) return alert("ليس لديك صلاحية للتعديل");
       
+      // لو الحفظ ده جاي من شيت اليوميات أو تغيير العملة، مسموح بالصفر والخانات الفاضية
+      const isSalesOrExchange = item.hasOwnProperty("euro") || item.hasOwnProperty("visa") || item.hasOwnProperty("ea");
+
       for (const key in item) {
-        if (key === "id" || key === "pieces") continue;
+        if (key === "id" || key === "pieces" || key === "type") continue;
         
         const val = item[key];
         
+        // لو الخانة فاضية
         if (val === "" || val === null || val === undefined) {
-          if (item.hasOwnProperty("euro") || item.hasOwnProperty("visa")) continue; 
+          if (isSalesOrExchange) continue; // مسموح في اليوميات وتغيير العملة
           return alert("لا يمكن الحفظ. يوجد خانات فارغة يجب ملؤها.");
         }
         
+        // لو الخانة أرقام وكانت القيمة صفر (زي اليورو أو الدولار)
         if (["amount", "euro", "dollar", "gbp", "egp", "visa", "ea", "da", "ba", "er", "dr", "br", "qty", "value"].includes(key)) {
            if (n(val) === 0) {
-             if (item.hasOwnProperty("euro") || item.hasOwnProperty("visa")) continue;
+             if (isSalesOrExchange) continue; // مسموح في اليوميات وتغيير العملة
              return alert("لم يتم ادخال قيمة");
            }
         }
