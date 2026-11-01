@@ -2685,7 +2685,23 @@ ${isAdmin ? `<button class="gray" onclick="box('explist')"> المصروفات</
         else if (q("sm") && q("sm").value === "fixed" && q("ft")) updateSalarySettings();
       }
     });
-
+    /* =========================================================
+       تحويل الأرقام العربية إلى إنجليزية تلقائياً
+       ========================================================= */
+    document.addEventListener("input", function(e) {
+      if (e.target.tagName === "INPUT" && e.target.type === "number") {
+        let val = e.target.value;
+        // تحويل الأرقام العربية إلى إنجليزية
+        const arabicNumbers = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'];
+        for (let i = 0; i < 10; i++) {
+          val = val.replace(new RegExp(arabicNumbers[i], 'g'), i);
+        }
+        // لو القيمة اتغيرت، حدث الخانة
+        if (e.target.value !== val) {
+          e.target.value = val;
+        }
+      }
+    });
     /* =========================================================
        بدء التشغيل
        ========================================================= */
