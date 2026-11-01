@@ -1877,9 +1877,8 @@
 
       return `
         <h2>المصروفات والمسحوبات</h2>
-        <div class="card">إجمالي المصروفات الكلي <strong>${m(unifiedOutflowTotal())}</strong></div>
-
-        <h3>مصروفات المحل</h3>
+${isAdmin ? `<div class="card">إجمالي المصروفات الكلي <strong>${m(unifiedOutflowTotal())}</strong></div>` : ""}
+       ${isAdmin ? ` <h3>مصروفات المحل</h3> ` : ""}
         ${isAdmin ? `
           <div class="grid">
             <label>التاريخ ${dateBox("xd", expenseRecord.date || rememberedDate("xd"))}</label>
@@ -1890,9 +1889,7 @@
         ` : ""}
 
         <div class="row">
-          <button class="gray" onclick="box('explist')"> المصروفات</button>
-          <div class="card">الإجمالي <strong>${m(expenseList.reduce((s, x) => s + n(x.amount), 0))}</strong></div>
-        </div>
+${isAdmin ? `<button class="gray" onclick="box('explist')"> المصروفات</button>` : ""}${isAdmin ? `<div class="card">الإجمالي <strong>${m(expenseList.reduce((s, x) => s + n(x.amount), 0))}</strong></div>` : ""}        </div>
 
         <div id="explist" style="display:none">
           <div class="table-scroll">
@@ -2380,6 +2377,7 @@
                         ${isSelf ? `<span style="color:var(--muted);font-size:12px">(أنت)</span>` : `
                           ${u.status !== "approved" ? `<button class="success" onclick="approveUser('${uid}')">موافقة</button>` : ""}
                           ${u.status === "approved" ? `<button class="warn" onclick="blockUser('${uid}', ${!u.blocked})">${u.blocked ? "إلغاء الحظر" : "حظر"}</button>` : ""}
+                          ${u.status === "approved" ? `<button class="light" onclick="toggleAdminRole('${uid}', '${u.role}')">${u.role === "admin" ? "إلغاء الآدمن" : "ترقية لآدمن"}</button>` : ""}
                           <button class="danger" onclick="deleteUser('${uid}')">حذف</button>
                         `}
                       </td>
@@ -2393,6 +2391,22 @@
       } catch (e) {
         console.error(e);
         document.getElementById("app").innerHTML = `<div class="head"><h1>المستخدمين</h1><button class="light" onclick="home()">رجوع</button></div><section class="panel"><p class="bad">فشل تحميل المستخدمين</p></section>`;
+      }
+    }
+	    async function toggleAdminRole(uid, currentRole) {
+      if (!isAdmin) return;
+      const newRole = currentRole === "admin" ? "viewer" : "admin";
+      const confirmMsg = newRole === "admin" 
+        ? "هل أنت متأكد من ترقية هذا المستخدم إلى آدمن؟ سيتمكن من التحكم الكامل في النظام."
+        : "هل أنت متأكد من إلغاء صلاحية الآدمن عن هذا المستخدم؟ سيصبح مشاهداً فقط.";
+        
+      if (!confirm(confirmMsg)) return;
+      
+      try {
+        await fbDB.ref(`${USERS_PATH}/${uid}`).update({ role: newRole });
+        renderUsersPage();
+      } catch (e) { 
+        alert("فشل تحديث الصلاحية: " + e.message); 
       }
     }
 
