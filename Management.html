@@ -1324,6 +1324,28 @@
       const r = edit?.type === "exchange" ? st().exchange.find(x => x.id === edit.id) : {};
       const x = exStats();
       const list = fl(st().exchange);
+      
+      // حساب الإجماليات المطلوبة لكل عملة
+      let totalEuro = 0, totalEuroEgp = 0;
+      let totalDollar = 0, totalDollarEgp = 0;
+      let totalGbp = 0, totalGbpEgp = 0;
+
+      list.forEach(item => {
+        const ea = n(item.ea), er = n(item.er);
+        const da = n(item.da), dr = n(item.dr);
+        const ba = n(item.ba), br = n(item.br);
+
+        totalEuro += ea;
+        totalEuroEgp += (ea * er);
+
+        totalDollar += da;
+        totalDollarEgp += (da * dr);
+
+        totalGbp += ba;
+        totalGbpEgp += (ba * br);
+      });
+
+      const totalEgpOverall = totalEuroEgp + totalDollarEgp + totalGbpEgp;
 
       return `
         <h2>تغيير العملة</h2>
@@ -1353,6 +1375,20 @@
           <div class="card">متوسط اليورو <strong>${m(x.eavg)}</strong></div>
           <div class="card">متوسط الدولار <strong>${m(x.davg)}</strong></div>
           <div class="card">متوسط الجنيه الإنجليزي <strong>${m(x.bavg)}</strong></div>
+        </div>
+
+        <!-- الكروت الجديدة لكل العملات -->
+        <div class="cards" style="margin-bottom: 15px; grid-template-columns: repeat(2, 1fr);">
+          <div class="card" style="border: 1px solid var(--green);">إجمالي اليورو  <strong>${m(totalEuro)} €</strong></div>
+          <div class="card" style="border: 1px solid var(--green);">المصري <strong>${m(totalEuroEgp)} L.E</strong></div>
+
+          <div class="card" style="border: 1px solid var(--green);">إجمالي الدولار  <strong>${m(totalDollar)} $</strong></div>
+          <div class="card" style="border: 1px solid var(--green);">المصري <strong>${m(totalDollarEgp)} L.E</strong></div>
+
+          <div class="card" style="border: 1px solid var(--green);">إجمالي  الإنجليزي  <strong>${m(totalGbp)} £</strong></div>
+          <div class="card" style="border: 1px solid var(--green);"> المصري  <strong>${m(totalGbpEgp)} L.E</strong></div>
+          
+          <div class="card" style="border: 2px solid #ff4d4d; grid-column: span 2;">إجمالي المصري الكلي  <strong>${m(totalEgpOverall)} L.E</strong></div>
         </div>
 
         <div id="exlist" style="display:none">
