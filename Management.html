@@ -323,7 +323,7 @@
       sellers: "البائعين",
       expenses: "المصروفات والمسحوبات",
       profits: "توزيع الأرباح",
-      items: "الاصناف"
+     
     };
 
     const blank = () => ({
@@ -1773,15 +1773,15 @@
         ${isAdmin ? `
           <div class="grid">
             <label>التاريخ ${dateBox("itd", r.date || rememberedDate("itd"))}</label>
-            <label>اسم الصنف <input id="itn" list="itemNameList" value="${r.name || ""}" placeholder="اكتب أول حرف"></label>
+            <label>اسم الصنف <input id="itn" list="itemNameList" value="${r.name || ""}" placeholder=" ...ء "></label>
             <label>عدد القطع المباعة <input id="itq" type="number" step="0.01" value="${r.qty || ""}"></label>
             <label>سعر القطع المباعة <input id="itv" type="number" step="0.01" value="${r.value || ""}"></label>
             <button onclick="saveItem()">${r.id ? "تعديل الصنف" : "إضافة صنف"}</button>
             ${r.id ? `<button class="light" onclick="edit=null; draw()">إلغاء التعديل</button>` : ""}
           </div>
-          <div class="row"><button class="gray" onclick="box('itemsList')">عرض / إخفاء الأصناف المسجلة</button></div>
+          <div class="row"><button class="gray" onclick="box('itemsList')">الأصناف المسجلة</button></div>
         ` : `
-          <div class="row"><button class="gray" onclick="box('itemsList')">عرض / إخفاء الأصناف المسجلة</button></div>
+          <div class="row"><button class="gray" onclick="box('itemsList')">الأصناف المسجلة</button></div>
         `}
 
         <div id="itemsList" style="display:none">
@@ -1791,7 +1791,7 @@
         </div>
 
         <hr>
-        <h3>الرسم البياني للفترة المحددة فوق</h3>
+        <h3>الرسم التوضيحي</h3>
         <div class="cards">
           <div class="card">إجمالي القطع <strong>${m(mainStats.totalQty)}</strong></div>
           <div class="card">إجمالي سعر القطع <strong>${m(mainStats.totalValue)}</strong></div>
@@ -1803,17 +1803,17 @@
         <h3>مقارنة بين فترتين</h3>
         <div class="grid">
           <label>الفترة الأولى من ${dateBox("iaf", aFrom)}</label>
-          <label>الفترة الأولى إلى ${dateBox("iat", aTo)}</label>
+          <label> إلى ${dateBox("iat", aTo)}</label>
           <label>الفترة الثانية من ${dateBox("ibf", bFrom)}</label>
-          <label>الفترة الثانية إلى ${dateBox("ibt", bTo)}</label>
-          <button onclick="setItemCompare()">تطبيق المقارنة</button>
+          <label>  إلى ${dateBox("ibt", bTo)}</label>
+          <button onclick="setItemCompare()"> مقارنة</button>
         </div>
 
         <div class="cards">
-          <div class="card">قطع الفترة الأولى <strong>${m(aStats.totalQty)}</strong></div>
-          <div class="card">قيمة الفترة الأولى <strong>${m(aStats.totalValue)}</strong></div>
-          <div class="card">قطع الفترة الثانية <strong>${m(bStats.totalQty)}</strong></div>
-          <div class="card">قيمة الفترة الثانية <strong>${m(bStats.totalValue)}</strong></div>
+          <div class="card">القطع المباعة في الفترة الاولي <strong>${m(aStats.totalQty)}</strong></div>
+          <div class="card">سعرها <strong>${m(aStats.totalValue)}</strong></div>
+          <div class="card">القطع المباعة في الفترة الثانية <strong>${m(bStats.totalQty)}</strong></div>
+          <div class="card">سعرها <strong>${m(bStats.totalValue)}</strong></div>
         </div>
 
         ${compareChart(aStats, bStats)}
