@@ -1031,6 +1031,24 @@
         return all;
       }, { euroSales: 0, dollarSales: 0, gbpSales: 0, euroChanged: 0, dollarChanged: 0, gbpChanged: 0, euro: 0, dollar: 0, gbp: 0, egp: 0, visa: 0, totalConvertedEgp: 0, cashOut: 0 });
 
+      // تجميع أرباح الشركاء من كل المحلات المختارة
+      const allPartners = {};
+      stores.filter(s => selectedIds.has(s[0])).forEach(s => {
+        const shop = ensureAllFields({ stores: { [s[0]]: data.stores[s[0]] } }).stores[s[0]];
+        
+        // حساب صافي الربح للمحل ده في الفترة المحددة
+        const savedStore = store;
+        store = s[0]; // مؤقتاً بنغير الستور عشان دالة profitCalc تشتغل صح
+        const p = profitCalc();
+        store = savedStore;
+
+        // تجميع الشركاء
+        (shop.partners || []).forEach(partner => {
+          const profitShare = p.netProfit * (n(partner.percent) / 100);
+          allPartners[partner.name] = (allPartners[partner.name] || 0) + profitShare;
+        });
+      });
+
       document.getElementById("app").innerHTML = `
         <div class="head"><h1>تحصيل المحلات</h1><button class="light" onclick="home()">رجوع</button></div>
         <section class="panel">
@@ -1062,6 +1080,16 @@
               <tr><th>المحل</th><th> € </th><th> EX </th><th> R </th><th> $ </th><th> EX </th><th> R </th><th> £ </th><th> EX </th><th> R </th><th>L.E</th><th>VISA</th><th>إجمالي التغيير (L.E)</th><th>مصاريف</th></tr>
               ${rows.map(row => `<tr><td>${row.name}</td><td>${m(row.totals.euroSales)}</td><td>${m(row.totals.euroChanged)}</td><td>${m(row.totals.euro)}</td><td>${m(row.totals.dollarSales)}</td><td>${m(row.totals.dollarChanged)}</td><td>${m(row.totals.dollar)}</td><td>${m(row.totals.gbpSales)}</td><td>${m(row.totals.gbpChanged)}</td><td>${m(row.totals.gbp)}</td><td>${m(row.totals.egp)}</td><td>${m(row.totals.visa)}</td><td><b style="color:var(--green)">${m(row.totals.totalConvertedEgp)}</b></td><td><b style="color:var(--red)">${m(row.totals.cashOut)}</b></td></tr>`).join("") || `<tr><td colspan="14">اختر محلًا واحدًا على الأقل لعرض التحصيل</td></tr>`}
               <tr class="total"><td>الإجمالي</td><td>${m(total.euroSales)}</td><td>${m(total.euroChanged)}</td><td>${m(total.euro)}</td><td>${m(total.dollarSales)}</td><td>${m(total.dollarChanged)}</td><td>${m(total.dollar)}</td><td>${m(total.gbpSales)}</td><td>${m(total.gbpChanged)}</td><td>${m(total.gbp)}</td><td>${m(total.egp)}</td><td>${m(total.visa)}</td><td><b style="color:var(--green)">${m(total.totalConvertedEgp)}</b></td><td><b style="color:var(--red)">${m(total.cashOut)}</b></td></tr>
+            </table>
+          </div>
+
+          <!-- قسم أرباح الشركاء المجمعة -->
+          <hr>
+          <h2> اجمالي أرباح الشركاء </h2>
+          <div class="table-scroll">
+            <table>
+              <tr><th>اسم الشريك</th><th>إجمالي الأرباح</th></tr>
+              ${Object.entries(allPartners).map(([name, profit]) => `<tr><td>${name}</td><td><b style="color:var(--green)">${m(profit)}</b></td></tr>`).join("") || `<tr><td colspan="2">لا يوجد شركاء مسجلين في المحلات المختارة</td></tr>`}
             </table>
           </div>
         </section>
