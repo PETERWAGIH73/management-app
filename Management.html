@@ -2024,26 +2024,46 @@ ${isAdmin ? `<button class="gray" onclick="box('explist')"> المصروفات</
       let typeName = "مصروفات كاش";
       const currentDate = dateValue("xd");
 
-      // ✨ الخانة الذكية للإيجار (4 دفعات)
-      if (itemName === "ايجار" || itemName === "إيجار") {
-        const currentMonth = currentDate.substring(0, 7); 
-        const rentThisMonth = (st().expenses || []).filter(e => 
-          (e.item === "ايجار" || e.item === "إيجار" || e.item.startsWith("ايجار")) && 
-          e.date.startsWith(currentMonth)
-        );
-
-        const nextRentNumber = rentThisMonth.length + 1;
+      // 1. لو أنت بتعدل مصروف موجود بالفعل
+      if (edit?.type === "expenses") {
+        const oldExpense = st().expenses.find(e => e.id === edit.id);
         
-        if (nextRentNumber > 4) {
-          return alert("لقد سجلت الـ 4 دفعات إيجار لهذا الشهر بالفعل.");
+        // لو البند القديم كان إيجار، نحافظ على الاسم القديم زي ما هو عشان ميحصلش لخبطة
+        if (oldExpense && (oldExpense.item.includes("ايجار") || oldExpense.item.includes("إيجار") || oldExpense.type === "ايجار")) {
+           itemName = xi.value.trim(); 
+           typeName = "ايجار";
+        } 
+        // لو كنت بتعدل مصروف عادي وحولته لإيجار
+        else if (itemName === "ايجار" || itemName === "إيجار") {
+           const currentMonth = currentDate.substring(0, 7); 
+           const rentThisMonth = (st().expenses || []).filter(e => 
+             (e.item.includes("ايجار") || e.item.includes("إيجار") || e.type === "ايجار") && e.date.startsWith(currentMonth)
+           );
+           const nextRentNumber = rentThisMonth.length + 1;
+           if (nextRentNumber > 4) return alert("لقد سجلت الـ 4 دفعات إيجار لهذا الشهر بالفعل.");
+           const ordinals = ["الأولى", "الثانية", "الثالثة", "الرابعة"];
+           itemName = `الدفعة ${ordinals[nextRentNumber - 1]} إيجار`; 
+           typeName = "ايجار"; 
         }
-
-        const ordinals = ["الأولي", "الثانية", "الثالثة", "الرابعة"];
-        itemName = `ايجار ${nextRentNumber}`; 
-        typeName = `الدفعة ${ordinals[nextRentNumber - 1]}`; 
+      } 
+      // 2. لو أنت بتسجل مصروف جديد من الأول
+      else {
+        if (itemName === "ايجار" || itemName === "إيجار") {
+          const currentMonth = currentDate.substring(0, 7); 
+          const rentThisMonth = (st().expenses || []).filter(e => 
+            (e.item.includes("ايجار") || e.item.includes("إيجار") || e.type === "ايجار") && e.date.startsWith(currentMonth)
+          );
+          const nextRentNumber = rentThisMonth.length + 1;
+          if (nextRentNumber > 4) return alert("لقد سجلت الـ 4 دفعات إيجار لهذا الشهر بالفعل.");
+          
+          const ordinals = ["الأولى", "الثانية", "الثالثة", "الرابعة"];
+          // هنا بقى السطر اللي بيغير الشكل للي أنت عايزه
+          itemName = `الدفعة ${ordinals[nextRentNumber - 1]} إيجار`; 
+          typeName = "ايجار"; 
+        }
       }
 
-      // 🛑 التعديل المهم: بنحفظ حفظ مباشر هنا عشان نتخطى دالة up اللي بتلغبط
+      // حفظ البيانات
       const record = {
         id: edit?.type === "expenses" ? edit.id : id(),
         date: currentDate,
