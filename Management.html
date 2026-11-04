@@ -1062,7 +1062,7 @@
             <button class="gray" onclick="selectAllCollectionStores()">اختيار كل المحلات</button>
             ${stores.map(s => `<label class="shop-choice"><input type="checkbox" ${selectedIds.has(s[0]) ? "checked" : ""} onchange="toggleCollectionStore('${s[0]}', this.checked)">${s[1]}</label>`).join("")}
           </div>
-          <div class="row"><button onclick="exportCollectionsPdf()">تصدير تحصيل المحلات PDF</button></div>
+          <div class="row"><button onclick="exportCollectionsPdf()">PDF</button></div>
           
           <div class="cards">
             <div class="card" style="border: 2px solid var(--green);">إجمالي التغيير (L.E) <strong>${m(total.totalConvertedEgp)}</strong></div>
@@ -1084,7 +1084,9 @@
           </div>
 
           <!-- قسم أرباح الشركاء المجمعة -->
-          <hr>
+                    ${isAdmin ? `
+
+		  <hr>
           <h2> اجمالي أرباح الشركاء </h2>
           <div class="table-scroll">
             <table>
@@ -1092,6 +1094,7 @@
               ${Object.entries(allPartners).map(([name, profit]) => `<tr><td>${name}</td><td><b style="color:var(--green)">${m(profit)}</b></td></tr>`).join("") || `<tr><td colspan="2">لا يوجد شركاء مسجلين في المحلات المختارة</td></tr>`}
             </table>
           </div>
+		    ` : ""}
         </section>
       `;
     }
@@ -2315,8 +2318,35 @@ ${isAdmin ? `<button class="gray" onclick="box('explist')"> المصروفات</
     }
 
     let traderBalanceSearch = "";
+    let selectedTraderNames = new Set();
 
-    function traderTotals() {
+    function toggleTraderSelection(name, checked) {
+      if (checked) selectedTraderNames.add(name);
+      else selectedTraderNames.delete(name);
+    }
+
+    function toggleAllTradersPdf() {
+      const checkboxes = document.querySelectorAll('.trader-checkbox');
+      const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+      
+      checkboxes.forEach(cb => {
+        cb.checked = !allChecked;
+        toggleTraderSelection(cb.value, !allChecked);
+      });
+      
+      const selectAllBox = document.getElementById("selectAllTraderCheckbox");
+      if (selectAllBox) selectAllBox.checked = !allChecked;
+    }
+
+    function toggleSelectAllTraders(checked) {
+      const checkboxes = document.querySelectorAll('.trader-checkbox');
+      checkboxes.forEach(cb => {
+        cb.checked = checked;
+        toggleTraderSelection(cb.value, checked);
+      });
+    }
+
+       function traderTotals() {
       const rows = {};
       let grand = 0;
       const selectedIds = selectedTraderBalanceStoreIds();
@@ -2333,12 +2363,6 @@ ${isAdmin ? `<button class="gray" onclick="box('explist')"> المصروفات</
         });
       });
 
-      let visibleEntries = Object.entries(rows).filter(([name, value]) => Math.abs(value.total) > 0.01);
-      const searchLower = traderBalanceSearch.trim().toLowerCase();
-      if (searchLower) {
-        visibleEntries = visibleEntries.filter(([name]) => name.toLowerCase().includes(searchLower));
-      }
-
       document.getElementById("app").innerHTML = `
         <h1 class="title">MANAGEMENT</h1>
         <section class="panel">
@@ -2347,10 +2371,11 @@ ${isAdmin ? `<button class="gray" onclick="box('explist')"> المصروفات</
           <div class="row" style="margin-bottom: 15px;">
             <label style="flex: 1; min-width: 250px;">
               بحث عن تاجر
-<input id="traderBalanceSearchInput" list="traderNamesList" placeholder="اكتب اسم التاجر..." value="${traderBalanceSearch}" autocomplete="off">
-<datalist id="traderNamesList">
-  ${Object.keys(rows).sort((a,b) => a.localeCompare(b, "ar")).map(n => `<option value="${n}">`).join("")}
-</datalist>            </label>
+              <input id="traderBalanceSearchInput" list="traderNamesList" placeholder="اكتب اسم التاجر..." value="${traderBalanceSearch}" autocomplete="off">
+              <datalist id="traderNamesList">
+                ${Object.keys(rows).sort((a,b) => a.localeCompare(b, "ar")).map(n => `<option value="${n}">`).join("")}
+              </datalist>
+            </label>
           </div>
 
           <div class="row">
@@ -2359,6 +2384,11 @@ ${isAdmin ? `<button class="gray" onclick="box('explist')"> المصروفات</
           </div>
           <div class="card">الإجمالي اللي عليك كله <strong>${m(grand)}</strong></div>
           
+          <div class="row" style="margin-top: 15px;">
+            <button class="gray" onclick="toggleAllVisibleTraders()">تحديد الكل</button>
+            <button onclick="exportTraderTotalsPdf()">PDF</button>
+          </div>
+
           <div id="traderTotalsTableContainer" class="table-scroll"></div>
         </section>
       `;
@@ -2376,6 +2406,7 @@ ${isAdmin ? `<button class="gray" onclick="box('explist')"> المصروفات</
         tableContainer.innerHTML = `
           <table>
             <tr>
+              <th style="width: 40px; text-align: center;"><input type="checkbox" id="selectAllTraderCheckbox" onchange="toggleSelectAllVisible(this.checked)" style="width: 18px; height: 18px; cursor: pointer;"></th>
               <th>التاجر</th>
               <th>تفصيل المحلات</th>
               <th>الإجمالي</th>
@@ -2383,14 +2414,22 @@ ${isAdmin ? `<button class="gray" onclick="box('explist')"> المصروفات</
             </tr>
             ${filtered.map(([name, value]) => `
               <tr>
+                <td style="text-align: center;"><input type="checkbox" class="trader-checkbox" value="${name}" ${selectedTraderNames.has(name) ? "checked" : ""} onchange="toggleTraderSelection('${name.replace(/'/g, "\\'")}', this.checked)" style="width: 18px; height: 18px; cursor: pointer;"></td>
                 <td>${name}</td>
                 <td>${Object.entries(value.parts).map(([shop, total]) => `${shop}: ${m(total)}`).join(" | ")}</td>
                 <td>${m(value.total)}</td>
                 ${isAdmin ? `<td><button class="danger" onclick="deleteTraderPermanently('${name.replace(/'/g, "\\'")}')">حذف نهائي</button></td>` : ""}
               </tr>
-            `).join("") || `<tr><td colspan="${isAdmin ? 4 : 3}">لا توجد أرصدة تطابق بحثك.</td></tr>`}
+            `).join("") || `<tr><td colspan="${isAdmin ? 5 : 4}">لا توجد أرصدة تطابق بحثك.</td></tr>`}
           </table>
         `;
+
+        const checkboxes = document.querySelectorAll('.trader-checkbox');
+        const selectAllBox = document.getElementById("selectAllTraderCheckbox");
+        if (checkboxes.length > 0 && selectAllBox) {
+            const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+            selectAllBox.checked = allChecked;
+        }
       };
 
       const searchInput = document.getElementById("traderBalanceSearchInput");
@@ -2402,6 +2441,72 @@ ${isAdmin ? `<button class="gray" onclick="box('explist')"> المصروفات</
       }
 
       updateTable();
+    }
+
+    function toggleAllVisibleTraders() {
+        const checkboxes = document.querySelectorAll('.trader-checkbox');
+        const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+        
+        checkboxes.forEach(cb => {
+            cb.checked = !allChecked;
+            toggleTraderSelection(cb.value, !allChecked);
+        });
+        
+        const selectAllBox = document.getElementById("selectAllTraderCheckbox");
+        if (selectAllBox) selectAllBox.checked = !allChecked;
+    }
+
+    function toggleSelectAllVisible(checked) {
+        const checkboxes = document.querySelectorAll('.trader-checkbox');
+        checkboxes.forEach(cb => {
+            cb.checked = checked;
+            toggleTraderSelection(cb.value, checked);
+        });
+    }
+
+    function exportTraderTotalsPdf() {
+      const rows = {};
+      const selectedIds = selectedTraderBalanceStoreIds();
+      const selectedStores = stores.filter(s => selectedIds.has(s[0]));
+      
+      selectedStores.forEach(s => {
+        const shop = ensureAllFields({ stores: { [s[0]]: data.stores[s[0]] } }).stores[s[0]];
+        (shop.traderTx || []).forEach(t => {
+          rows[t.name] ??= { total: 0, parts: {} };
+          const value = t.kind === "invoice" ? n(t.amount) : -n(t.amount);
+          rows[t.name].total += value;
+          rows[t.name].parts[s[1]] = (rows[t.name].parts[s[1]] || 0) + value;
+        });
+      });
+
+      let entriesToPrint = [];
+      let grandTotal = 0;
+
+      if (selectedTraderNames.size > 0) {
+        entriesToPrint = Object.entries(rows).filter(([name]) => selectedTraderNames.has(name));
+      } else {
+        entriesToPrint = Object.entries(rows).filter(([name, value]) => Math.abs(value.total) > 0.01);
+        const searchLower = traderBalanceSearch.trim().toLowerCase();
+        if (searchLower) entriesToPrint = entriesToPrint.filter(([name]) => name.toLowerCase().includes(searchLower));
+      }
+
+      entriesToPrint.forEach(([name, value]) => {
+          grandTotal += value.total;
+      });
+
+      const title = entriesToPrint.length === 1 ? `رصيد التاجر - ${entriesToPrint[0][0]}` : "أرصدة التجار";
+      
+      const content = `
+        <div class="summary-grid">
+          <div class="metric">عدد التجار<b>${entriesToPrint.length}</b></div>
+          <div class="metric">الإجمالي الكلي<b>${m(grandTotal)}</b></div>
+        </div>
+        <table><thead><tr><th>#</th><th>التاجر</th><th>تفصيل المحلات</th><th>الإجمالي</th></tr></thead><tbody>
+          ${entriesToPrint.map(([name, value], i) => `<tr><td>${i + 1}</td><td>${name}</td><td>${Object.entries(value.parts).map(([shop, total]) => `${shop}: ${m(total)}`).join(" | ")}</td><td><b>${m(value.total)}</b></td></tr>`).join("") || `<tr><td colspan="4">لا توجد أرصدة.</td></tr>`}
+        </tbody></table>
+      `;
+      
+      printPdf(title, `تاريخ الإصدار: ${today()}`, content);
     }
 
     function deleteTraderPermanently(traderName) {
@@ -2426,7 +2531,6 @@ ${isAdmin ? `<button class="gray" onclick="box('explist')"> المصروفات</
       traderTotals();
       alert(`تم حذف التاجر "${traderName}" وكل معاملاته بنجاح ✅`);
     }
-
     /* =========================================================
        إدارة المستخدمين
        ========================================================= */
@@ -2630,7 +2734,7 @@ ${isAdmin ? `<button class="gray" onclick="box('explist')"> المصروفات</
         <!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>${title}</title>
         <style>
           @page{size:A4 ${orientation};margin:14mm 12mm 16mm}
-          *{box-sizing:border-box} body{font-family:Tahoma,Arial,sans-serif;color:#142033;margin:0;font-size:12px;line-height:1.55}
+          *{box-sizing:border-box} body{font-family:Tahoma,Arial,sans-serif;color:#142033;margin:0;font-size:15px;line-height:1.55}
           .report-head{border-bottom:3px solid #17808b;padding:0 0 12px;margin-bottom:18px;display:flex;justify-content:space-between;gap:16px;align-items:flex-start}
           h1{font-size:24px;margin:0;color:#0b1220} h2{font-size:16px;color:#123b52;margin:22px 0 8px;border-right:4px solid #22a6b3;padding-right:8px}
           .brand{font-weight:900;letter-spacing:.6px;color:#17808b}.meta{margin:4px 0 0;color:#52677d}.stamp{color:#6a7d91;font-size:10px;text-align:left}
