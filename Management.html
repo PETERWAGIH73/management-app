@@ -1944,8 +1944,10 @@
 
       return `
         <h2>المصروفات والمسحوبات</h2>
-${isAdmin ? `<div class="card">إجمالي المصروفات الكلي <strong>${m(unifiedOutflowTotal())}</strong></div>` : ""}
-       ${isAdmin ? ` <h3>مصروفات المحل</h3> ` : ""}
+${isAdmin ? (() => {
+  const p = profitCalc();
+  return `<div class="card">إجمالي المصروفات الكلي <strong>${m(p.expenses)}</strong></div>`;
+})() : ""}       ${isAdmin ? ` <h3>مصروفات المحل</h3> ` : ""}
         ${isAdmin ? `
           <div class="grid">
             <label>التاريخ ${dateBox("xd", expenseRecord.date || rememberedDate("xd"))}</label>
@@ -2734,7 +2736,7 @@ ${isAdmin ? `<button class="gray" onclick="box('explist')"> المصروفات</
         <!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>${title}</title>
         <style>
           @page{size:A4 ${orientation};margin:14mm 12mm 16mm}
-          *{box-sizing:border-box} body{font-family:Tahoma,Arial,sans-serif;color:#142033;margin:0;font-size:15px;line-height:1.55}
+          *{box-sizing:border-box} body{font-family:Tahoma,Arial,sans-serif;color:#142033;margin:0;font-size:14px;line-height:1.55;font-weight:bold;}
           .report-head{border-bottom:3px solid #17808b;padding:0 0 12px;margin-bottom:18px;display:flex;justify-content:space-between;gap:16px;align-items:flex-start}
           h1{font-size:24px;margin:0;color:#0b1220} h2{font-size:16px;color:#123b52;margin:22px 0 8px;border-right:4px solid #22a6b3;padding-right:8px}
           .brand{font-weight:900;letter-spacing:.6px;color:#17808b}.meta{margin:4px 0 0;color:#52677d}.stamp{color:#6a7d91;font-size:10px;text-align:left}
@@ -2782,20 +2784,59 @@ ${isAdmin ? `<button class="gray" onclick="box('explist')"> المصروفات</
       const rows = unifiedOutflows();
       const normal = fl(shop.expenses || []).reduce((s, x) => s + n(x.amount), 0);
       const traders = fl(shop.traderTx || []).filter(x => x.kind === "payment").reduce((s, x) => s + n(x.amount), 0);
-      const sellers = fl(shop.withdrawals || []).reduce((s, x) => s + n(x.amount), 0);
+      const sellersWithdrawals = fl(shop.withdrawals || []).reduce((s, x) => s + n(x.amount), 0);
       
+      // حساب المرتبات بنفس طريقة صفحة الأرباح
+      const p = profitCalc();
+      const salariesTotal = p.salariesTotal + p.fixedSalariesTotal;
+      const eachSalary = (shop.sellers || []).length ? p.salariesTotal / shop.sellers.length : 0;
+      
+      // تجميع مسحوبات كل بائع
+      const withdrawalsBySeller = {};
+      fl(shop.withdrawals || []).forEach(x => {
+        withdrawalsBySeller[x.seller] = (withdrawalsBySeller[x.seller] || 0) + n(x.amount);
+      });
+
+      // بناء جدول البائعين
+      let sellersRows = "";
+      if ((shop.sellers || []).length > 0) {
+        sellersRows += `<h2>رواتب البائعين</h2>
+          <table><thead><tr><th>البائع</th><th>المستحق</th><th>المسحوبات</th><th>المتبقي</th></tr></thead><tbody>
+          ${(shop.sellers || []).map(s => {
+            const withdrawn = withdrawalsBySeller[s.name] || 0;
+            const remaining = eachSalary - withdrawn;
+            return `<tr><td>${s.name}</td><td>${m(eachSalary)}</td><td>${m(withdrawn)}</td><td><b>${m(remaining)}</b></td></tr>`;
+          }).join("")}
+          </tbody></table>`;
+      }
+
+      if ((shop.fixedSellers || []).length > 0) {
+        sellersRows += `<h2>رواتب ثابتة</h2>
+          <table><thead><tr><th>الاسم</th><th>الراتب الثابت</th><th>المسحوبات</th><th>المتبقي</th></tr></thead><tbody>
+          ${(shop.fixedSellers || []).map(s => {
+            const withdrawn = withdrawalsBySeller[s.name] || 0;
+            const remaining = n(s.salary) - withdrawn;
+            return `<tr><td>${s.name}</td><td>${m(s.salary)}</td><td>${m(withdrawn)}</td><td><b>${m(remaining)}</b></td></tr>`;
+          }).join("")}
+          </tbody></table>`;
+      }
+
+      // ✨ التعديل هنا: ضفنا المرتبات في الـ summary
       const content = `
         <div class="summary-grid">
-          <div class="metric">مصاريف المحلات<b>${m(normal + traders + sellers)}</b></div>
+          <div class="metric">إجمالي المصروفات <b>${m(p.expenses)}</b></div>
           <div class="metric">عدد البنود<b>${rows.length}</b></div>
           <div class="metric">المصروفات الكاش<b>${m(normal)}</b></div>
           <div class="metric">دفعات التجار<b>${m(traders)}</b></div>
-          <div class="metric">مسحوبات البائعين<b>${m(sellers)}</b></div>
+          <div class="metric">مسحوبات البائعين <b>${m(sellersWithdrawals)}</b></div>
+          <div class="metric">إجمالي المرتبات<b>${m(salariesTotal)}</b></div>
         </div>
         <h2>تفاصيل المصروفات والمسحوبات</h2>
         <table><thead><tr><th>#</th><th>التاريخ</th><th>البند</th><th>النوع</th><th>القيمة</th><th>المصدر</th></tr></thead><tbody>
           ${rows.map((x, i) => `<tr><td>${i + 1}</td><td>${x.date}</td><td>${x.item}</td><td><span class="tag">${x.type}</span></td><td>${m(x.amount)}</td><td>${x.source === "expenses" ? "مصروفات" : x.source === "traderTx" ? "دفعات التجار" : "مسحوبات"}</td></tr>`).join("") || `<tr><td colspan="6">لا توجد عمليات</td></tr>`}
-        </tbody></table>`;
+        </tbody></table>
+        ${sellersRows}
+      `;
       printPdf(`كشف مصروفات ومسحوبات - ${meta()[1]}`, `الفترة: من ${period.from} إلى ${period.to}`, content);
     }
 
