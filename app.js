@@ -354,7 +354,7 @@ function home() {
     ` : ""}
     <button class="wide" onclick="collections()">تحصيل المحلات</button>
     <button class="wide" onclick="traderTotals()">إجمالي الأرصدة للتجار</button>
-  `;
+        ${isAdmin ? `<button class="wide" onclick="auditLog()" style="border: 2px solid var(--yellow); color: #fff;">مراجعة العمليات </button>` : ""}  `;
 }
 
 function addStore() {
@@ -386,6 +386,106 @@ function deleteStore(storeId) {
   save();
   home();
 }
+    /* =========================================================
+       مراجعة العمليات (للأدمن فقط)
+       ========================================================= */
+    function auditLog() {
+      if (!isAdmin) return alert("هذه الصفحة للأدمن فقط");
+      
+      store = "";
+      edit = null;
+      history.replaceState(null, "", "#MANAGEMENT-AUDIT");
+
+      const from = sessionStorage.auditFrom || today();
+      const to = sessionStorage.auditTo || today();
+
+      const shopsData = stores.map(s => {
+        const shop = ensureAllFields({ stores: { [s[0]]: data.stores[s[0]] } }).stores[s[0]];
+        const inDateRange = (item) => item.date && item.date >= from && item.date <= to;
+
+        return {
+          name: s[1],
+          sales: (shop.sales || []).filter(inDateRange),
+          exchange: (shop.exchange || []).filter(inDateRange),
+          traderTx: (shop.traderTx || []).filter(inDateRange),
+          expenses: (shop.expenses || []).filter(inDateRange),
+          withdrawals: (shop.withdrawals || []).filter(inDateRange)
+        };
+      }).filter(s => 
+        s.sales.length > 0 || s.exchange.length > 0 || s.traderTx.length > 0 || s.expenses.length > 0 || s.withdrawals.length > 0
+      );
+
+      const sum = (list, field) => list.reduce((total, item) => total + n(item[field]), 0);
+
+      document.getElementById("app").innerHTML = `
+        <div class="head"><h1>مراجعة العمليات</h1><button class="light" onclick="home()">رجوع</button></div>
+        <section class="panel">
+          <div class="grid">
+            <label>من تاريخ ${dateBox("auf", from)}</label>
+            <label>إلى تاريخ ${dateBox("aut", to)}</label>
+            <button onclick="setAuditPeriod()">عرض التقرير</button>
+            <button class="light" onclick="sessionStorage.auditFrom='${today()}'; sessionStorage.auditTo='${today()}'; auditLog()">اليوم</button>
+          </div>
+
+          <div style="margin-top: 20px; font-size: 16px; line-height: 2;">
+            ${shopsData.length ? shopsData.map(shop => `
+              <div style="background: var(--panel-soft); border: 1px solid var(--orange); border-radius: 10px; padding: 15px; margin-bottom: 15px;">
+                <h3 style="color: var(--orange); margin-top: 0;">📍 ${shop.name}</h3>
+                
+                ${shop.sales.length ? `
+                  <p><strong>المبيعات اليومية:</strong> 
+                    ${shop.sales.map(x => `
+                      (${x.date}) 
+                      ${x.euro ? `يورو: ${m(x.euro)} - ` : ""}
+                      ${x.dollar ? `دولار: ${m(x.dollar)} - ` : ""}
+                      ${x.gbp ? `إسترليني: ${m(x.gbp)} - ` : ""}
+                      ${x.egp ? `جنيه: ${m(x.egp)} - ` : ""}
+                      ${x.visa ? `فيزا: ${m(x.visa)}` : ""}
+                    `).join(" | ")}
+                  </p>
+                ` : ""}
+
+                ${shop.exchange.length ? `
+                  <p><strong>تغيير عملة:</strong> 
+                    ${shop.exchange.map(x => `
+                      (${x.date}) 
+                      ${x.ea ? `${m(x.ea)} يورو بسعر ${m(x.er)} - ` : ""}
+                      ${x.da ? `${m(x.da)} دولار بسعر ${m(x.dr)} - ` : ""}
+                      ${x.ba ? `${m(x.ba)} إسترليني بسعر ${m(x.br)}` : ""}
+                    `).join(" | ")}
+                  </p>
+                ` : ""}
+
+                ${shop.traderTx.length ? `
+                  <p><strong>معاملات التجار:</strong> 
+                    ${shop.traderTx.map(x => `${x.name} (${traderKindLabel(x.kind)}: ${m(x.amount)})`).join(" - ")}
+                  </p>
+                ` : ""}
+
+                ${shop.expenses.length ? `
+                  <p><strong>مصروفات المحل:</strong> 
+                    ${shop.expenses.map(x => `${x.item} (${m(x.amount)})`).join(" - ")}
+                    <br><span style="color:var(--red); font-size: 14px;">إجمالي المصروفات: ${m(sum(shop.expenses, 'amount'))}</span>
+                  </p>
+                ` : ""}
+
+                ${shop.withdrawals.length ? `
+                  <p><strong>مسحوبات البائعين:</strong> 
+                    ${shop.withdrawals.map(x => `${x.seller} سحب (${m(x.amount)})`).join(" - ")}
+                  </p>
+                ` : ""}
+              </div>
+            `).join("") : `<div class="card" style="text-align:center; margin-top:20px;">لا توجد عمليات مسجلة في هذه الفترة</div>`}
+          </div>
+        </section>
+      `;
+    }
+
+    function setAuditPeriod() {
+      sessionStorage.auditFrom = dateValue("auf");
+      sessionStorage.auditTo = dateValue("aut");
+      auditLog();
+    }
 
 function storeCollectionTotals(storeId) {
   const shop = ensureAllFields({ stores: { [storeId]: data.stores[storeId] } }).stores[storeId];
@@ -488,7 +588,10 @@ function collections() {
         <div class="card">صافي الدولار <strong>${m(total.dollar)}</strong></div>
         <div class="card">صافي الإسترليني <strong>${m(total.gbp)}</strong></div>
         <div class="card">إجمالي الجنيه <strong>${m(total.egp)}</strong></div>
-        <div class="card">إجمالي الفيزا <strong>${m(total.visa)}</strong></div>
+                   <div class="card" style="border: 1px solid var(--orange);">
+              إجمالي الفيزا <strong>${m(total.visa)}</strong>
+              <div style="font-size:12px; margin-top:5px; color:var(--orange);">بعد خصم 3%: <b>${m(total.visa * 0.97)}</b></div>
+            </div>
       </div>
 
       <h2>تفاصيل تحصيل المحلات</h2>
