@@ -352,7 +352,7 @@ function home() {
         </div>
       </section>
     ` : ""}
-    <button class="wide" onclick="collections()">تحصيل المحلات</button>
+    <button class="wide" onclick="collections()"> الخزنة</button>
     <button class="wide" onclick="traderTotals()">إجمالي الأرصدة للتجار</button>
         ${isAdmin ? `<button class="wide" onclick="auditLog()" style="border: 2px solid var(--yellow); color: #fff;">مراجعة العمليات </button>` : ""}  `;
 }
