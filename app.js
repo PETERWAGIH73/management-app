@@ -1859,3 +1859,190 @@ period = loadSavedPeriod();
 syncCustomStores();
 applyViewMode();
 setupAuthListener();
+/* =========================================================
+   دوال النسخ الاحتياطي وإدارة المستخدمين (اللي كانت ناقصة)
+   ========================================================= */
+async function backup() {
+  if (!isAdmin) return;
+  saveLocal();
+  const file = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+  const fileName = "MANAGEMENT backup.json";
+
+  if (window.showSaveFilePicker) {
+    try {
+      const handle = await window.showSaveFilePicker({
+        suggestedName: fileName,
+        types: [{ description: "JSON Backup", accept: { "application/json": [".json"] } }]
+      });
+      const writable = await handle.createWritable();
+      await writable.write(file);
+      await writable.close();
+      alert("تم حفظ النسخة الاحتياطية");
+      return;
+    } catch (e) {
+      if (e.name === "AbortError") return;
+    }
+  }
+
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(file);
+  link.download = fileName;
+  link.click();
+  URL.revokeObjectURL(link.href);
+}
+
+function restore(event) {
+  if (!isAdmin) return;
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      data = ensureAllFields(JSON.parse(reader.result));
+      syncCustomStores();
+      save();
+      applyViewMode();
+      alert("تم الاسترجاع");
+      home();
+    } catch (x) {
+      alert("ملف غير صالح");
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = "";
+}
+
+function clearAllData() {
+  if (!isAdmin) return;
+  if (!confirm("متأكد إنك عايز تحذف كل بيانات البرنامج؟")) return;
+  if (!confirm("آخر تأكيد: الحذف نهائي إلا لو عندك نسخة احتياطية.")) return;
+  data = ensureAllFields({
+    traders: [], customStores: data.customStores || [], deletedStoreIds: data.deletedStoreIds || [],
+    viewMode: data.viewMode || "desktop", stores: {}
+  });
+  stores.forEach(s => { data.stores[s[0]] = blank(); });
+  save();
+  alert("تم حذف كل البيانات");
+  home();
+}
+
+async function renderUsersPage() {
+  if (!isAdmin) return;
+  document.getElementById("app").innerHTML = `<div class="head"><h1>المستخدمين</h1><button class="light" onclick="home()">رجوع</button></div><section class="panel"><p>جاري التحميل...</p></section>`;
+
+  try {
+    const snap = await fbDB.ref(USERS_PATH).once("value");
+    const users = snap.val() || {};
+    const entries = Object.entries(users);
+
+    document.getElementById("app").innerHTML = `
+      <div class="head"><h1>👥 إدارة المستخدمين</h1><button class="light" onclick="home()">رجوع</button></div>
+      <section class="panel">
+        <h2>كل المستخدمين (${entries.length})</h2>
+        <div class="table-scroll">
+          <table>
+            <tr><th>الاسم</th><th>الإيميل</th><th>الحالة</th><th>الصلاحية</th><th>تحكم</th></tr>
+            ${entries.map(([uid, u]) => {
+              const isSelf = uid === ADMIN_UID;
+              const status = u.blocked ? "محظور ⛔" : (u.status === "approved" ? "موافق ✅" : "في الانتظار ⏳");
+              const statusClass = u.blocked ? "bad" : (u.status === "approved" ? "ok" : "pending");
+              const role = u.role === "admin" ? "أدمين" : "مشاهد";
+              return `
+                <tr>
+                  <td>${u.name || "-"}</td>
+                  <td>${u.email || "-"}</td>
+                  <td class="${statusClass}">${status}</td>
+                  <td>${role}</td>
+                  <td>
+                    ${isSelf ? `<span style="color:var(--muted);font-size:12px">(أنت)</span>` : `
+                      ${u.status !== "approved" ? `<button class="success" onclick="approveUser('${uid}')">موافقة</button>` : ""}
+                      ${u.status === "approved" ? `<button class="warn" onclick="blockUser('${uid}', ${!u.blocked})">${u.blocked ? "إلغاء الحظر" : "حظر"}</button>` : ""}
+                      ${u.status === "approved" ? `<button class="light" onclick="toggleAdminRole('${uid}', '${u.role}')">${u.role === "admin" ? "إلغاء الآدمن" : "ترقية لآدمن"}</button>` : ""}
+                      <button class="danger" onclick="deleteUser('${uid}')">حذف</button>
+                    `}
+                  </td>
+                </tr>
+              `;
+            }).join("") || `<tr><td colspan="5">لا يوجد مستخدمين</td></tr>`}
+          </table>
+        </div>
+      </section>
+    `;
+  } catch (e) {
+    console.error(e);
+    document.getElementById("app").innerHTML = `<div class="head"><h1>المستخدمين</h1><button class="light" onclick="home()">رجوع</button></div><section class="panel"><p class="bad">فشل تحميل المستخدمين</p></section>`;
+  }
+}
+
+async function approveUser(uid) {
+  if (!isAdmin) return;
+  try {
+    await fbDB.ref(`${USERS_PATH}/${uid}`).update({ status: "approved", blocked: false });
+    renderUsersPage();
+  } catch (e) { alert("فشل: " + e.message); }
+}
+
+async function blockUser(uid, block) {
+  if (!isAdmin) return;
+  try {
+    await fbDB.ref(`${USERS_PATH}/${uid}`).update({ blocked: block });
+    renderUsersPage();
+  } catch (e) { alert("فشل: " + e.message); }
+}
+
+async function deleteUser(uid) {
+  if (!isAdmin) return;
+  if (!confirm("حذف المستخدم ده؟")) return;
+  try {
+    await fbDB.ref(`${USERS_PATH}/${uid}`).remove();
+    renderUsersPage();
+  } catch (e) { alert("فشل: " + e.message); }
+}
+
+async function toggleAdminRole(uid, currentRole) {
+  if (!isAdmin) return;
+  const newRole = currentRole === "admin" ? "viewer" : "admin";
+  const confirmMsg = newRole === "admin" 
+    ? "هل أنت متأكد من ترقية هذا المستخدم إلى آدمن؟" 
+    : "هل أنت متأكد من إلغاء صلاحية الآدمن عن هذا المستخدم؟";
+    
+  if (!confirm(confirmMsg)) return;
+  
+  try {
+    await fbDB.ref(`${USERS_PATH}/${uid}`).update({ role: newRole });
+    renderUsersPage();
+  } catch (e) { alert("فشل تحديث الصلاحية: " + e.message); }
+}
+
+function manualSync() {
+  if (!isAdmin) { alert("المزامنة اليدوية للأدمين بس"); return; }
+  if (isSyncing) return;
+  const choice = confirm("ماذا تريد أن تفعل؟\n\n OK = رفع البيانات المحلية إلى Firebase\n Cancel = تنزيل البيانات من Firebase");
+  if (choice) {
+    saveRemote().then(() => alert("تم رفع البيانات ✅"));
+  } else {
+    fbDB.ref(FB_PATH).once("value").then(snap => {
+      const remote = snap.val();
+      if (remote) {
+        delete remote._lastUpdate;
+        data = ensureAllFields(remote);
+        syncCustomStores();
+        saveLocal();
+        if (store) draw(); else home();
+        alert("تم تنزيل البيانات ✅");
+      } else {
+        alert("لا توجد بيانات في Firebase");
+      }
+    });
+  }
+}
+
+/* =========================================================
+   بدء التشغيل
+   ========================================================= */
+clientId = getClientId();
+data = loadLocal();
+period = loadSavedPeriod();
+syncCustomStores();
+applyViewMode();
+setupAuthListener();
