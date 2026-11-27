@@ -710,10 +710,64 @@ function draw() {
   if (!bodyEl) return;
   try {
     bodyEl.innerHTML = pages[tab]();
+        applyAuditDecorations(bodyEl);
   } catch (err) {
     console.error("Draw error in tab " + tab + ":", err);
     bodyEl.innerHTML = `<div class="card bad">حدث خطأ في تحميل الصفحة: ${err.message}</div>`;
   }
+}
+
+function auditActor() {
+  return {
+    uid: currentUser?.uid || "",
+    name: currentUserData?.name || currentUser?.displayName || currentUser?.email || "مستخدم غير معروف"
+  };
+}
+
+function auditRecord(item, previous = null) {
+  const actor = auditActor();
+  const now = Date.now();
+  return {
+    ...item,
+    _auditCreatedBy: previous?._auditCreatedBy || (!previous ? actor.uid : ""),
+    _auditCreatedByName: previous?._auditCreatedByName || (!previous ? actor.name : ""),
+    _auditCreatedAt: previous?._auditCreatedAt || (!previous ? now : 0),
+    _auditUpdatedBy: actor.uid,
+    _auditUpdatedByName: actor.name,
+    _auditUpdatedAt: now
+  };
+}
+
+function auditRowAttrs(record) {
+  const primary = ADMIN_UID;
+  const creatorIsOther = record?._auditCreatedBy && record._auditCreatedBy !== primary;
+  const editorIsOther = record?._auditUpdatedBy && record._auditUpdatedBy !== primary;
+  if (!creatorIsOther && !editorIsOther) return "";
+  const label = creatorIsOther
+    ? `أضافه ${record._auditCreatedByName || "أدمن آخر"}`
+    : `عدّله ${record._auditUpdatedByName || "أدمن آخر"}`;
+  const editor = editorIsOther && creatorIsOther && record._auditUpdatedBy !== record._auditCreatedBy
+    ? `؛ آخر تعديل ${record._auditUpdatedByName || "أدمن آخر"}` : "";
+  const changedAt = record._auditUpdatedAt || record._auditCreatedAt || "";
+  return `class="audit-foreign" data-audit-label="${escapeAuditText(label + editor)}" data-audit-time="${changedAt}"`;
+}
+
+function escapeAuditText(value) {
+  return String(value).replace(/[&<>"']/g, ch => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+  })[ch]);
+}
+
+function applyAuditDecorations(root = document) {
+  root.querySelectorAll("tr.audit-foreign").forEach(row => {
+    const first = row.cells?.[0];
+    if (!first || first.querySelector(".audit-badge")) return;
+    const badge = document.createElement("span");
+    badge.className = "audit-badge";
+    badge.textContent = row.dataset.auditLabel || "أدمن آخر";
+    if (row.dataset.auditTime) badge.title = new Date(Number(row.dataset.auditTime)).toLocaleString("ar-EG");
+    first.prepend(badge);
+  });
 }
 
 function up(list, item) {
@@ -743,6 +797,7 @@ function up(list, item) {
   if (item.value !== undefined && n(item.value) < 0) return alert("سعر القطع لا يمكن أن يكون بالسالب.");
 
   const index = list.findIndex(x => x.id === item.id);
+  item = auditRecord(item, index > -1 ? list[index] : null);
   if (index > -1) list[index] = item; else list.push(item);
   save(); edit = null; draw();
 }
@@ -1012,11 +1067,12 @@ function filterTraderTransactions(name) {
   const search = name.trim().toLowerCase();
   const list = fl(st().traderTx || []).filter(x => !search || String(x.name).toLowerCase().includes(search));
   target.innerHTML = list.map(x => `
-    <tr>
+    <tr ${auditRowAttrs(x)}>
       <td>${x.date}</td><td>${x.name}</td><td>${traderKindLabel(x.kind)}</td><td>${m(x.amount)}</td>
       <td>${isAdmin ? `<button class="light" onclick="edt('traderTx','${x.id}')">تعديل</button><button class="danger" onclick="del('traderTx','${x.id}')">حذف</button>` : "-"}</td>
     </tr>
   `).join("") || `<tr><td colspan="5">${search ? "لا توجد معاملات لهذا التاجر خلال الفترة" : "لا توجد معاملات خلال الفترة"}</td></tr>`;
+  applyAuditDecorations(target);
 }
 
 function traders() {
@@ -1073,7 +1129,7 @@ function traders() {
           <tr><th>التاريخ</th><th>التاجر</th><th>المعاملة</th><th>القيمة</th>${isAdmin ? "<th>تحكم</th>" : ""}</tr>
           <tbody id="traderTransactionRows">
             ${filteredList.map(x => `
-              <tr>
+              <tr ${auditRowAttrs(x)}>
                 <td>${x.date}</td><td>${x.name}</td><td>${traderKindLabel(x.kind)}</td><td>${m(x.amount)}</td>
                 ${isAdmin ? `<td><button class="light" onclick="edt('traderTx','${x.id}')">تعديل</button><button class="danger" onclick="del('traderTx','${x.id}')">حذف</button></td>` : ""}
               </tr>
@@ -1187,7 +1243,7 @@ function exportTraderTransactionsPdf() {
       <div class="metric">إجمالي المرتجعات<b>${m(returns)}</b></div>
     </div>
     <table><thead><tr><th>#</th><th>التاريخ</th><th>التاجر</th><th>النوع</th><th>القيمة</th></tr></thead><tbody>
-      ${rows.map((x, i) => `<tr><td>${i + 1}</td><td>${x.date}</td><td>${x.name}</td><td>${traderKindLabel(x.kind)}</td><td>${m(x.amount)}</td></tr>`).join("") || `<tr><td colspan="5">لا توجد معاملات</td></tr>`}
+      ${rows.map((x, i) => `<tr ${auditRowAttrs(x)}><td>${i + 1}</td><td>${x.date}</td><td>${x.name}</td><td>${traderKindLabel(x.kind)}</td><td>${m(x.amount)}</td></tr>`).join("") || `<tr><td colspan="5">لا توجد معاملات</td></tr>`}
     </tbody></table>`;
   printPdf(`${title} - ${meta()[1]}`, `الفترة: من ${period.from} إلى ${period.to}`, content);
 }
@@ -1216,7 +1272,7 @@ function exportTraderTransactionsPdf() {
         <div class="table-scroll">
           <table>
             <tr><th>البائع</th>${isAdmin ? "<th>تحكم</th>" : ""}</tr>
-            ${sellers.map(x => `<tr><td>${x.name}</td>${isAdmin ? `<td><button class="danger" onclick="deleteSeller('${x.id}')">حذف</button></td>` : ""}</tr>`).join("") || `<tr><td colspan="${isAdmin ? 2 : 1}">لا يوجد بائعين</td></tr>`}
+            ${sellers.map(x => `<tr ${auditRowAttrs(x)}><td>${x.name}</td>${isAdmin ? `<td><button class="danger" onclick="deleteSeller('${x.id}')">حذف</button></td>` : ""}</tr>`).join("") || `<tr><td colspan="${isAdmin ? 2 : 1}">لا يوجد بائعين</td></tr>`}
           </table>
         </div>
 
@@ -1235,7 +1291,7 @@ function exportTraderTransactionsPdf() {
           <table>
             <tr><th>الأسم</th><th>الراتب</th>${isAdmin ? "<th>تحكم</th>" : ""}</tr>
             ${fixedSellers.map(x => `
-              <tr>
+              <tr ${auditRowAttrs(x)}>
                 <td>${x.name}</td>
                 <td>${m(x.salary)}</td>
                 ${isAdmin ? `<td>
@@ -1252,7 +1308,7 @@ function exportTraderTransactionsPdf() {
 function addSeller() {
   if (!isAdmin) return;
   if (!sn.value.trim()) return;
-  st().sellers.push({ id: id(), name: sn.value.trim() });
+  st().sellers.push(auditRecord({ id: id(), name: sn.value.trim() }));
   save(); draw();
 }
 
@@ -1275,12 +1331,11 @@ function deleteSeller(sellerId) {
       if (edit?.type === "fixedSellers") {
         const seller = st().fixedSellers.find(x => x.id === edit.id);
         if (seller) {
-          seller.name = name;
-          seller.salary = salary;
+          Object.assign(seller, auditRecord({ ...seller, name, salary }, seller));
         }
       } else {
         // اضافة 
-        st().fixedSellers.push({ id: id(), name: name, salary: salary });
+        st().fixedSellers.push(auditRecord({ id: id(), name, salary }));
       }
       
       save(); 
@@ -1352,7 +1407,7 @@ ${isAdmin ? `<button class="gray" onclick="box('explist')"> المصروفات</
         <table>
           <tr><th>التاريخ</th><th>البند</th><th>النوع</th><th>القيمة</th><th>المصدر</th>${isAdmin ? "<th>تعديل</th>" : ""}</tr>
           ${unifiedList.map(x => `
-            <tr>
+            <tr ${auditRowAttrs(x)}>
               <td>${x.date}</td><td>${x.item}</td><td>${x.type}</td><td>${m(x.amount)}</td>
 <td>${x.source === "expenses" ? (x.type || "مصروفات كاش") : x.source === "traderTx" ? "دفعة تاجر" : "مسحوبات"}</td>                  ${isAdmin ? `<td><button class="light" onclick="edt('${x.source}','${x.id}')">تعديل</button><button class="danger" onclick="del('${x.source}','${x.id}')">حذف</button></td>` : ""}
             </tr>
@@ -1432,7 +1487,7 @@ function saveExpense() {
     }
   }
 
-  const record = {
+  let record = {
     id: edit?.type === "expenses" ? edit.id : id(),
     date: currentDate,
     item: itemName,
@@ -1442,6 +1497,7 @@ function saveExpense() {
 
   const list = st().expenses;
   const index = list.findIndex(x => x.id === record.id);
+  record = auditRecord(record, index > -1 ? list[index] : null);
   if (index > -1) list[index] = record; else list.push(record);
   
   save(); 
@@ -1586,10 +1642,11 @@ function profits() {
     </div>
 
     <h3>مرتبات البائعين</h3>
+    ${shop._auditSalarySettings && (shop._auditSalarySettings._auditCreatedBy !== ADMIN_UID || shop._auditSalarySettings._auditUpdatedBy !== ADMIN_UID) ? `<p class="audit-settings-note">آخر تغيير لإعدادات الرواتب بواسطة: ${escapeAuditText(shop._auditSalarySettings._auditUpdatedByName || shop._auditSalarySettings._auditCreatedByName || "أدمن آخر")}</p>` : ""}
     <div class="table-scroll">
       <table>
         <tr><th>البائع</th><th>المستحق </th><th>المسحوبات </th><th>المتبقي</th></tr>
-        ${(shop.sellers || []).map(s => `<tr><td>${s.name}</td><td>${m(eachSalary)}</td><td>${m(withdrawals[s.name] || 0)}</td><td>${m(eachSalary - (withdrawals[s.name] || 0))}</td></tr>`).join("") || `<tr><td colspan="4">لا يوجد بائعين</td></tr>`}
+        ${(shop.sellers || []).map(s => `<tr ${auditRowAttrs(s)}><td>${s.name}</td><td>${m(eachSalary)}</td><td>${m(withdrawals[s.name] || 0)}</td><td>${m(eachSalary - (withdrawals[s.name] || 0))}</td></tr>`).join("") || `<tr><td colspan="4">لا يوجد بائعين</td></tr>`}
       </table>
     </div>
 
@@ -1597,7 +1654,7 @@ function profits() {
     <div class="table-scroll">
       <table>
         <tr><th>الأسم</th><th>الراتب </th><th>المسحوبات </th><th>المتبقي </th></tr>
-        ${(shop.fixedSellers || []).map(s => `<tr><td>${s.name}</td><td>${m(s.salary)}</td><td>${m(withdrawals[s.name] || 0)}</td><td>${m(n(s.salary) - (withdrawals[s.name] || 0))}</td></tr>`).join("") || `<tr><td colspan="4">لا يوجد بائعين براتب ثابت</td></tr>`}
+        ${(shop.fixedSellers || []).map(s => `<tr ${auditRowAttrs(s)}><td>${s.name}</td><td>${m(s.salary)}</td><td>${m(withdrawals[s.name] || 0)}</td><td>${m(n(s.salary) - (withdrawals[s.name] || 0))}</td></tr>`).join("") || `<tr><td colspan="4">لا يوجد بائعين براتب ثابت</td></tr>`}
       </table>
     </div>
 
@@ -1605,7 +1662,7 @@ function profits() {
     <div class="table-scroll">
       <table>
         <tr><th>الشريك</th><th>النسبة</th><th>الربح</th></tr>
-        ${(shop.partners || []).map(x => `<tr><td>${x.name}</td><td>${m(x.percent)}%</td><td>${m(p.netProfit * n(x.percent) / 100)}</td></tr>`).join("") || `<tr><td colspan="3">لا يوجد شركاء</td></tr>`}
+        ${(shop.partners || []).map(x => `<tr ${auditRowAttrs(x)}><td>${x.name}</td><td>${m(x.percent)}%</td><td>${m(p.netProfit * n(x.percent) / 100)}</td></tr>`).join("") || `<tr><td colspan="3">لا يوجد شركاء</td></tr>`}
       </table>
     </div>
   `;
@@ -1621,6 +1678,7 @@ function updateSalarySettings() {
   st().salaryMode = sm;
   st().commissionPercent = cm;
   st().salaryFixedTotal = ft;
+  st()._auditSalarySettings = auditRecord({ salaryMode: sm, commissionPercent: cm, salaryFixedTotal: ft }, st()._auditSalarySettings || null);
 
   save();
   draw();
@@ -1639,12 +1697,11 @@ function addPartner() {
     if (!partner) return;
     const otherPercent = (st().partners || []).reduce((s, x) => x.id !== edit.id ? s + n(x.percent) : s, 0);
     if (otherPercent + percent > 100) return alert("إجمالي النسب لا يتخطى 100%");
-    partner.name = name;
-    partner.percent = percent;
+    Object.assign(partner, auditRecord({ ...partner, name, percent }, partner));
   } else {
     const total = (st().partners || []).reduce((s, x) => s + n(x.percent), 0);
     if (total + percent > 100) return alert("إجمالي النسب لا يتخطى 100%");
-    st().partners.push({ id: id(), name: name, percent: percent });
+    st().partners.push(auditRecord({ id: id(), name, percent }));
   }
   
   save(); 
@@ -1663,7 +1720,7 @@ function table(list, type, heads, map) {
         ${isAdmin ? "<th>تحكم</th>" : ""}
       </tr>
       ${list.map(x => `
-        <tr>
+        <tr ${auditRowAttrs(x)}>
           ${map(x).map(c => `<td>${c}</td>`).join("")}
           ${isAdmin ? `<td>
             <button class="light" onclick="edt('${type}','${x.id}')">تعديل</button>
