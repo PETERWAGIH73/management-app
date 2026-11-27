@@ -318,7 +318,7 @@ function setupAuthListener() {
         return;
       }
 
-      if (userData.status !== "approved") {
+      if (userData.status !== "approved" && userData.status !== "online" && userData.status !== "offline") {
         userRole = "pending"; isAdmin = false; canView = false;
         renderWaitingScreen("pending");
         return;
