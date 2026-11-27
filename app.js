@@ -295,15 +295,12 @@ function setupAuthListener() {
 
       currentUserData = userData;
 
-      if (user.uid === ADMIN_UID) {
+      // التعديل هنا: لو هو الأدمن الرئيسي أو لو الـ role بتاعه admin
+      if (user.uid === ADMIN_UID || userData.role === "admin") {
         isAdmin = true;
         canView = true;
         userRole = "admin";
-        if (userData.status !== "approved" || userData.role !== "admin") {
-          await fbDB.ref(`${USERS_PATH}/${user.uid}`).update({
-            status: "approved", role: "admin", blocked: false
-          });
-        }
+        
         data = loadLocal();
         syncCustomStores();
         period = loadSavedPeriod();
