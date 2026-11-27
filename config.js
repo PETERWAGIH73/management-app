@@ -39,6 +39,8 @@ let authMode = "login";
 let fbDataListener = null;
 let fbConnListener = null;
 let authListenerSet = false;
+let fbPresenceListener = null;
+let currentUserStatusRef = null;
 
 const stores = [
   ["cleopatra", "كليوباترا", 0],

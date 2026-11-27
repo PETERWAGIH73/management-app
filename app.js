@@ -152,12 +152,13 @@ function renderDashboard() {
       <div class="top-right">
         <b>T.P</b>
         <div class="actions">
+${currentUser.uid === ADMIN_UID ? `<button onclick="renderUsersPage()" style="background: #1a1a24; color: #8a7e9b; border: 1px solid #2c2c3e; font-weight: 900; letter-spacing: 1px;"> الأعضاء</button>` : ""}
           <button class="light" onclick="home()">الرئيسية</button>
           ${isAdmin ? `
             <button class="gray" onclick="backup()">نسخ احتياطي</button>
             <button onclick="document.getElementById('restoreFile').click()">استرجاع</button>
             <input class="file" id="restoreFile" type="file" accept="application/json" onchange="restore(event)">
-            <button class="warn" onclick="renderUsersPage()"> الأعضاء</button>
+            
           ` : ""}
           <button class="mode-toggle" id="modeToggleBtn" onclick="toggleViewMode()"> فون</button>
           <span class="sync-status" id="syncStatus" onclick="manualSync()" title="مزامنة">
@@ -260,6 +261,17 @@ function setupAuthListener() {
     }
 
     currentUser = user;
+    // تسجيل حالة الاتصال
+    const userStatusRef = fbDB.ref(`${USERS_PATH}/${user.uid}/status`);
+    const lastSeenRef = fbDB.ref(`${USERS_PATH}/${user.uid}/lastSeen`);
+    
+    // تحديث لحظي
+    userStatusRef.set("online");
+    lastSeenRef.set(Date.now());
+
+    // أغلاق لحظي
+    userStatusRef.onDisconnect().set("offline");
+    lastSeenRef.onDisconnect().set(Date.now());
 
     try {
       const snap = await fbDB.ref(`${USERS_PATH}/${user.uid}`).once("value");
@@ -347,14 +359,14 @@ function home() {
       <section class="panel">
         <h2>إضافة محل</h2>
         <div class="grid grid3">
-          <label>اسم المحل <input id="newStoreName" placeholder="...***..."></label>
+          <label>اسم المحل <input id="newStoreName" placeholder="...*N*..."></label>
           <button onclick="addStore()">إضافة </button>
         </div>
       </section>
     ` : ""}
     <button class="wide" onclick="collections()"> الخزنة</button>
     <button class="wide" onclick="traderTotals()">أرصدة التجار</button>
-        ${isAdmin ? `<button class="wide" onclick="auditLog()" style="border: 2px solid var(--yellow); color: #fff;"> @#$.RV.$#@ </button>` : ""}  `;
+        ${isAdmin ? `<button class="wide" onclick="auditLog()" style="border: 2px solid var(--yellow); color: #fff;"> ✧ . RV . ✧ </button>` : ""}  `;
 }
 
 function addStore() {
@@ -420,12 +432,12 @@ function deleteStore(storeId) {
       const sum = (list, field) => list.reduce((total, item) => total + n(item[field]), 0);
 
       document.getElementById("app").innerHTML = `
-        <div class="head"><h1>Day.Rv</h1><button class="light" onclick="home()">رجوع</button></div>
+        <div class="head"><h1>✧ D. REVIEW  ✧</h1><button class="light" onclick="home()">رجوع</button></div>
         <section class="panel">
           <div class="grid">
             <label>التاريخ ${dateBox("aud", selectedDate)}</label>
             <button onclick="setAuditDay()">عرض</button>
-            <button class="light" onclick="sessionStorage.auditDate='${today()}'; auditLog()">النهاردة</button>
+            <button class="light" onclick="sessionStorage.auditDate='${today()}'; auditLog()">اليوم</button>
           </div>
 
           <div style="margin-top: 20px; font-size: 16px; line-height: 2;">
@@ -476,7 +488,7 @@ function deleteStore(storeId) {
                   </p>
                 ` : ""}
               </div>
-            `).join("") : `<div class="card" style="text-align:center; margin-top:20px;">.₰ . . " Peter " . . ₰.</div>`}
+            `).join("") : `<div class="card" style="text-align:center; margin-top:20px;">.₰ . . ✦  Peter ✦ . . ₰.</div>`}
           </div>
         </section>
       `;
@@ -1981,7 +1993,8 @@ function clearAllData() {
 }
 
 async function renderUsersPage() {
-  if (!isAdmin) return;
+  if (currentUser.uid !== ADMIN_UID) return alert("هذه الصفحة للأدمن الرئيسي فقط");
+  
   document.getElementById("app").innerHTML = `<div class="head"><h1>المستخدمين</h1><button class="light" onclick="home()">رجوع</button></div><section class="panel"><p>جاري التحميل...</p></section>`;
 
   try {
@@ -1990,28 +2003,35 @@ async function renderUsersPage() {
     const entries = Object.entries(users);
 
     document.getElementById("app").innerHTML = `
-      <div class="head"><h1> إدارة المستخدمين</h1><button class="light" onclick="home()">رجوع</button></div>
+      <div class="head"><h1> ENG ₰ PETER </h1><button class="light" onclick="home()">رجوع</button></div>
       <section class="panel">
-        <h2>كل المستخدمين (${entries.length})</h2>
+        <h2>الأعضاء (${entries.length})</h2>
         <div class="table-scroll">
           <table>
-            <tr><th>الاسم</th><th>الإيميل</th><th>الحالة</th><th>الصلاحية</th><th>تحكم</th></tr>
+            <tr><th>الحالة</th><th>الاسم</th><th>الإيميل</th><th>الصلاحية</th><th>تحكم</th></tr>
             ${entries.map(([uid, u]) => {
               const isSelf = uid === ADMIN_UID;
-              const status = u.blocked ? "محظور ⛔" : (u.status === "approved" ? "موافق " : "في الانتظار ⏳");
-              const statusClass = u.blocked ? "bad" : (u.status === "approved" ? "ok" : "pending");
+              const isOnline = (u.status === "online") || (u.status === "approved" && u.lastSeen > Date.now() - 60000);
+              const lastSeen = u.lastSeen ? new Date(u.lastSeen).toLocaleString('ar-EG') : "غير متوفر";
+              
               const role = u.role === "admin" ? "أدمين" : "مشاهد";
               return `
                 <tr>
+                  <td>
+                    <div style="display:flex; align-items:center; gap:5px;">
+                      <span style="width:10px; height:10px; border-radius:50%; background:${isOnline ? 'var(--green)' : '#555'};"></span>
+                      ${isOnline ? '✓' : '✕'}
+                    </div>
+                    ${!isOnline ? `<div style="font-size:10px; color:var(--muted);">آخر ظهور: ${lastSeen}</div>` : ''}
+                  </td>
                   <td>${u.name || "-"}</td>
                   <td>${u.email || "-"}</td>
-                  <td class="${statusClass}">${status}</td>
                   <td>${role}</td>
                   <td>
                     ${isSelf ? `<span style="color:var(--muted);font-size:12px">(أنت)</span>` : `
-                      ${u.status !== "approved" ? `<button class="success" onclick="approveUser('${uid}')">موافقة</button>` : ""}
-                      ${u.status === "approved" ? `<button class="warn" onclick="blockUser('${uid}', ${!u.blocked})">${u.blocked ? "إلغاء الحظر" : "حظر"}</button>` : ""}
-                      ${u.status === "approved" ? `<button class="light" onclick="toggleAdminRole('${uid}', '${u.role}')">${u.role === "admin" ? "إلغاء الآدمن" : "ترقية لآدمن"}</button>` : ""}
+                      ${u.status !== "approved" && u.status !== "online" && u.status !== "offline" ? `<button class="success" onclick="approveUser('${uid}')">موافقة</button>` : ""}
+                      ${(u.status === "approved" || isOnline || u.status === "offline") ? `<button class="warn" onclick="blockUser('${uid}', ${!u.blocked})">${u.blocked ? "إلغاء الحظر" : "حظر"}</button>` : ""}
+                      ${(u.status === "approved" || isOnline || u.status === "offline") ? `<button class="light" onclick="toggleAdminRole('${uid}', '${u.role}')">${u.role === "admin" ? "إلغاء الآدمن" : "ترقية لآدمن"}</button>` : ""}
                       <button class="danger" onclick="deleteUser('${uid}')">حذف</button>
                     `}
                   </td>
