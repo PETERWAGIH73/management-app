@@ -2071,7 +2071,8 @@ async function deleteUser(uid) {
 }
 
 async function toggleAdminRole(uid, currentRole) {
-  if (!isAdmin) return;
+  if (currentUser.uid !== ADMIN_UID) return alert("هذه الصفحة للأدمن الرئيسي فقط");
+  
   const newRole = currentRole === "admin" ? "viewer" : "admin";
   const confirmMsg = newRole === "admin" 
     ? "هل أنت متأكد من ترقية هذا المستخدم إلى آدمن؟" 
@@ -2082,7 +2083,9 @@ async function toggleAdminRole(uid, currentRole) {
   try {
     await fbDB.ref(`${USERS_PATH}/${uid}`).update({ role: newRole });
     renderUsersPage();
-  } catch (e) { alert("فشل تحديث الصلاحية: " + e.message); }
+  } catch (e) { 
+    alert("فشل تحديث الصلاحية: " + e.message); 
+  }
 }
 
 function manualSync() {
