@@ -231,12 +231,9 @@ body.mode-mobile label { font-size: 12px; }
 body.mode-mobile input, body.mode-mobile select, body.mode-mobile textarea { padding: 8px 10px; font-size: 13px; }
 body.mode-mobile .auth-box { padding: 24px; }
 body.mode-mobile .auth-box h1 { font-size: 26px; }
-.audit-foreign td { background: rgba(204, 42, 52, .13) !important; color: #8f1722; }
-.audit-legend { margin: 8px 0 12px; padding: 8px 11px; border-right: 3px solid #c62835; background: #fff0f1; color: #8f1722; font-size: 12px; font-weight: 700; }
-.audit-foreign td:first-child { box-shadow: inset -3px 0 0 #c62835; }
+.audit-foreign td { background: transparent !important; color: #fff; }
 .audit-badge { display: inline-block; margin: 0 0 5px 6px; padding: 3px 7px; border: 1px solid #c62835; border-radius: 999px; background: #fff0f1; color: #a31622; font-size: 10px; font-weight: 800; white-space: normal; }
-.audit-settings-note { display: inline-block; padding: 7px 10px; border-right: 3px solid #c62835; background: #fff0f1; color: #a31622; font-weight: 800; }
-[dir="rtl"] .audit-foreign td:first-child { box-shadow: inset -3px 0 0 #c62835; }
+.audit-settings-note { display: inline-block; padding: 0; color: #fff; font-weight: 700; }
 .table-scroll { width: 100%; max-width: 100%; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; margin-top: 14px; }
 .table-scroll table { margin-top: 0; width: max-content; min-width: 100%; }
 body.mode-mobile .table-scroll table th, body.mode-mobile .table-scroll table td { white-space: nowrap; padding: 6px 8px; font-size: 11px; }

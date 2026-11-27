@@ -710,7 +710,7 @@ function draw() {
   if (!bodyEl) return;
   try {
     bodyEl.innerHTML = pages[tab]();
-        applyAuditDecorations(bodyEl);
+    applyAuditDecorations(bodyEl);
   } catch (err) {
     console.error("Draw error in tab " + tab + ":", err);
     bodyEl.innerHTML = `<div class="card bad">حدث خطأ في تحميل الصفحة: ${err.message}</div>`;
