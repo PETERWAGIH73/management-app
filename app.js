@@ -21,7 +21,7 @@ function renderAuthScreen() {
           </label>
           <br>
           <label id="authNameWrap" style="display:none">الاسم
-            <input type="text" id="authName" placeholder="اسمك">
+            <input type="text" id="authName" placeholder="ادخل اسم">
           </label>
           <br id="authNameBr" style="display:none">
           <button id="authSubmit" onclick="submitAuth()" style="width:100%;min-height:46px">تسجيل الدخول</button>
@@ -135,7 +135,7 @@ function renderWaitingScreen(status) {
         <h2>${isBlocked ? "تم حظر حسابك" : "حسابك في انتظار الموافقة"}</h2>
         <p>${isBlocked
           ? "تم حظر حسابك. ."
-          : "تم إنشاء حساب بنجاح ✅<br>انت في انتظار الموافقة من النظام."
+          : "تم إنشاء حساب بنجاح ✅<br>انت في انتظار الموافقة."
         }</p>
         <button class="light" onclick="logout()" style="width:100%;min-height:46px">  خروج</button>
       </div>
@@ -160,7 +160,7 @@ function renderDashboard() {
             <button class="warn" onclick="renderUsersPage()"> الأعضاء</button>
           ` : ""}
           <button class="mode-toggle" id="modeToggleBtn" onclick="toggleViewMode()"> فون</button>
-          <span class="sync-status" id="syncStatus" onclick="manualSync()" title="اضغط للمزامنة اليدوية">
+          <span class="sync-status" id="syncStatus" onclick="manualSync()" title="مزامنة">
             <span class="sync-dot"></span>
             <span id="syncText">جاري الاتصال...</span>
           </span>
@@ -347,20 +347,20 @@ function home() {
       <section class="panel">
         <h2>إضافة محل</h2>
         <div class="grid grid3">
-          <label>اسم المحل <input id="newStoreName" placeholder="اكتب اسم المحل"></label>
-          <button onclick="addStore()">إضافة محل جديد</button>
+          <label>اسم المحل <input id="newStoreName" placeholder="...***..."></label>
+          <button onclick="addStore()">إضافة </button>
         </div>
       </section>
     ` : ""}
     <button class="wide" onclick="collections()"> الخزنة</button>
-    <button class="wide" onclick="traderTotals()">إجمالي الأرصدة للتجار</button>
-        ${isAdmin ? `<button class="wide" onclick="auditLog()" style="border: 2px solid var(--yellow); color: #fff;">مراجعة العمليات </button>` : ""}  `;
+    <button class="wide" onclick="traderTotals()">أرصدة التجار</button>
+        ${isAdmin ? `<button class="wide" onclick="auditLog()" style="border: 2px solid var(--yellow); color: #fff;"> @#$.RV.$#@ </button>` : ""}  `;
 }
 
 function addStore() {
   const name = q("newStoreName").value.trim();
   if (!name) return alert("اكتب اسم المحل");
-  if (stores.some(s => s[1] === name)) return alert("هذا المحل موجود بالفعل");
+  if (stores.some(s => s[1] === name)) return alert(" المحل موجود بالفعل");
   const newStore = [`store-${id()}`, name, 1];
   stores.push(newStore);
   data.customStores ||= [];
@@ -387,8 +387,9 @@ function deleteStore(storeId) {
   home();
 }
     /* =========================================================
-       مراجعة العمليات (للأدمن فقط)
+       مراجعة العمليات خلال اليوم
        ========================================================= */
+
     function auditLog() {
       if (!isAdmin) return alert("هذه الصفحة للأدمن فقط");
       
@@ -396,12 +397,13 @@ function deleteStore(storeId) {
       edit = null;
       history.replaceState(null, "", "#MANAGEMENT-AUDIT");
 
-      const from = sessionStorage.auditFrom || today();
-      const to = sessionStorage.auditTo || today();
+      // (بيبدأ بتاريخ اليوم افتراضياً)
+      const selectedDate = sessionStorage.auditDate || today();
 
       const shopsData = stores.map(s => {
         const shop = ensureAllFields({ stores: { [s[0]]: data.stores[s[0]] } }).stores[s[0]];
-        const inDateRange = (item) => item.date && item.date >= from && item.date <= to;
+        // الفلترة على يوم واحد بس
+        const inDateRange = (item) => item.date === selectedDate;
 
         return {
           name: s[1],
@@ -418,28 +420,28 @@ function deleteStore(storeId) {
       const sum = (list, field) => list.reduce((total, item) => total + n(item[field]), 0);
 
       document.getElementById("app").innerHTML = `
-        <div class="head"><h1>مراجعة العمليات</h1><button class="light" onclick="home()">رجوع</button></div>
+        <div class="head"><h1>Day.Rv</h1><button class="light" onclick="home()">رجوع</button></div>
         <section class="panel">
           <div class="grid">
-            <label>من تاريخ ${dateBox("auf", from)}</label>
-            <label>إلى تاريخ ${dateBox("aut", to)}</label>
-            <button onclick="setAuditPeriod()">عرض التقرير</button>
-            <button class="light" onclick="sessionStorage.auditFrom='${today()}'; sessionStorage.auditTo='${today()}'; auditLog()">اليوم</button>
+            <label>التاريخ ${dateBox("aud", selectedDate)}</label>
+            <button onclick="setAuditDay()">عرض</button>
+            <button class="light" onclick="sessionStorage.auditDate='${today()}'; auditLog()">النهاردة</button>
           </div>
 
           <div style="margin-top: 20px; font-size: 16px; line-height: 2;">
+            <h3 style="color: var(--orange); border-bottom: 1px solid var(--line); padding-bottom: 10px;"> ${selectedDate}</h3>
+            
             ${shopsData.length ? shopsData.map(shop => `
               <div style="background: var(--panel-soft); border: 1px solid var(--orange); border-radius: 10px; padding: 15px; margin-bottom: 15px;">
-                <h3 style="color: var(--orange); margin-top: 0;">📍 ${shop.name}</h3>
+                <h3 style="color: var(--orange); margin-top: 0;">※ ${shop.name}</h3>
                 
                 ${shop.sales.length ? `
-                  <p><strong>المبيعات اليومية:</strong> 
+                  <p><strong> اليومية:</strong> 
                     ${shop.sales.map(x => `
-                      (${x.date}) 
-                      ${x.euro ? `يورو: ${m(x.euro)} - ` : ""}
-                      ${x.dollar ? `دولار: ${m(x.dollar)} - ` : ""}
-                      ${x.gbp ? `إسترليني: ${m(x.gbp)} - ` : ""}
-                      ${x.egp ? `جنيه: ${m(x.egp)} - ` : ""}
+                      ${x.euro ? `يورو: ${m(x.euro)} | ` : ""}
+                      ${x.dollar ? `دولار: ${m(x.dollar)} | ` : ""}
+                      ${x.gbp ? `إسترليني: ${m(x.gbp)} | ` : ""}
+                      ${x.egp ? `جنيه: ${m(x.egp)} | ` : ""}
                       ${x.visa ? `فيزا: ${m(x.visa)}` : ""}
                     `).join(" | ")}
                   </p>
@@ -448,9 +450,8 @@ function deleteStore(storeId) {
                 ${shop.exchange.length ? `
                   <p><strong>تغيير عملة:</strong> 
                     ${shop.exchange.map(x => `
-                      (${x.date}) 
-                      ${x.ea ? `${m(x.ea)} يورو بسعر ${m(x.er)} - ` : ""}
-                      ${x.da ? `${m(x.da)} دولار بسعر ${m(x.dr)} - ` : ""}
+                      ${x.ea ? `${m(x.ea)} يورو بسعر ${m(x.er)} | ` : ""}
+                      ${x.da ? `${m(x.da)} دولار بسعر ${m(x.dr)} | ` : ""}
                       ${x.ba ? `${m(x.ba)} إسترليني بسعر ${m(x.br)}` : ""}
                     `).join(" | ")}
                   </p>
@@ -458,27 +459,33 @@ function deleteStore(storeId) {
 
                 ${shop.traderTx.length ? `
                   <p><strong>معاملات التجار:</strong> 
-                    ${shop.traderTx.map(x => `${x.name} (${traderKindLabel(x.kind)}: ${m(x.amount)})`).join(" - ")}
+                    ${shop.traderTx.map(x => `${x.name} (${traderKindLabel(x.kind)}: ${m(x.amount)})`).join(" | ")}
                   </p>
                 ` : ""}
 
                 ${shop.expenses.length ? `
                   <p><strong>مصروفات المحل:</strong> 
-                    ${shop.expenses.map(x => `${x.item} (${m(x.amount)})`).join(" - ")}
+                    ${shop.expenses.map(x => `${x.item} (${m(x.amount)})`).join(" | ")}
                     <br><span style="color:var(--red); font-size: 14px;">إجمالي المصروفات: ${m(sum(shop.expenses, 'amount'))}</span>
                   </p>
                 ` : ""}
 
                 ${shop.withdrawals.length ? `
                   <p><strong>مسحوبات البائعين:</strong> 
-                    ${shop.withdrawals.map(x => `${x.seller} سحب (${m(x.amount)})`).join(" - ")}
+                    ${shop.withdrawals.map(x => `${x.seller} سحب (${m(x.amount)})`).join(" | ")}
                   </p>
                 ` : ""}
               </div>
-            `).join("") : `<div class="card" style="text-align:center; margin-top:20px;">لا توجد عمليات مسجلة في هذه الفترة</div>`}
+            `).join("") : `<div class="card" style="text-align:center; margin-top:20px;">.₰ . . " Peter " . . ₰.</div>`}
           </div>
         </section>
       `;
+    }
+
+    function setAuditDay() {
+      // بناخد التاريخ من الخانات ونحفظه في السيشن
+      sessionStorage.auditDate = dateValue("aud");
+      auditLog();
     }
 
     function setAuditPeriod() {
@@ -570,8 +577,8 @@ function collections() {
     <div class="head"><h1>تحصيل المحلات</h1><button class="light" onclick="home()">رجوع</button></div>
     <section class="panel">
       <div class="grid">
-        <label>من تاريخ ${dateBox("from", period.from)}</label>
-        <label>إلى تاريخ ${dateBox("to", period.to)}</label>
+        <label>من ${dateBox("from", period.from)}</label>
+        <label>إلى ${dateBox("to", period.to)}</label>
         <button onclick="setPeriod({from:dateValue('from'),to:dateValue('to')}); collections()">الفترة المحددة</button>
         <button class="light" onclick="setPeriod(thisMonth()); collections()">الشهر الحالي</button>
       </div>
@@ -653,8 +660,8 @@ function switchTab(key) {
 function dates() {
   return `
     <div class="grid">
-      <label>من تاريخ ${dateBox("from", period.from)}</label>
-      <label>إلى تاريخ ${dateBox("to", period.to)}</label>
+      <label>من ${dateBox("from", period.from)}</label>
+      <label>إلى ${dateBox("to", period.to)}</label>
       <button onclick="setPeriod({from:dateValue('from'),to:dateValue('to')}); render()">الفترة المحددة</button>
       <button class="light" onclick="setPeriod(thisMonth()); render()">الشهر الحالي</button>
     </div>
@@ -1030,12 +1037,12 @@ function traders() {
       </div>
       <div class="row">
         <button onclick="saveTrader()">${r.id ? "تعديل" : "حفظ"}</button>
-        <button onclick="exportTraderTransactionsPdf()">تصدير معاملات التجار PDF</button>
+        <button onclick="exportTraderTransactionsPdf()">PDF</button>
       </div>
     ` : `
       <div class="row">
         <label>بحث باسم التاجر <input id="trn" list="tn" value="${search}" oninput="showTraderLiveBalance(this.value); filterTraderTransactions(this.value)"></label>
-        <button onclick="exportTraderTransactionsPdf()">تصدير معاملات التجار PDF</button>
+        <button onclick="exportTraderTransactionsPdf()">PDF</button>
       </div>
     `}
 
@@ -1045,16 +1052,16 @@ function traders() {
         المعاملات <strong>${m(balance.movement)}</strong>
         الرصيد الحالي <strong>${m(balance.closing)}</strong>
       </div>
-      <div class="card">مديونية المحل <strong>${m(storeBalance)}</strong></div>
+      <div class="card">المديونية <strong>${m(storeBalance)}</strong></div>
     </div>
 
     <hr>
-    <div class="row"><button class="gray" onclick="box('traderMonthList')">معاملات الشهر</button></div>
+    <div class="row"><button class="gray" onclick="box('traderMonthList')">المعاملات</button></div>
 
     <div id="traderMonthList" style="display:none">
       <div class="table-scroll">
         <table>
-          <tr><th>التاريخ</th><th>التاجر</th><th>النوع</th><th>القيمة</th>${isAdmin ? "<th>تحكم</th>" : ""}</tr>
+          <tr><th>التاريخ</th><th>التاجر</th><th>المعاملة</th><th>القيمة</th>${isAdmin ? "<th>تحكم</th>" : ""}</tr>
           <tbody id="traderTransactionRows">
             ${filteredList.map(x => `
               <tr>
@@ -1179,46 +1186,59 @@ function exportTraderTransactionsPdf() {
 /* =========================================================
    شيت البائعين
    ========================================================= */
-function sellers() {
-  const shop = st();
-  const sellers = shop.sellers || [];
-  const fixedSellers = shop.fixedSellers || [];
+    function sellers() {
+      const shop = st();
+      const sellers = shop.sellers || [];
+      const fixedSellers = shop.fixedSellers || [];
+      
+      // وضع التعديل
+      const fixedEdit = edit?.type === "fixedSellers" ? fixedSellers.find(x => x.id === edit.id) : {};
 
-  return `
-    <h2>البائعين</h2>
-    <h3>بائعين العمولة</h3>
-    ${isAdmin ? `
-      <div class="grid grid3">
-        <label>اسم البائع <input id="sn"></label>
-        <button onclick="addSeller()">إضافة بائع</button>
-      </div>
-    ` : ""}
+      return `
+        <h2>البائعين</h2>
+        <h3>بائعين العمولة</h3>
+        ${isAdmin ? `
+          <div class="grid grid3">
+            <label>اسم البائع <input id="sn"></label>
+            <button onclick="addSeller()">إضافة بائع</button>
+          </div>
+        ` : ""}
 
-    <div class="table-scroll">
-      <table>
-        <tr><th>البائع</th>${isAdmin ? "<th>تحكم</th>" : ""}</tr>
-        ${sellers.map(x => `<tr><td>${x.name}</td>${isAdmin ? `<td><button class="danger" onclick="deleteSeller('${x.id}')">حذف</button></td>` : ""}</tr>`).join("") || `<tr><td colspan="${isAdmin ? 2 : 1}">لا يوجد بائعين</td></tr>`}
-      </table>
-    </div>
+        <div class="table-scroll">
+          <table>
+            <tr><th>البائع</th>${isAdmin ? "<th>تحكم</th>" : ""}</tr>
+            ${sellers.map(x => `<tr><td>${x.name}</td>${isAdmin ? `<td><button class="danger" onclick="deleteSeller('${x.id}')">حذف</button></td>` : ""}</tr>`).join("") || `<tr><td colspan="${isAdmin ? 2 : 1}">لا يوجد بائعين</td></tr>`}
+          </table>
+        </div>
 
-    <hr>
-    <h3>راتب ثابت</h3>
-    ${isAdmin ? `
-      <div class="grid grid3">
-        <label>الأسم <input id="fsn"></label>
-        <label>الراتب الثابت <input id="fss" type="number" step="0.01"></label>
-        <button onclick="addFixedSeller()">إضافة</button>
-      </div>
-    ` : ""}
+        <hr>
+        <h3>راتب ثابت</h3>
+        ${isAdmin ? `
+          <div class="grid grid3">
+            <label>الأسم <input id="fsn" value="${fixedEdit.name || ''}"></label>
+            <label>الراتب الثابت <input id="fss" type="number" step="0.01" value="${fixedEdit.salary || ''}"></label>
+            <button onclick="addFixedSeller()">${fixedEdit.id ? 'تعديل الراتب' : 'إضافة'}</button>
+            ${fixedEdit.id ? `<button class="light" onclick="edit=null; draw()">إلغاء التعديل</button>` : ''}
+          </div>
+        ` : ""}
 
-    <div class="table-scroll">
-      <table>
-        <tr><th>الأسم</th><th>الراتب</th>${isAdmin ? "<th>تحكم</th>" : ""}</tr>
-        ${fixedSellers.map(x => `<tr><td>${x.name}</td><td>${m(x.salary)}</td>${isAdmin ? `<td><button class="danger" onclick="deleteFixedSeller('${x.id}')">حذف</button></td>` : ""}</tr>`).join("") || `<tr><td colspan="${isAdmin ? 3 : 2}">لا يوجد بيانات</td></tr>`}
-      </table>
-    </div>
-  `;
-}
+        <div class="table-scroll">
+          <table>
+            <tr><th>الأسم</th><th>الراتب</th>${isAdmin ? "<th>تحكم</th>" : ""}</tr>
+            ${fixedSellers.map(x => `
+              <tr>
+                <td>${x.name}</td>
+                <td>${m(x.salary)}</td>
+                ${isAdmin ? `<td>
+                  <button class="light" onclick="edt('fixedSellers','${x.id}')">تعديل</button>
+                  <button class="danger" onclick="deleteFixedSeller('${x.id}')">حذف</button>
+                </td>` : ""}
+              </tr>
+            `).join("") || `<tr><td colspan="${isAdmin ? 3 : 2}">لا يوجد بيانات</td></tr>`}
+          </table>
+        </div>
+      `;
+    }
 
 function addSeller() {
   if (!isAdmin) return;
@@ -1234,13 +1254,30 @@ function deleteSeller(sellerId) {
   save(); draw();
 }
 
-function addFixedSeller() {
-  if (!isAdmin) return;
-  if (!fsn.value.trim()) return;
-  st().fixedSellers.push({ id: id(), name: fsn.value.trim(), salary: n(fss.value) });
-  save(); draw();
-}
+    function addFixedSeller() {
+      if (!isAdmin) return;
+      const name = fsn.value.trim();
+      const salary = n(fss.value);
+      
+      if (!name) return alert("اكتب اسم البائع");
+      if (salary <= 0) return alert("اكتب راتب صحيح");
 
+      // تعديل 
+      if (edit?.type === "fixedSellers") {
+        const seller = st().fixedSellers.find(x => x.id === edit.id);
+        if (seller) {
+          seller.name = name;
+          seller.salary = salary;
+        }
+      } else {
+        // اضافة 
+        st().fixedSellers.push({ id: id(), name: name, salary: salary });
+      }
+      
+      save(); 
+      edit = null; 
+      draw();
+    }
 function deleteFixedSeller(sellerId) {
   if (!isAdmin) return;
   if (!confirm("حذف ؟")) return;
@@ -1285,7 +1322,7 @@ ${isAdmin ? `<button class="gray" onclick="box('explist')"> المصروفات</
 
     <div id="explist" style="display:none">
       <div class="table-scroll">
-        ${table(expenseList, "expenses", ["التاريخ", "البند", "النوع", "القيمة"], x => [x.date, x.item, x.type || "مصروفات كاش", m(x.amount)])}
+        ${table(expenseList, "expenses", ["التاريخ", "البند", "النوع", "القيمة"], x => [x.date, x.item, x.type || " كاش", m(x.amount)])}
       </div>
     </div>
 
@@ -1294,11 +1331,11 @@ ${isAdmin ? `<button class="gray" onclick="box('explist')"> المصروفات</
     <h3>كشف المصروفات التفصيلي</h3>
     <p>تفاصيل المصروفات </p>
     <div class="row">
-      <button class="gray" onclick="box('unifiedlist')">عرض التفاصيل</button>
+      <button class="gray" onclick="box('unifiedlist')">عرض</button>
       <button onclick="exportExpensesPdf()">PDF</button>
       <div class="card">مصروفات كاش <strong>${m(expenseList.reduce((s, x) => s + n(x.amount), 0))}</strong></div>
-      <div class="card">دفعات التجار <strong>${m(traderPaymentList.reduce((s, x) => s + n(x.amount), 0))}</strong></div>
-      <div class="card">مسحوبات البائعين <strong>${m(withdrawalList.reduce((s, x) => s + n(x.amount), 0))}</strong></div>
+      <div class="card">دفعة تاجر <strong>${m(traderPaymentList.reduce((s, x) => s + n(x.amount), 0))}</strong></div>
+      <div class="card">مسحوبات <strong>${m(withdrawalList.reduce((s, x) => s + n(x.amount), 0))}</strong></div>
     </div>
     
     <div id="unifiedlist" style="display:none">
@@ -1308,7 +1345,7 @@ ${isAdmin ? `<button class="gray" onclick="box('explist')"> المصروفات</
           ${unifiedList.map(x => `
             <tr>
               <td>${x.date}</td><td>${x.item}</td><td>${x.type}</td><td>${m(x.amount)}</td>
-<td>${x.source === "expenses" ? (x.type || "مصروفات كاش") : x.source === "traderTx" ? "دفعات التجار" : "مسحوبات البائعين"}</td>                  ${isAdmin ? `<td><button class="light" onclick="edt('${x.source}','${x.id}')">تعديل</button><button class="danger" onclick="del('${x.source}','${x.id}')">حذف</button></td>` : ""}
+<td>${x.source === "expenses" ? (x.type || "مصروفات كاش") : x.source === "traderTx" ? "دفعة تاجر" : "مسحوبات"}</td>                  ${isAdmin ? `<td><button class="light" onclick="edt('${x.source}','${x.id}')">تعديل</button><button class="danger" onclick="del('${x.source}','${x.id}')">حذف</button></td>` : ""}
             </tr>
           `).join("") || `<tr><td colspan="${isAdmin ? 6 : 5}">لا توجد عمليات خلال الفترة</td></tr>`}
         </table>
@@ -1480,13 +1517,14 @@ function profits() {
   const eachSalary = (shop.sellers || []).length ? p.salariesTotal / shop.sellers.length : 0;
 
   return `
-    <h2>توزيع الأرباح وإضافة شركاء</h2>
+    <h2>توزيع الأرباح</h2>
 
     ${isAdmin ? `
       <div class="grid grid3">
-        <label>اسم الشريك <input id="pn"></label>
-        <label>النسبة % <input id="pp" type="number" step="0.01"></label>
-        <button onclick="addPartner()">إضافة شريك</button>
+        <label>اسم الشريك <input id="pn" value="${edit?.type === 'partners' ? (shop.partners || []).find(x => x.id === edit.id)?.name || '' : ''}"></label>
+        <label>النسبة % <input id="pp" type="number" step="0.01" value="${edit?.type === 'partners' ? (shop.partners || []).find(x => x.id === edit.id)?.percent || '' : ''}"></label>
+        <button onclick="addPartner()">${edit?.type === 'partners' ? 'تعديل الشريك' : 'إضافة '}</button>
+        ${edit?.type === 'partners' ? `<button class="light" onclick="edit=null; draw()">إلغاء التعديل</button>` : ''}
       </div>
     ` : ""}
 
@@ -1518,8 +1556,8 @@ function profits() {
         <input id="ft" type="number" step="0.01" value="${p.fixedTotal}" ${isAdmin ? "" : "disabled"}>
       </label>
 
-      ${isAdmin ? `<button onclick="updateSalarySettings()" style="margin-top: 24px;">تحديث التقرير</button>` : ""}
-      <button class="gray" onclick="exportProfitPdf()" style="margin-top: 24px;">تصدير PDF</button>
+      ${isAdmin ? `<button onclick="updateSalarySettings()" style="margin-top: 24px;">تحديث</button>` : ""}
+      <button class="gray" onclick="exportProfitPdf()" style="margin-top: 24px;">PDF</button>
     </div>
 
     <div class="cards">
@@ -1581,12 +1619,28 @@ function updateSalarySettings() {
 
 function addPartner() {
   if (!isAdmin) return;
-  const total = (st().partners || []).reduce((s, x) => s + n(x.percent), 0);
-  const percent = n(pp.value);
-  if (!pn.value.trim() || percent <= 0) return alert("اكتب اسم الشريك ونسبته");
-  if (total + percent > 100) return alert("إجمالي النسب لا يتخطى 100%");
-  st().partners.push({ id: id(), name: pn.value.trim(), percent });
-  save(); draw();
+  
+  const name = q("pn").value.trim();
+  const percent = n(q("pp").value);
+  
+  if (!name || percent <= 0) return alert("اكتب اسم الشريك ونسبته");
+  
+  if (edit?.type === "partners") {
+    const partner = (st().partners || []).find(x => x.id === edit.id);
+    if (!partner) return;
+    const otherPercent = (st().partners || []).reduce((s, x) => x.id !== edit.id ? s + n(x.percent) : s, 0);
+    if (otherPercent + percent > 100) return alert("إجمالي النسب لا يتخطى 100%");
+    partner.name = name;
+    partner.percent = percent;
+  } else {
+    const total = (st().partners || []).reduce((s, x) => s + n(x.percent), 0);
+    if (total + percent > 100) return alert("إجمالي النسب لا يتخطى 100%");
+    st().partners.push({ id: id(), name: name, percent: percent });
+  }
+  
+  save(); 
+  edit = null; 
+  draw();
 }
 
 /* =========================================================
@@ -1685,12 +1739,12 @@ function traderTotals() {
   document.getElementById("app").innerHTML = `
     <h1 class="title">MANAGEMENT</h1>
     <section class="panel">
-      <h2>إجمالي الأرصدة للتجار</h2>
+      <h2>مديونات المحلات</h2>
       
       <div class="row" style="margin-bottom: 15px;">
         <label style="flex: 1; min-width: 250px;">
           بحث عن تاجر
-          <input id="traderBalanceSearchInput" list="traderNamesList" placeholder="اكتب اسم التاجر..." value="${traderBalanceSearch}" autocomplete="off">
+          <input id="traderBalanceSearchInput" list="traderNamesList" placeholder="..." value="${traderBalanceSearch}" autocomplete="off">
           <datalist id="traderNamesList">
             ${Object.keys(rows).sort((a,b) => a.localeCompare(b, "ar")).map(n => `<option value="${n}">`).join("")}
           </datalist>
@@ -1701,7 +1755,7 @@ function traderTotals() {
         <button class="gray" onclick="selectAllTraderBalanceStores()">اختيار كل المحلات</button>
         ${stores.map(s => `<label class="shop-choice"><input type="checkbox" ${selectedIds.has(s[0]) ? "checked" : ""} onchange="toggleTraderBalanceStore('${s[0]}', this.checked)">${s[1]}</label>`).join("")}
       </div>
-      <div class="card">الإجمالي اللي عليك كله <strong>${m(grand)}</strong></div>
+      <div class="card">إجمالي المديونية <strong>${m(grand)}</strong></div>
       
       <div class="row" style="margin-top: 15px;">
         <button class="gray" onclick="toggleAllVisibleTraders()">تحديد الكل</button>
@@ -1727,7 +1781,7 @@ function traderTotals() {
         <tr>
           <th style="width: 40px; text-align: center;"><input type="checkbox" id="selectAllTraderCheckbox" onchange="toggleSelectAllVisible(this.checked)" style="width: 18px; height: 18px; cursor: pointer;"></th>
           <th>التاجر</th>
-          <th>تفصيل المحلات</th>
+          <th>مديونية المحل</th>
           <th>الإجمالي</th>
           ${isAdmin ? "<th>تحكم</th>" : ""}
         </tr>
@@ -1820,7 +1874,7 @@ function exportTraderTotalsPdf() {
       <div class="metric">عدد التجار<b>${entriesToPrint.length}</b></div>
       <div class="metric">الإجمالي الكلي<b>${m(grandTotal)}</b></div>
     </div>
-    <table><thead><tr><th>#</th><th>التاجر</th><th>تفصيل المحلات</th><th>الإجمالي</th></tr></thead><tbody>
+    <table><thead><tr><th>#</th><th>التاجر</th><th>المحل</th><th>الإجمالي</th></tr></thead><tbody>
       ${entriesToPrint.map(([name, value], i) => `<tr><td>${i + 1}</td><td>${name}</td><td>${Object.entries(value.parts).map(([shop, total]) => `${shop}: ${m(total)}`).join(" | ")}</td><td><b>${m(value.total)}</b></td></tr>`).join("") || `<tr><td colspan="4">لا توجد أرصدة.</td></tr>`}
     </tbody></table>
   `;
@@ -1860,7 +1914,7 @@ syncCustomStores();
 applyViewMode();
 setupAuthListener();
 /* =========================================================
-   دوال النسخ الاحتياطي وإدارة المستخدمين (اللي كانت ناقصة)
+   دوال النسخ الاحتياطي وإدارة المستخدمين
    ========================================================= */
 async function backup() {
   if (!isAdmin) return;
@@ -1936,7 +1990,7 @@ async function renderUsersPage() {
     const entries = Object.entries(users);
 
     document.getElementById("app").innerHTML = `
-      <div class="head"><h1>👥 إدارة المستخدمين</h1><button class="light" onclick="home()">رجوع</button></div>
+      <div class="head"><h1> إدارة المستخدمين</h1><button class="light" onclick="home()">رجوع</button></div>
       <section class="panel">
         <h2>كل المستخدمين (${entries.length})</h2>
         <div class="table-scroll">
@@ -1944,7 +1998,7 @@ async function renderUsersPage() {
             <tr><th>الاسم</th><th>الإيميل</th><th>الحالة</th><th>الصلاحية</th><th>تحكم</th></tr>
             ${entries.map(([uid, u]) => {
               const isSelf = uid === ADMIN_UID;
-              const status = u.blocked ? "محظور ⛔" : (u.status === "approved" ? "موافق ✅" : "في الانتظار ⏳");
+              const status = u.blocked ? "محظور ⛔" : (u.status === "approved" ? "موافق " : "في الانتظار ⏳");
               const statusClass = u.blocked ? "bad" : (u.status === "approved" ? "ok" : "pending");
               const role = u.role === "admin" ? "أدمين" : "مشاهد";
               return `
@@ -2019,7 +2073,7 @@ function manualSync() {
   if (isSyncing) return;
   const choice = confirm("ماذا تريد أن تفعل؟\n\n OK = رفع البيانات المحلية إلى Firebase\n Cancel = تنزيل البيانات من Firebase");
   if (choice) {
-    saveRemote().then(() => alert("تم رفع البيانات ✅"));
+    saveRemote().then(() => alert("تم رفع البيانات "));
   } else {
     fbDB.ref(FB_PATH).once("value").then(snap => {
       const remote = snap.val();
@@ -2029,20 +2083,10 @@ function manualSync() {
         syncCustomStores();
         saveLocal();
         if (store) draw(); else home();
-        alert("تم تنزيل البيانات ✅");
+        alert("تم تنزيل البيانات ");
       } else {
         alert("لا توجد بيانات في Firebase");
       }
     });
   }
 }
-
-/* =========================================================
-   بدء التشغيل
-   ========================================================= */
-clientId = getClientId();
-data = loadLocal();
-period = loadSavedPeriod();
-syncCustomStores();
-applyViewMode();
-setupAuthListener();
