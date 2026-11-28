@@ -646,9 +646,10 @@ function render() {
       ${Object.entries(tabNames).map(([key, value]) => `
         <button class="tab ${tab === key ? "on" : ""}" onclick="switchTab('${key}')">${value}</button>
       `).join("")}
+      ${isAdmin ? `<button class="tab ${tab === "vacations" ? "on" : ""}" onclick="switchTab('vacations')">الإجازات</button>` : ""}
     </div>
     <section class="panel">
-      ${dates()}
+      ${tab === "vacations" ? "" : dates()}
       <div id="body"></div>
     </section>
   `;
@@ -656,6 +657,7 @@ function render() {
 }
 
 function switchTab(key) { 
+  if (key === "vacations" && !isAdmin) return;
   tab = key; 
   edit = null; 
   Object.keys(localStorage).forEach(k => {
@@ -698,6 +700,7 @@ function openStore(storeId) {
   ss.expenses ||= [];
   ss.withdrawals ||= [];
   ss.partners ||= [];
+  ss.vacations ||= [];
   ss.salaryMode ||= "percent";
   ss.commissionPercent ||= 0;
   ss.salaryFixedTotal ||= 0;
@@ -705,10 +708,11 @@ function openStore(storeId) {
 }
 
 function draw() {
-  const pages = { sales, exchange, traders, sellers, expenses, profits };
+  const pages = { sales, exchange, traders, sellers, expenses, profits, vacations };
   const bodyEl = document.getElementById("body");
   if (!bodyEl) return;
   try {
+    if (tab === "vacations" && !isAdmin) { tab = "sales"; return render(); }
     bodyEl.innerHTML = pages[tab]();
     applyAuditDecorations(bodyEl);
   } catch (err) {
@@ -1248,6 +1252,129 @@ function exportTraderTransactionsPdf() {
   printPdf(`${title} - ${meta()[1]}`, `الفترة: من ${period.from} إلى ${period.to}`, content);
 }
 
+function printPdf(title, subtitle, content) {
+  const printWindow = window.open("", "_blank");
+  if (!printWindow) {
+    alert("المتصفح منع نافذة التقرير. اسمح بالنوافذ المنبثقة لهذا الموقع ثم اضغط PDF مرة أخرى.");
+    return;
+  }
+  printWindow.document.open();
+  printWindow.document.write(`<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeAuditText(title)}</title>
+    <style>
+      *{box-sizing:border-box}body{font-family:Tahoma,Arial,sans-serif;color:#172033;margin:24px;font-size:13px}
+      h1{font-size:24px;margin:0 0 8px;color:#172033}h2{font-size:17px;margin:22px 0 10px}
+      .subtitle{color:#555;margin:0 0 20px}.summary-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:16px 0}
+      .metric{border:1px solid #cbd2dc;border-right:4px solid #c99a24;padding:9px;background:#f7f8fa}.metric b{display:block;margin-top:5px;font-size:15px}.metric small{display:block;line-height:1.6;margin-top:4px}
+      table{width:100%;border-collapse:collapse;margin:10px 0 18px}th,td{border:1px solid #adb5c2;padding:7px;text-align:right;vertical-align:top}
+      th{background:#e9edf2;font-weight:700}.print-action{margin:0 0 16px;padding:8px 14px;border:0;border-radius:5px;background:#172033;color:#fff;font-size:14px;cursor:pointer}
+      @media print{body{margin:10mm}.print-action{display:none}thead{display:table-header-group}tr{break-inside:avoid}}
+    </style></head><body><button class="print-action" onclick="window.print()">طباعة / حفظ PDF</button><h1>${escapeAuditText(title)}</h1><p class="subtitle">${escapeAuditText(subtitle || "")}</p>${content}</body></html>`);
+  printWindow.document.close();
+  printWindow.focus();
+  window.setTimeout(() => { try { printWindow.print(); } catch (e) { console.error("Print dialog failed:", e); } }, 350);
+}
+
+function exportExpensesPdf() {
+  const shop = st();
+  const p = profitCalc();
+  const advances = sellerAdvanceSummary().withdrawals;
+  const cashExpenses = fl(shop.expenses || []);
+  const traderPayments = fl(shop.traderTx || []).filter(x => x.kind === "payment");
+  const withdrawals = fl(shop.withdrawals || []);
+  const withdrawalTotal = withdrawals.reduce((sum, x) => sum + n(x.amount), 0);
+  const storeExpenseTotal = p.normalExpenses + p.traderPayments + withdrawalTotal;
+  const payrollTotal = p.salariesTotal + p.fixedSalariesTotal;
+  const storeExpenseRows = [
+    ...cashExpenses.map(x => ({ date: x.date, item: x.item, type: x.type || "مصروف كاش", amount: x.amount })),
+    ...withdrawals.map(x => ({ date: x.date, item: x.seller, type: "مسحوبات", amount: x.amount }))
+  ].sort((a, b) => String(a.date || "").localeCompare(String(b.date || "")));
+  const commissionRows = (shop.sellers || []).map(s => {
+    const due = n(p.salaryBySeller?.[s.id]);
+    const advance = n(advances[s.name]);
+    const leaveDays = vacationDaysInRange(s.id, period.from, period.to, shop.vacations || []);
+    return `<tr><td>${s.name}</td><td>${leaveDays}</td><td>${m(due)}</td><td>${m(advance)}</td><td>${m(due - advance)}</td></tr>`;
+  }).join("");
+  const fixedRows = (shop.fixedSellers || []).map(s => {
+    const due = n(s.salary);
+    const advance = n(advances[s.name]);
+    return `<tr><td>${s.name}</td><td>${m(due)}</td><td>${m(advance)}</td><td>${m(due - advance)}</td></tr>`;
+  }).join("");
+  const content = `<div class="summary-grid">
+      <div class="metric">مصروفات المحل<b>${m(storeExpenseTotal)}</b></div>
+      <div class="metric">إجمالي المرتبات<b>${m(payrollTotal)}</b></div>
+      <div class="metric">المجموع الكلي للمصروفات<b>${m(p.expenses)}</b></div>
+    </div>
+    <h2>مصروفات المحل والمسحوبات</h2><table><thead><tr><th>التاريخ</th><th>البند</th><th>النوع</th><th>القيمة</th></tr></thead><tbody>
+      ${storeExpenseRows.map(x => `<tr><td>${x.date}</td><td>${x.item}</td><td>${x.type}</td><td>${m(x.amount)}</td></tr>`).join("") || `<tr><td colspan="4">لا توجد مصروفات أو مسحوبات في الفترة</td></tr>`}
+    </tbody></table>
+    <h2>دفعات التجار بالتفصيل</h2><table><thead><tr><th>التاريخ</th><th>التاجر</th><th>القيمة</th></tr></thead><tbody>
+      ${traderPayments.map(x => `<tr><td>${x.date}</td><td>${x.name}</td><td>${m(x.amount)}</td></tr>`).join("") || `<tr><td colspan="3">لا توجد دفعات للتجار في الفترة</td></tr>`}
+    </tbody></table>
+    <h2>عمولات البياعين</h2><table><thead><tr><th>البياع</th><th>أيام الإجازة</th><th>المستحق</th><th>المسحوبات</th><th>المتبقي</th></tr></thead><tbody>
+      ${commissionRows || `<tr><td colspan="5">لا يوجد بياعون بالعمولة</td></tr>`}
+    </tbody></table>
+    <h2>الرواتب الثابتة</h2><table><thead><tr><th>البياع</th><th>المستحق</th><th>المسحوبات</th><th>المتبقي</th></tr></thead><tbody>
+      ${fixedRows || `<tr><td colspan="4">لا توجد رواتب ثابتة</td></tr>`}
+    </tbody></table>
+    `;
+  printPdf(`تقرير المصروفات - ${meta()[1]}`, `الفترة: من ${period.from} إلى ${period.to}`, content);
+}
+
+function exportProfitPdf() {
+  const shop = st();
+  const p = profitCalc();
+  const advances = sellerAdvanceSummary().withdrawals;
+  const withdrawalTotal = fl(shop.withdrawals || []).reduce((sum, x) => sum + n(x.amount), 0);
+  const sellerRows = (shop.sellers || []).map(s => {
+    const due = n(p.salaryBySeller?.[s.id]);
+    const advance = n(advances[s.name]);
+    const leaveDays = vacationDaysInRange(s.id, period.from, period.to, shop.vacations || []);
+    return `<tr><td>${s.name}</td><td>${leaveDays}</td><td>${m(due)}</td><td>${m(advance)}</td><td>${m(due - advance)}</td></tr>`;
+  }).join("");
+  const fixedRows = (shop.fixedSellers || []).map(s => {
+    const advance = n(advances[s.name]);
+    return `<tr><td>${s.name}</td><td>${m(s.salary)}</td><td>${m(advance)}</td><td>${m(n(s.salary) - advance)}</td></tr>`;
+  }).join("");
+  const partnerRows = (shop.partners || []).map(x => `<tr><td>${x.name}</td><td>${m(x.percent)}%</td><td>${m(p.netProfit * n(x.percent) / 100)}</td></tr>`).join("");
+  const content = `<div class="summary-grid">
+      <div class="metric">مصروفات المحل<b>${m(p.normalExpenses + p.traderPayments + withdrawalTotal)}</b></div>
+      <div class="metric">المرتبات
+        <small>عمولات: ${m(p.salariesTotal)} | ثابتة: ${m(p.fixedSalariesTotal)}</small>
+      </div>
+      <div class="metric">المجموع الكلي للمصروفات<b>${m(p.expenses)}</b></div>
+    </div><h2>مرتبات بياعين العمولة</h2><table><thead><tr><th>البياع</th><th>أيام الإجازة</th><th>المستحق</th><th>المسحوبات</th><th>المتبقي</th></tr></thead><tbody>${sellerRows || `<tr><td colspan="5">لا يوجد بياعون</td></tr>`}</tbody></table>
+    <h2>الرواتب الثابتة</h2><table><thead><tr><th>البياع</th><th>المستحق</th><th>المسحوبات</th><th>المتبقي</th></tr></thead><tbody>${fixedRows || `<tr><td colspan="4">لا توجد رواتب ثابتة</td></tr>`}</tbody></table>
+    <h2>توزيع أرباح الشركاء</h2><table><thead><tr><th>الشريك</th><th>النسبة</th><th>النصيب</th></tr></thead><tbody>${partnerRows || `<tr><td colspan="3">لا يوجد شركاء</td></tr>`}</tbody></table>`;
+  printPdf(`تقرير الأرباح - ${meta()[1]}`, `الفترة: من ${period.from} إلى ${period.to}`, content);
+}
+
+function exportCollectionsPdf() {
+  const selectedIds = selectedCollectionStoreIds();
+  const selected = stores.filter(s => selectedIds.has(s[0]));
+  const rows = selected.map(s => ({ id: s[0], name: s[1], totals: storeCollectionTotals(s[0]) }));
+  const total = rows.reduce((acc, row) => {
+    Object.keys(acc).forEach(key => { acc[key] += n(row.totals[key]); });
+    return acc;
+  }, { euroSales: 0, dollarSales: 0, gbpSales: 0, euroChanged: 0, dollarChanged: 0, gbpChanged: 0, euro: 0, dollar: 0, gbp: 0, egp: 0, visa: 0, totalConvertedEgp: 0, cashOut: 0 });
+  const partners = {};
+  const oldStore = store;
+  try {
+    selected.forEach(s => {
+      store = s[0];
+      const p = profitCalc();
+      (data.stores[s[0]]?.partners || []).forEach(x => {
+        partners[x.name] = (partners[x.name] || 0) + p.netProfit * n(x.percent) / 100;
+      });
+    });
+  } finally { store = oldStore; }
+  const content = `<div class="summary-grid"><div class="metric">إجمالي التحويل<b>${m(total.totalConvertedEgp)}</b></div><div class="metric">إجمالي المصروفات والمسحوبات<b>${m(total.cashOut)}</b></div><div class="metric">إجمالي الجنيه المصري والفيزا<b>${m(total.egp + total.visa)}</b></div></div>
+    <table><thead><tr><th>المحل</th><th>يورو</th><th>دولار</th><th>إسترليني</th><th>جنيه مصري</th><th>فيزا</th><th>إجمالي التحويل</th><th>مصروفات</th></tr></thead><tbody>
+    ${rows.map(r => `<tr><td>${r.name}</td><td>${m(r.totals.euro)}</td><td>${m(r.totals.dollar)}</td><td>${m(r.totals.gbp)}</td><td>${m(r.totals.egp)}</td><td>${m(r.totals.visa)}</td><td>${m(r.totals.totalConvertedEgp)}</td><td>${m(r.totals.cashOut)}</td></tr>`).join("") || `<tr><td colspan="8">اختر محلًا واحدًا على الأقل</td></tr>`}
+    <tr><th>الإجمالي</th><th>${m(total.euro)}</th><th>${m(total.dollar)}</th><th>${m(total.gbp)}</th><th>${m(total.egp)}</th><th>${m(total.visa)}</th><th>${m(total.totalConvertedEgp)}</th><th>${m(total.cashOut)}</th></tr></tbody></table>
+    <h2>أرباح الشركاء</h2><table><tr><th>الشريك</th><th>إجمالي الأرباح</th></tr>${Object.entries(partners).map(([name, amount]) => `<tr><td>${name}</td><td>${m(amount)}</td></tr>`).join("") || `<tr><td colspan="2">لا توجد أرباح مسجلة</td></tr>`}</table>`;
+  printPdf("تقرير تحصيل المحلات", `الفترة: من ${period.from} إلى ${period.to}`, content);
+}
+
 /* =========================================================
    شيت البائعين
    ========================================================= */
@@ -1304,6 +1431,104 @@ function exportTraderTransactionsPdf() {
         </div>
       `;
     }
+
+function dateListInclusive(from, to) {
+  if (!from || !to || from > to) return [];
+  const dates = [];
+  const current = new Date(`${from}T00:00:00Z`);
+  const end = new Date(`${to}T00:00:00Z`);
+  while (current <= end) {
+    dates.push(current.toISOString().slice(0, 10));
+    current.setUTCDate(current.getUTCDate() + 1);
+  }
+  return dates;
+}
+
+function sellerIsOnVacation(sellerId, date, list = st().vacations || []) {
+  return list.some(v => v.sellerId === sellerId && (!v.monthKey || date.slice(0, 7) === v.monthKey) && v.startDate <= date && v.endDate >= date);
+}
+
+function vacationDaysInRange(sellerId, from, to, list = st().vacations || []) {
+  const vacationDates = new Set();
+  list.filter(v => v.sellerId === sellerId).forEach(v => {
+    dateListInclusive(v.startDate, v.endDate).forEach(d => {
+      if (d >= from && d <= to) vacationDates.add(d);
+    });
+  });
+  return vacationDates.size;
+}
+
+function vacations() {
+  if (!isAdmin) return `<p>هذه الصفحة للأدمن فقط.</p>`;
+  const shop = st();
+  shop.vacations ||= [];
+  const record = edit?.type === "vacations" ? shop.vacations.find(v => v.id === edit.id) || {} : {};
+  const sellers = shop.sellers || [];
+  const monthKey = record.monthKey || record.startDate?.slice(0, 7) || (period?.from || today()).slice(0, 7);
+  const entries = [...shop.vacations].sort((a, b) => String(b.startDate).localeCompare(String(a.startDate)));
+  return `
+    <h2>إجازات البياعين</h2>
+    ${sellers.length ? `
+      <div class="grid grid3">
+        <label>البياع
+          <select id="vacSeller">
+            ${sellers.map(s => `<option value="${s.id}" ${record.sellerId === s.id ? "selected" : ""}>${s.name}</option>`).join("")}
+          </select>
+        </label>
+        <label>الشهر<input id="vacMonth" type="month" value="${monthKey}"></label>
+        <label>من يوم<input id="vacStartDay" type="number" min="1" max="31" value="${record.startDate ? Number(record.startDate.slice(8, 10)) : ""}"></label>
+        <label>إلى يوم<input id="vacEndDay" type="number" min="1" max="31" value="${record.endDate ? Number(record.endDate.slice(8, 10)) : ""}"></label>
+        <button onclick="saveVacation()">${record.id ? "تعديل الإجازة" : "حفظ الإجازة"}</button>
+        ${record.id ? `<button class="light" onclick="edit=null; draw()">إلغاء</button>` : ""}
+      </div>
+    ` : `<p class="notice">أضف البياعين في صفحة البياعين أولًا.</p>`}
+    <p class="notice"></p>
+    <p class="notice"></p>
+    <div class="table-scroll"><table>
+      <tr><th>الشهر</th><th>البياع</th><th>من يوم</th><th>إلى يوم</th><th>عدد الأيام</th><th>إجراءات</th></tr>
+      ${entries.map(v => {
+        const seller = sellers.find(s => s.id === v.sellerId);
+        const days = dateListInclusive(v.startDate, v.endDate).length;
+        return `<tr ${auditRowAttrs(v)}><td>${v.monthKey || v.startDate.slice(0, 7)}</td><td>${seller?.name || v.sellerName || "بياع محذوف"}</td><td>${v.startDate.slice(8, 10)}</td><td>${v.endDate.slice(8, 10)}</td><td>${days}</td><td><button class="light" onclick="edt('vacations','${v.id}')">تعديل</button> <button class="danger" onclick="del('vacations','${v.id}')">حذف</button></td></tr>`;
+      }).join("") || `<tr><td colspan="6">لا توجد إجازات مسجلة</td></tr>`}
+    </table></div>
+  `;
+}
+
+function saveVacation() {
+  if (!isAdmin) return;
+  const shop = st();
+  const sellerId = q("vacSeller")?.value;
+  const seller = (shop.sellers || []).find(s => s.id === sellerId);
+  const monthKey = q("vacMonth")?.value;
+  const startDay = Number(q("vacStartDay")?.value);
+  const endDay = Number(q("vacEndDay")?.value);
+  if (!seller) return alert("اختر بياعًا من القائمة");
+  if (!monthKey || !startDay || !endDay) return alert("اختر الشهر ويوم بداية ونهاية الإجازة");
+  const daysInMonth = new Date(Date.UTC(Number(monthKey.slice(0, 4)), Number(monthKey.slice(5, 7)), 0)).getUTCDate();
+  if (startDay < 1 || endDay < 1 || startDay > daysInMonth || endDay > daysInMonth) return alert("اليوم المختار غير موجود في هذا الشهر");
+  const startDate = `${monthKey}-${String(startDay).padStart(2, "0")}`;
+  const endDate = `${monthKey}-${String(endDay).padStart(2, "0")}`;
+  if (startDate > endDate) return alert("تاريخ البداية يجب أن يسبق تاريخ النهاية");
+
+  const idValue = edit?.type === "vacations" ? edit.id : id();
+  const otherLeaves = (shop.vacations || []).filter(v => v.id !== idValue);
+  const proposed = { id: idValue, sellerId, sellerName: seller.name, monthKey, startDate, endDate };
+  for (const day of dateListInclusive(startDate, endDate)) {
+    const activeSellers = (shop.sellers || []).filter(s =>
+      !sellerIsOnVacation(s.id, day, [...otherLeaves, proposed])
+    );
+    if (!activeSellers.length) return alert(`لا يمكن حفظها: لن يتبقى بياع يعمل يوم ${day}`);
+  }
+
+  const index = (shop.vacations || []).findIndex(v => v.id === idValue);
+  const saved = auditRecord(proposed, index >= 0 ? shop.vacations[index] : null);
+  if (index >= 0) shop.vacations[index] = saved;
+  else shop.vacations.push(saved);
+  save();
+  edit = null;
+  draw();
+}
 
 function addSeller() {
   if (!isAdmin) return;
@@ -1519,6 +1744,38 @@ function saveWithdrawal() {
 /* =========================================================
    شيت الأرباح
    ========================================================= */
+function salaryAllocationBySeller(shop, exchangeStats, salaryMode, commission, fixedTotal) {
+  const sellers = shop.sellers || [];
+  const allocations = Object.fromEntries(sellers.map(s => [s.id, 0]));
+  if (!sellers.length) return allocations;
+
+  const dailyPools = new Map();
+  if (salaryMode === "fixed") {
+    const days = dateListInclusive(period.from, period.to);
+    const dailyFixed = fixedTotal / Math.max(1, days.length);
+    days.forEach(day => dailyPools.set(day, dailyFixed));
+  } else {
+    fl(shop.sales || []).forEach(sale => {
+      const dailyBase = Math.max(0,
+        n(sale.egp) + n(sale.visa) * 0.97 +
+        n(sale.euro) * exchangeStats.eavg +
+        n(sale.dollar) * exchangeStats.davg +
+        n(sale.gbp) * exchangeStats.bavg -
+        (meta()[2] ? n(sale.pieces) : 0)
+      );
+      dailyPools.set(sale.date, (dailyPools.get(sale.date) || 0) + dailyBase * commission / 100);
+    });
+  }
+
+  dailyPools.forEach((pool, day) => {
+    const active = sellers.filter(s => !sellerIsOnVacation(s.id, day, shop.vacations || []));
+    if (!active.length) return;
+    const perSeller = pool / active.length;
+    active.forEach(s => { allocations[s.id] = (allocations[s.id] || 0) + perSeller; });
+  });
+  return allocations;
+}
+
 function profitCalc() {
   const s = totals();
   const e = exStats();
@@ -1540,6 +1797,7 @@ function profitCalc() {
   } else {
     salariesTotal = salaryBase * commission / 100;
   }
+  const salaryBySeller = salaryAllocationBySeller(shop, e, salaryMode, commission, fixedTotal);
 
   const fixedSalariesTotal = (shop.fixedSellers || []).reduce((sum, x) => sum + n(x.salary), 0);
 
@@ -1553,7 +1811,7 @@ function profitCalc() {
     grossSalesEgp, salesEgp, visaDisc,
     normalExpenses, traderPayments,
     expenses: totalOperatingCosts,
-    salariesTotal, fixedSalariesTotal, netProfit,
+    salariesTotal, salaryBySeller, fixedSalariesTotal, netProfit,
     pieces: meta()[2] ? s.pieces : 0,
     salaryMode, commission, fixedTotal
   };
@@ -1579,7 +1837,7 @@ function profits() {
   const advanceSummary = sellerAdvanceSummary();
   const withdrawals = advanceSummary.withdrawals;
   const partnersPercent = (shop.partners || []).reduce((s, x) => s + n(x.percent), 0);
-  const eachSalary = (shop.sellers || []).length ? p.salariesTotal / shop.sellers.length : 0;
+  const salaryBySeller = p.salaryBySeller || {};
 
   return `
     <h2>توزيع الأرباح</h2>
@@ -1645,8 +1903,8 @@ function profits() {
     ${shop._auditSalarySettings && (shop._auditSalarySettings._auditCreatedBy !== ADMIN_UID || shop._auditSalarySettings._auditUpdatedBy !== ADMIN_UID) ? `<p class="audit-settings-note">آخر تغيير لإعدادات الرواتب بواسطة: ${escapeAuditText(shop._auditSalarySettings._auditUpdatedByName || shop._auditSalarySettings._auditCreatedByName || "أدمن آخر")}</p>` : ""}
     <div class="table-scroll">
       <table>
-        <tr><th>البائع</th><th>المستحق </th><th>المسحوبات </th><th>المتبقي</th></tr>
-        ${(shop.sellers || []).map(s => `<tr ${auditRowAttrs(s)}><td>${s.name}</td><td>${m(eachSalary)}</td><td>${m(withdrawals[s.name] || 0)}</td><td>${m(eachSalary - (withdrawals[s.name] || 0))}</td></tr>`).join("") || `<tr><td colspan="4">لا يوجد بائعين</td></tr>`}
+        <tr><th>البائع</th><th>أيام الإجازة</th><th>المستحق</th><th>المسحوبات</th><th>المتبقي</th></tr>
+        ${(shop.sellers || []).map(s => { const due = n(salaryBySeller[s.id]); const off = vacationDaysInRange(s.id, period.from, period.to, shop.vacations || []); return `<tr ${auditRowAttrs(s)}><td>${s.name}</td><td>${off}</td><td>${m(due)}</td><td>${m(withdrawals[s.name] || 0)}</td><td>${m(due - (withdrawals[s.name] || 0))}</td></tr>`; }).join("") || `<tr><td colspan="5">لا يوجد بائعين</td></tr>`}
       </table>
     </div>
 

@@ -62,6 +62,6 @@ const tabNames = {
 
 const blank = () => ({
   sales: [], exchange: [], traderTx: [], sellers: [], fixedSellers: [],
-  items: [], expenses: [], withdrawals: [], partners: [],
+  items: [], expenses: [], withdrawals: [], partners: [], vacations: [],
   salaryMode: "percent", commissionPercent: 0, salaryFixedTotal: 0
 });

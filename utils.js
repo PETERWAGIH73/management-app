@@ -28,6 +28,7 @@ function ensureAllFields(obj) {
       ss.expenses ||= [];
       ss.withdrawals ||= [];
       ss.partners ||= [];
+      ss.vacations ||= [];
       ss.salaryMode ||= "percent";
       ss.commissionPercent ||= 0;
       ss.salaryFixedTotal ||= 0;
@@ -188,6 +189,7 @@ function syncCustomStores() {
       ss.expenses ||= [];
       ss.withdrawals ||= [];
       ss.partners ||= [];
+      ss.vacations ||= [];
       ss.salaryMode ||= "percent";
       ss.commissionPercent ||= 0;
       ss.salaryFixedTotal ||= 0;
@@ -210,6 +212,7 @@ function syncCustomStores() {
     ss.expenses ||= [];
     ss.withdrawals ||= [];
     ss.partners ||= [];
+    ss.vacations ||= [];
     ss.salaryMode ||= "percent";
     ss.commissionPercent ||= 0;
     ss.salaryFixedTotal ||= 0;
